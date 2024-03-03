@@ -149,7 +149,7 @@ export class Fuzzy
             },
             (winid) => {
                 win_execute(winid, $"syn match FilterMenuFilenameSubtle \".*:\\d\\+:\"")
-                hi def link FilterMenuFilenameSubtle statusline
+                hi def link FilterMenuFilenameSubtle Comment
                 # note: it is expensive to regex match. even though following pattern
                 #   is more accurate vim throws 'redrawtime' exceeded and stops
                 # win_execute(menu.id, $"syn match FilterMenuMatch \"[^:]\\+:\\d\\+:\"")
@@ -183,11 +183,9 @@ export class Fuzzy
                                 job.Stop()
                             endif
                         })
-                    var pat = menu.prompt
+                    var pat = menu.prompt->escape('~')
                     if pat[-1 : -1] == '\'
-                        pat = pat->escape('~\')
-                    else
-                        pat = pat->escape('~')
+                        pat = $'{pat}\'
                     endif
                     win_execute(menu.id, $"syn match FilterMenuMatch \"{pat}\"")
                 endif
