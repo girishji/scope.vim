@@ -1,5 +1,8 @@
 vim9script
 
+# some chunks shamelessly ripped from habamax
+#   https://github.com/habamax/.vim/blob/master/autoload/popup.vim#L89-L89
+
 var options = {
     borderchars: ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
     bordercharsp: ['─', '│', '═', '│', '┌', '┐', '╡', '╞'],
@@ -68,7 +71,7 @@ export class FilterMenu
         endif
     enddef
 
-    def new(title: string, items_dict: list<dict<any>>, Callback: func(any, string), Setup: func(number) = null_function, GetFilteredItems: func(list<any>, string): list<any> = null_function, maximize: bool = false)
+    def new(title: string, items_dict: list<dict<any>>, Callback: func(any, string), Setup: func(number) = null_function, GetFilteredItems: func(list<any>, string): list<any> = null_function, Cleanup: func() = null_function, maximize: bool = false)
         if empty(prop_type_get('DevdocMenuMatch'))
             :highlight default DevdocMenuMatch term=bold cterm=bold gui=bold
             prop_type_add('DevdocMenuMatch', {highlight: "DevdocMenuMatch", override: true, priority: 1000, combine: true})
@@ -112,6 +115,9 @@ export class FilterMenu
                 if key == "\<esc>"
                     popup_close(id, -1)
                     popup_close(this.idp, -1)
+                    if Cleanup != null_function
+                        Cleanup()
+                    endif
                 elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>"]->index(key) > -1
                         && this.filtered_items[0]->len() > 0 && items_count > 0
                     popup_close(id, {idx: getcurpos(id)[1], key: key})
