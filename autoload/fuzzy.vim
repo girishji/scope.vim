@@ -79,6 +79,8 @@ enddef
 
 export class Fuzzy
 
+    var prev_grep = null_string
+
     # fuzzy find files (build a list of files once and then fuzzy search on them)
     def File(findCmd: string = null_string, count: number = 10000)  # list at least 10k files to search on
         var menu: popup.FilterMenu
@@ -94,7 +96,7 @@ export class Fuzzy
                     exe $"e {res.text}"
                 endif
             },
-            (winid) => {
+            (winid, _) => {
                 win_execute(winid, "syn match FilterMenuDirectorySubtle '^.*[\\/]'")
                 hi def link FilterMenuDirectorySubtle Comment
             },
@@ -147,15 +149,22 @@ export class Fuzzy
                     exe $":e +{fl[1]} {fl[0]}"
                 endif
             },
-            (winid) => {
-                win_execute(winid, $"syn match FilterMenuFilenameSubtle \".*:\\d\\+:\"")
+            (id, idp) => {
+                win_execute(id, $"syn match FilterMenuFilenameSubtle \".*:\\d\\+:\"")
                 hi def link FilterMenuFilenameSubtle Comment
                 # note: it is expensive to regex match. even though following pattern
                 #   is more accurate vim throws 'redrawtime' exceeded and stops
                 # win_execute(menu.id, $"syn match FilterMenuMatch \"[^:]\\+:\\d\\+:\"")
+                if this.prev_grep != null_string
+                    idp->popup_settext($'{popup.options.promptchar} {this.prev_grep}')
+                    idp->clearmatches()
+                    matchaddpos('FilterMenuCursor', [[1, 3]], 10, -1, {window: idp})
+                    matchaddpos('FilterMenuVirtualText', [[1, 4, 999]], 10, -1, {window: idp})
+                endif
             },
             (lst: list<dict<any>>, prompt: string): list<any> => {
-                # This is called everytime when user types something
+                # This function is called everytime when user types something
+                this.prev_grep = prompt
                 win_execute(menu.id, "syn clear FilterMenuMatch")
                 echo ''
                 if prompt != null_string
@@ -183,13 +192,14 @@ export class Fuzzy
                                 job.Stop()
                             endif
                         })
-                    var pat = menu.prompt->escape('~')
+                    var pat = prompt->escape('~')
                     if pat[-1 : -1] == '\'
                         pat = $'{pat}\'
                     endif
                     win_execute(menu.id, $"syn match FilterMenuMatch \"{pat}\"")
                 endif
-                return [lst, [lst]]
+                var items_dict = [{text: ''}]
+                return [items_dict, [items_dict]]
             },
             () => {
                 :echo ''
@@ -224,7 +234,7 @@ export class Fuzzy
                     endif
                 endif
             },
-            (winid) => {
+            (winid, _) => {
                 win_execute(winid, "syn match FilterMenuDirectorySubtle '^.*[\\/]'")
                 hi def link FilterMenuDirectorySubtle Comment
             },
@@ -264,7 +274,7 @@ export class Fuzzy
                     exe $":e {res.text}"
                 endif
             },
-            (winid) => {
+            (winid, _) => {
                 win_execute(winid, "syn match FilterMenuDirectorySubtle '^.*[\\/]'")
                 hi def link FilterMenuDirectorySubtle Comment
             })
@@ -316,7 +326,7 @@ export class Fuzzy
                 exe $":{res.linenr}"
                 normal! zz
             },
-            (winid) => {
+            (winid, _) => {
                 win_execute(winid, 'syn match FilterMenuLineNr "(\d\+)$"')
                 hi def link FilterMenuLineNr Comment
             })
@@ -339,7 +349,7 @@ export class Fuzzy
                     exe $":e {path_e}{res.text}"
                 endif
             },
-            (winid) => {
+            (winid, _) => {
                 win_execute(winid, "syn match FilterMenuDirectorySubtle '^.*[\\/]'")
                 hi def link FilterMenuDirectorySubtle Comment
             })
@@ -351,7 +361,7 @@ export class Fuzzy
             (res, key) => {
                 exe $":colorscheme {res.text}"
             },
-            (winid) => {
+            (winid, _) => {
                 if exists("g:colors_name")
                     win_execute(winid, $'syn match FilterMenuCurrent "^{g:colors_name}$"')
                     hi def link FilterMenuCurrent Statement
@@ -395,7 +405,7 @@ export class Fuzzy
             (res, key) => {
                 feedkeys($":{res.value}\<C-f>")
             },
-            (winid) => {
+            (winid, _) => {
                 win_execute(winid, 'syn match FilterMenuHiLinksTo "\(links to\)\|\(cleared\)"')
                 hi def link FilterMenuHiLinksTo Comment
                 for h in hl
@@ -447,7 +457,7 @@ export class Fuzzy
             (res, key) => {
                 win_gotoid(res.winid)
             },
-            (winid) => {
+            (winid, _) => {
                 win_execute(winid, 'syn match FilterMenuRegular "^ (.\{-}):.*(\d\+)$" contains=FilterMenuBraces')
                 win_execute(winid, 'syn match FilterMenuCurrent "^\*(.\{-}):.*(\d\+)$" contains=FilterMenuBraces')
                 win_execute(winid, 'syn match FilterMenuBraces "(\d\+)$" contained')

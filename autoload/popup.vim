@@ -1,9 +1,9 @@
 vim9script
 
 # some chunks shamelessly ripped from habamax
-#   https://github.com/habamax/.vim/blob/master/autoload/popup.vim#L89-L89
+#   https://github.com/habamax/.vim/blob/master/autoload/popup.vim
 
-var options = {
+export var options = {
     borderchars: ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
     bordercharsp: ['─', '│', '═', '│', '┌', '┐', '╡', '╞'],
     borderhighlight: hlexists('PopupBorderHighlight') ? ['PopupBorderHighlight'] : [],
@@ -56,7 +56,7 @@ export class FilterMenu
         # this.idp->popup_settext($'{options.promptchar} {this.prompt}{options.cursorchar}')
         this.idp->popup_settext($'{options.promptchar} {this.prompt} ')
         this.idp->clearmatches()
-        matchaddpos('DevdocMenuCursor', [[1, 3 + this.prompt->len()]], 10, -1, {window: this.idp})
+        matchaddpos('FilterMenuCursor', [[1, 3 + this.prompt->len()]], 10, -1, {window: this.idp})
 
         var pos = this.id->popup_getpos()
         var new_width = pos.core_width
@@ -71,13 +71,16 @@ export class FilterMenu
         endif
     enddef
 
-    def new(title: string, items_dict: list<dict<any>>, Callback: func(any, string), Setup: func(number) = null_function, GetFilteredItems: func(list<any>, string): list<any> = null_function, Cleanup: func() = null_function, maximize: bool = false)
-        if empty(prop_type_get('DevdocMenuMatch'))
-            :highlight default DevdocMenuMatch term=bold cterm=bold gui=bold
-            prop_type_add('DevdocMenuMatch', {highlight: "DevdocMenuMatch", override: true, priority: 1000, combine: true})
+    def new(title: string, items_dict: list<dict<any>>, Callback: func(any, string), Setup: func(number, number) = null_function, GetFilteredItems: func(list<any>, string): list<any> = null_function, Cleanup: func() = null_function, maximize: bool = false)
+        if empty(prop_type_get('FilterMenuMatch'))
+            :highlight default FilterMenuMatch term=bold cterm=bold gui=bold
+            prop_type_add('FilterMenuMatch', {highlight: "FilterMenuMatch", override: true, priority: 1000, combine: true})
         endif
-        if hlget('DevdocMenuCursor')->empty()
-            :highlight default DevdocMenuCursor term=reverse cterm=reverse gui=reverse
+        if hlget('FilterMenuCursor')->empty()
+            :highlight default FilterMenuCursor term=reverse cterm=reverse gui=reverse
+        endif
+        if hlget('FilterMenuVirtualText')->empty()
+            :highlight default link FilterMenuVirtualText Comment
         endif
         this.title = title
         this.items_dict = items_dict
@@ -105,7 +108,7 @@ export class FilterMenu
             this._CommonProps(options.bordercharsp, pos_top, 1)->extend({
             title: $" ({items_count}/{items_count}) {this.title} ",
             }))
-        matchaddpos('DevdocMenuCursor', [[1, 3]], 10, -1, {window: this.idp})
+        matchaddpos('FilterMenuCursor', [[1, 3]], 10, -1, {window: this.idp})
 
         this.id = popup_create([],
             this._CommonProps(options.borderchars, pos_top + 3, height)->extend({
@@ -123,7 +126,15 @@ export class FilterMenu
                     popup_close(id, {idx: getcurpos(id)[1], key: key})
                     popup_close(this.idp, -1)
                 elseif key == "\<Right>" || key == "\<PageDown>"
-                    win_execute(id, 'normal! ' .. "\<C-d>")
+                    if this.idp->getmatches()->indexof((_, v) => v.group == 'FilterMenuVirtualText') != -1
+                        # virtual text present. grep using virtual text.
+                        this.prompt = this.idp->getwininfo()[0].bufnr->getbufline(1)[0]->slice(2)
+                        var GetFilteredItemsFn = GetFilteredItems == null_function ? this._GetFilteredItems : GetFilteredItems
+                        [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
+                        this._SetPopupContent()
+                    else
+                        win_execute(id, 'normal! ' .. "\<C-d>")
+                    endif
                 elseif key == "\<Left>" || key == "\<PageUp>"
                     win_execute(id, 'normal! ' .. "\<C-u>")
                 elseif key == "\<tab>" || key == "\<C-n>" || key == "\<Down>" || key == "\<ScrollWheelDown>"
@@ -149,7 +160,9 @@ export class FilterMenu
                         if this.prompt == ""
                             return true
                         endif
-                        this.prompt = this.prompt->strcharpart(0, this.prompt->strchars() - 1)
+                        if this.prompt != null_string
+                            this.prompt = this.prompt->strcharpart(0, this.prompt->strchars() - 1)
+                        endif
                     elseif key =~ '\p'
                         this.prompt = this.prompt .. key
                     endif
@@ -172,7 +185,7 @@ export class FilterMenu
         win_execute(this.id, "setl nu cursorline cursorlineopt=both")
         this.SetText(this.items_dict)
         if Setup != null_function
-            Setup(this.id)
+            Setup(this.id, this.idp)
         endif
     enddef
 
@@ -221,7 +234,7 @@ export class FilterMenu
         if itemsAny->len() > 1
             return itemsAny[0]->mapnew((idx, v) => {
                 return {text: v.text, props: itemsAny[1][idx]->mapnew((_, c) => {
-                    return {col: v.text->byteidx(c) + 1, length: 1, type: 'DevdocMenuMatch'}
+                    return {col: v.text->byteidx(c) + 1, length: 1, type: 'FilterMenuMatch'}
                 })}
             })
         else
