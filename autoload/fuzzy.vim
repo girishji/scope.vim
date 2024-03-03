@@ -169,6 +169,7 @@ export class Fuzzy
                 echo ''
                 if prompt != null_string
                     var cmd = (grepcmd ?? &grepprg) .. ' ' .. prompt
+                    cmd = cmd->escape('*')
                     echo cmd
                     # do not convert cmd to list, as this will not quote space characters correctly.
                     var job: task.AsyncCmd
@@ -198,7 +199,7 @@ export class Fuzzy
                     endif
                     win_execute(menu.id, $"syn match FilterMenuMatch \"{pat}\"")
                 endif
-                var items_dict = [{text: ''}]
+                var items_dict = []
                 return [items_dict, [items_dict]]
             },
             () => {

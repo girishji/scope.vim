@@ -52,6 +52,11 @@ export class FilterMenu
         var items_count = this.items_dict->len()
         var titletxt = $" ({items_count > 0 ? this.filtered_items[0]->len() : 0}/{items_count}) {this.title} "
         this.idp->popup_setoptions({title: titletxt})
+        if this.filtered_items[0]->empty()
+            win_execute(this.id, "setl nonu nocursorline")
+        else
+            win_execute(this.id, "setl nu cursorline")
+        endif
         this.id->popup_settext(this._Printify(this.filtered_items))
         # this.idp->popup_settext($'{options.promptchar} {this.prompt}{options.cursorchar}')
         this.idp->popup_settext($'{options.promptchar} {this.prompt} ')
@@ -230,7 +235,6 @@ export class FilterMenu
     enddef
 
     def _Printify(itemsAny: list<any>): list<any>
-        if itemsAny[0]->len() == 0 | return [] | endif
         if itemsAny->len() > 1
             return itemsAny[0]->mapnew((idx, v) => {
                 return {text: v.text, props: itemsAny[1][idx]->mapnew((_, c) => {
@@ -238,9 +242,13 @@ export class FilterMenu
                 })}
             })
         else
-            return itemsAny[0]->mapnew((_, v) => {
-                return {text: v.text}
-            })
+            if itemsAny[0]->empty()
+                return []
+            else
+                return itemsAny[0]->mapnew((_, v) => {
+                    return {text: v.text}
+                })
+            endif
         endif
     enddef
 endclass
