@@ -9,7 +9,7 @@
   <a href="#configuration">Configuration</a>
 </p>
 
-![Demo](img/demo.gif)
+![Demo](img/demo.jpeg)
 
 There are already some good implementations of this kind. See
 [fuzzyy](https://github.com/Donaldttt/fuzzyy) and
