@@ -5,3 +5,9 @@ endif
 vim9script
 
 g:loaded_scope = true
+
+import autoload '../autoload/scope/popup.vim'
+
+def! g:ScopePopupOptionsSet(opt: dict<any>)
+    popup.options->extend(opt)
+enddef

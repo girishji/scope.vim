@@ -21,7 +21,7 @@ It is easy to extend the functionality to <a href="#Search-Interesting-Things">f
 
 ## Usage
 
-Map the following methods to your favorite keys.
+Map the following functions to your favorite keys.
 
 #### Find File
 
@@ -29,101 +29,100 @@ Search for files in the current working directory.
 
 ```
 vim9script
-import 'fuzzyscope.vim' as scope
-nnoremap <leader><space> <scriptcmd>scope.fuzzy.File()<CR>
+import autoload 'scope/fuzzy.vim'
+nnoremap <leader><space> <scriptcmd>fuzzy.File()<CR>
 ```
 
 Search for installed Vim files.
 
 ```
 vim9script
-import 'fuzzyscope.vim' as scope
-nnoremap <leader>fv <scriptcmd>scope.fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
+import autoload 'scope/fuzzy.vim'
+nnoremap <leader>fv <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
 ```
 
 Use [fd](https://github.com/sharkdp/fd) instead of `find` command.
 
 ```
 vim9script
-import 'fuzzyscope.vim' as scope
-nnoremap <leader>ff <scriptcmd>scope.fuzzy.File('fd -tf --follow')<CR>
+import autoload 'scope/fuzzy.vim'
+nnoremap <leader>ff <scriptcmd>fuzzy.File('fd -tf --follow')<CR>
 ```
 
-Method `scope.fuzzy.Find()` takes a string argument. Set this to the full command
-used for finding files. Directory tree is traversed by a separate spawned job,
-so it never freezes no matter how many thousand files you have in the tree.
+> [!NOTE]
+> Function `fuzzy.Find()` takes a string argument. Set this to the command used for finding files.
+> Directories are traversed by a spawned job, so Vim remains responsive when gathering large directories.
 
 ### Grep
 
-Live grep in the directory. To grep the same keyword the second time, there is
-no need to type again. Previous grep string appears as muted virtual text in
-the prompt. Simply type `<Right>` or `<PgDn>` key to fill in and grep again.
+Live grep in the directory.
+
+> [!NOTE]
+> To grep the same keyword the second time, it is not necessary to type again. Prompt already contains the previous grep string as virtual text. Simply type `<Right>` or `<PgDn>` key to fill in and continue, or type over it to dismiss.
 
 ```
 vim9script
-import 'fuzzyscope.vim' as scope
-nnoremap <leader>g <scriptcmd>scope.fuzzy.Grep()<CR>
-# '.git' directory is excluded from search.
+import autoload 'scope/fuzzy.vim'
+nnoremap <leader>g <scriptcmd>fuzzy.Grep()<CR>
 ```
 
 Define your own grep command.
 
 ```
 vim9script
-import 'fuzzyscope.vim' as scope
-nnoremap <leader>G <scriptcmd>scope.fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
+import autoload 'scope/fuzzy.vim'
+nnoremap <leader>G <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
 ```
 
 ### Switch Buffers
 
 ```
 vim9script
-import 'fuzzyscope.vim' as scope
-nnoremap <leader><bs> <scriptcmd>scope.fuzzy.Buffer()<CR>
+import autoload 'scope/fuzzy.vim'
+nnoremap <leader><bs> <scriptcmd>fuzzy.Buffer()<CR>
 ```
 
 Search unlisted buffers as well.
 
 ```
 vim9script
-import 'fuzzyscope.vim' as scope
-nnoremap <leader><bs> <scriptcmd>scope.fuzzy.Buffer(true)<CR>
+import autoload 'scope/fuzzy.vim'
+nnoremap <leader><bs> <scriptcmd>fuzzy.Buffer(true)<CR>
 ```
 
 ### Others
 
-You can map the following methods to keys.
+You can map the following functions to keys.
 
 ```
 vim9script
-import 'fuzzyscope.vim' as scope
+import autoload 'scope/fuzzy.vim'
 ```
-
-See `autoload/scope/fuzzy.vim` for implementation.
 
 Method|Description
 ------|-----------
-scope.fuzzy.Keymap() | Key mappings
-scope.fuzzy.Help() | Help topics
-scope.fuzzy.Highlight() | Highlight groups
-scope.fuzzy.Window() | Open windows
-scope.fuzzy.Template() | Files in `~/.vim/templates` directory
-scope.fuzzy.CmdHistory() | Command history
-scope.fuzzy.Filetype() | File types
-scope.fuzzy.Colorscheme() | Available color schemes
-scope.fuzzy.GitFile() | Git files
-scope.fuzzy.MRU() | `:h v:oldfiles`
+fuzzy.Keymap() | Key mappings
+fuzzy.Help() | Help topics
+fuzzy.Highlight() | Highlight groups
+fuzzy.Window() | Open windows
+fuzzy.Template() | Files in `~/.vim/templates` directory
+fuzzy.CmdHistory() | Command history
+fuzzy.Filetype() | File types
+fuzzy.Colorscheme() | Available color schemes
+fuzzy.GitFile() | Git files
+fuzzy.MRU() | `:h v:oldfiles`
+
+See `autoload/scope/fuzzy.vim` for implementation.
 
 ### Search Interesting Things
 
 This is just an example. To fuzzy search for function definitions, classes, and other
 useful artifacts in Python code, put the following in
-`~/.vim/after/ftplugin/python.vim`. This technique is powerful when dealing
-with large files, especially if you find `:h folds` inconvenient.
+`~/.vim/after/ftplugin/python.vim`.
 
 ```
 if exists('g:loaded_scope')
-    import 'fuzzyscope.vim' as fuzzy
+    import autoload 'scope/fuzzy.vim'
     def Things()
         var things = []
         for nr in range(1, line('$'))
@@ -133,7 +132,7 @@ if exists('g:loaded_scope')
                 things->add({text: $"{line} ({nr})", linenr: nr})
             endif
         endfor
-        fuzzy.FilterMenuFactory("Py Things", things,
+        fuzzy.FilterMenu.new("Py Things", things,
             (res, key) => {
                 exe $":{res.linenr}"
                 normal! zz
@@ -196,6 +195,24 @@ packadd scope.vim
 
 </details>
 
-#### Credits
+## Configuration
+
+Popup window appearance can be configured. `borderchars`, `borderhighlight`, `highlight`,
+`scrollbarhighlight`, `thumbhighlight` and  other `:h popup_create-arguments` can be
+configured using `g:ScopePopupOptionsSet()`.
+
+To set border of popup window to `Comment` highlight group:
+
+```
+g:ScopePopupOptionsSet({borderhighlight: ['Comment']})
+```
+
+`ScopeMenuMatch` highlight group modifies the look of characters searched so far.
+`ScopeMenuVirtualText` is for the virtual text in Grep window. For other groups
+see `autoload/scope/fuzzy.vim`.
+
+### Credits
 
 Some chunks shamelessly ripped from [habamax](https://github.com/habamax/.vim/blob/master/autoload/).
+
+**Open an issue if you encounter errors.**
