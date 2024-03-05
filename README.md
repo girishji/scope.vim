@@ -13,9 +13,9 @@
 
 There are already some good implementations of this kind. See
 [fuzzyy](https://github.com/Donaldttt/fuzzyy) and
-[fzf](https://github.com/junegunn/fzf). This plugin has all the features except
+[fzf](https://github.com/junegunn/fzf). This plugin is minimal but has all the features except
 for the preview window (which I do not find useful). The core functionality is implemented in two files, with a
-total of ~300 lines of code. The third file contains some boilerplate examples.
+total of ~300 lines of code.
 
 It is easy to extend the functionality to <a href="#Search-Interesting-Things">fuzzy search anything</a>.
 
@@ -55,8 +55,9 @@ so it never freezes no matter how many thousand files you have in the tree.
 
 ### Grep
 
-Live grep in the directory. It does not freeze when searching large number of
-files.
+Live grep in the directory. To grep the same keyword the second time, there is
+no need to type again. Previous grep string appears as muted virtual text in
+the prompt. Simply type `<Right>` or `<PgDn>` key to fill in and grep again.
 
 ```
 vim9script
