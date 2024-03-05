@@ -117,75 +117,75 @@ export class FilterMenu
 
         this.id = popup_create([],
             this._CommonProps(options.borderchars, pos_top + 3, height)->extend({
-            border: [0, 1, 1, 1],
-            filter: (id, key) => {
-                items_count = this.items_dict->len()
-                if key == "\<esc>"
-                    popup_close(id, -1)
-                    popup_close(this.idp, -1)
-                    if Cleanup != null_function
-                        Cleanup()
-                    endif
-                elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>"]->index(key) > -1
-                        && this.filtered_items[0]->len() > 0 && items_count > 0
-                    popup_close(id, {idx: getcurpos(id)[1], key: key})
-                    popup_close(this.idp, -1)
-                elseif key == "\<Right>" || key == "\<PageDown>"
-                    if this.idp->getmatches()->indexof((_, v) => v.group == 'FilterMenuVirtualText') != -1
-                        # virtual text present. grep using virtual text.
-                        this.prompt = this.idp->getwininfo()[0].bufnr->getbufline(1)[0]->slice(2)
+                border: [0, 1, 1, 1],
+                filter: (id, key) => {
+                    items_count = this.items_dict->len()
+                    if key == "\<esc>"
+                        popup_close(this.idp, -1)
+                        popup_close(id, -1)
+                        if Cleanup != null_function
+                            Cleanup()
+                        endif
+                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>"]->index(key) > -1
+                            && this.filtered_items[0]->len() > 0 && items_count > 0
+                        popup_close(this.idp, -1)
+                        popup_close(id, {idx: getcurpos(id)[1], key: key})
+                    elseif key == "\<Right>" || key == "\<PageDown>"
+                        if this.idp->getmatches()->indexof((_, v) => v.group == 'FilterMenuVirtualText') != -1
+                            # virtual text present. grep using virtual text.
+                            this.prompt = this.idp->getwininfo()[0].bufnr->getbufline(1)[0]->slice(2)
+                            var GetFilteredItemsFn = GetFilteredItems == null_function ? this._GetFilteredItems : GetFilteredItems
+                            [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
+                            this._SetPopupContent()
+                        else
+                            win_execute(id, 'normal! ' .. "\<C-d>")
+                        endif
+                    elseif key == "\<Left>" || key == "\<PageUp>"
+                        win_execute(id, 'normal! ' .. "\<C-u>")
+                    elseif key == "\<tab>" || key == "\<C-n>" || key == "\<Down>" || key == "\<ScrollWheelDown>"
+                        var ln = getcurpos(id)[1]
+                        win_execute(id, "normal! j")
+                        if ln == getcurpos(id)[1]
+                            win_execute(id, "normal! gg")
+                        endif
+                    elseif key == "\<S-tab>" || key == "\<C-p>" || key == "\<Up>" || key == "\<ScrollWheelUp>"
+                        var ln = getcurpos(id)[1]
+                        win_execute(id, "normal! k")
+                        if ln == getcurpos(id)[1]
+                            win_execute(id, "normal! G")
+                        endif
+                    # Ignoring fancy events and double clicks, which are 6 char long: `<80><fc> <80><fd>.`
+                    elseif ignore_input->index(key) == -1 && strcharlen(key) != 6 && str2list(key) != ignore_input_wtf
+                        if key == "\<C-U>"
+                            if this.prompt == ""
+                                return true
+                            endif
+                            this.prompt = ""
+                        elseif (key == "\<C-h>" || key == "\<bs>")
+                            if this.prompt == ""
+                                return true
+                            endif
+                            if this.prompt != null_string
+                                this.prompt = this.prompt->strcharpart(0, this.prompt->strchars() - 1)
+                            endif
+                        elseif key =~ '\p'
+                            this.prompt = this.prompt .. key
+                        endif
                         var GetFilteredItemsFn = GetFilteredItems == null_function ? this._GetFilteredItems : GetFilteredItems
                         [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
                         this._SetPopupContent()
+                    endif
+                    return true
+                },
+                callback: (id, result) => {
+                    if result->type() == v:t_number
+                        if result > 0
+                            Callback(this.filtered_items[0][result - 1], "")
+                        endif
                     else
-                        win_execute(id, 'normal! ' .. "\<C-d>")
+                        Callback(this.filtered_items[0][result.idx - 1], result.key)
                     endif
-                elseif key == "\<Left>" || key == "\<PageUp>"
-                    win_execute(id, 'normal! ' .. "\<C-u>")
-                elseif key == "\<tab>" || key == "\<C-n>" || key == "\<Down>" || key == "\<ScrollWheelDown>"
-                    var ln = getcurpos(id)[1]
-                    win_execute(id, "normal! j")
-                    if ln == getcurpos(id)[1]
-                        win_execute(id, "normal! gg")
-                    endif
-                elseif key == "\<S-tab>" || key == "\<C-p>" || key == "\<Up>" || key == "\<ScrollWheelUp>"
-                    var ln = getcurpos(id)[1]
-                    win_execute(id, "normal! k")
-                    if ln == getcurpos(id)[1]
-                        win_execute(id, "normal! G")
-                    endif
-                # Ignoring fancy events and double clicks, which are 6 char long: `<80><fc> <80><fd>.`
-                elseif ignore_input->index(key) == -1 && strcharlen(key) != 6 && str2list(key) != ignore_input_wtf
-                    if key == "\<C-U>"
-                        if this.prompt == ""
-                            return true
-                        endif
-                        this.prompt = ""
-                    elseif (key == "\<C-h>" || key == "\<bs>")
-                        if this.prompt == ""
-                            return true
-                        endif
-                        if this.prompt != null_string
-                            this.prompt = this.prompt->strcharpart(0, this.prompt->strchars() - 1)
-                        endif
-                    elseif key =~ '\p'
-                        this.prompt = this.prompt .. key
-                    endif
-                    var GetFilteredItemsFn = GetFilteredItems == null_function ? this._GetFilteredItems : GetFilteredItems
-                    [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
-                    this._SetPopupContent()
-                endif
-                return true
-            },
-            callback: (id, result) => {
-                if result->type() == v:t_number
-                    if result > 0
-                        Callback(this.filtered_items[0][result - 1], "")
-                    endif
-                else
-                    Callback(this.filtered_items[0][result.idx - 1], result.key)
-                endif
-            }
+                }
         }))
         win_execute(this.id, "setl nu cursorline cursorlineopt=both")
         this.SetText(this.items_dict)

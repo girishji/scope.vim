@@ -1,7 +1,7 @@
 vim9script
 
-import './popup.vim'
 import './task.vim'
+import './popup.vim'
 
 # some chunks shamelessly ripped from habamax
 # https://github.com/habamax/.vim/blob/master/autoload/fuzzy.vim
@@ -64,7 +64,7 @@ def FindCmd(): list<any>
         return 'fd -tf --follow'->split()
     else
         var cmd = ['find', '.']
-        for fname in ['*.zwc', '*.swp']
+        for fname in ['*.zwc', '*.swp', '.DS_Store']
             cmd->extend(['-name', fname, '-prune', '-o'])
         endfor
         for fname in ['.git']  # matches .git/ and .gitrc through */git*
@@ -164,6 +164,13 @@ export class Fuzzy
             },
             (lst: list<dict<any>>, prompt: string): list<any> => {
                 # This function is called everytime when user types something
+                # when text is pasted to prompt window, spawning a new job for
+                # every character input causes hiccups. sleep for a short period
+                # and bail if prompt has changed.
+                sleep 1m
+                if menu.prompt != prompt
+                    return [[], [[]]]
+                endif
                 this.prev_grep = prompt
                 win_execute(menu.id, "syn clear FilterMenuMatch")
                 echo ''
