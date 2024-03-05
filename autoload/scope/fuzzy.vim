@@ -130,6 +130,11 @@ export class Fuzzy
             })
     enddef
 
+    def GrepCmd(): string
+        var cmd = 'grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged'
+        return &grepprg ?? cmd
+    enddef
+
     # live grep, not fuzzy search.
     # before typing <space> use '\' to escape.
     # (grep pattern is: grep <pat> <path1, path2, ...>, so it will interpret second word as path)
@@ -151,10 +156,10 @@ export class Fuzzy
             },
             (id, idp) => {
                 win_execute(id, $"syn match FilterMenuFilenameSubtle \".*:\\d\\+:\"")
-                hi def link FilterMenuFilenameSubtle Comment
                 # note: it is expensive to regex match. even though following pattern
-                #   is more accurate vim throws 'redrawtime' exceeded and stops
+                #   is more accurate vim throws 'redrawtime exceeded' and stops
                 # win_execute(menu.id, $"syn match FilterMenuMatch \"[^:]\\+:\\d\\+:\"")
+                hi def link FilterMenuFilenameSubtle Comment
                 if this.prev_grep != null_string
                     idp->popup_settext($'{popup.options.promptchar} {this.prev_grep}')
                     idp->clearmatches()
@@ -175,7 +180,7 @@ export class Fuzzy
                 win_execute(menu.id, "syn clear FilterMenuMatch")
                 echo ''
                 if prompt != null_string
-                    var cmd = (grepcmd ?? &grepprg) .. ' ' .. prompt
+                    var cmd = (grepcmd ?? this.GrepCmd()) .. ' ' .. prompt
                     cmd = cmd->escape('*')
                     echo cmd
                     # do not convert cmd to list, as this will not quote space characters correctly.
