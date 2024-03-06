@@ -101,16 +101,16 @@ import autoload 'scope/fuzzy.vim'
 
 Method|Description
 ------|-----------
-fuzzy.Keymap() | Key mappings
-fuzzy.Help() | Help topics
-fuzzy.Highlight() | Highlight groups
-fuzzy.Window() | Open windows
-fuzzy.Template() | Files in `~/.vim/templates` directory
-fuzzy.CmdHistory() | Command history
-fuzzy.Filetype() | File types
-fuzzy.Colorscheme() | Available color schemes
-fuzzy.GitFile() | Git files
-fuzzy.MRU() | `:h v:oldfiles`
+`fuzzy.Keymap()` | Key mappings
+`fuzzy.Help()` | Help topics
+`fuzzy.Highlight()` | Highlight groups
+`fuzzy.Window()` | Open windows
+`fuzzy.Template()` | Files in `~/.vim/templates` directory
+`fuzzy.CmdHistory()` | Command history
+`fuzzy.Filetype()` | File types
+`fuzzy.Colorscheme()` | Available color schemes
+`fuzzy.GitFile()` | Git files
+`fuzzy.MRU()` | `:h v:oldfiles`
 
 See `autoload/scope/fuzzy.vim` for implementation.
 
