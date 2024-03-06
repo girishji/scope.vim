@@ -1,6 +1,6 @@
 <h1 align="center"> Scope </h1>
 
-<h4 align="center"> Minimal, fast, async, robust, and extensible fuzzy finder for Vim. </h4>
+<h4 align="center"> Minimal, fast, and async fuzzy finder for Vim. </h4>
 
 <p align="center">
   <a href="#usage">Usage</a> •
@@ -145,6 +145,8 @@ if exists('g:loaded_scope')
     nnoremap <buffer> <space>/ <scriptcmd>Things()<CR>
 endif
 ```
+
+See `autoload/scope/fuzzy.vim` for inspiration.
 
 ## Requirements
 
