@@ -74,8 +74,6 @@ export def FindCmd(): list<any>
     endif
 enddef
 
-var prev_grep = null_string
-
 # fuzzy find files (build a list of files once and then fuzzy search on them)
 export def File(findCmd: string = null_string, count: number = 10000)  # list at least 10k files to search on
     var menu: popup.FilterMenu
@@ -130,6 +128,8 @@ def GrepCmd(): string
     return &grepprg ?? cmd
 enddef
 
+var prev_grep = null_string
+
 # live grep, not fuzzy search.
 # before typing <space> use '\' to escape.
 # (grep pattern is: grep <pat> <path1, path2, ...>, so it will interpret second word as path)
@@ -155,8 +155,8 @@ export def Grep(grepcmd: string = '')
             #   is more accurate vim throws 'redrawtime exceeded' and stops
             # win_execute(menu.id, $"syn match FilterMenuMatch \"[^:]\\+:\\d\\+:\"")
             hi def link ScopeFilterMenuFilenameSubtle Comment
-            if this.prev_grep != null_string
-                idp->popup_settext($'{popup.options.promptchar} {this.prev_grep}')
+            if prev_grep != null_string
+                idp->popup_settext($'{popup.options.promptchar} {prev_grep}')
                 idp->clearmatches()
                 matchaddpos('ScopeFilterMenuCursor', [[1, 3]], 10, -1, {window: idp})
                 matchaddpos('ScopeFilterMenuVirtualText', [[1, 4, 999]], 10, -1, {window: idp})
@@ -171,11 +171,11 @@ export def Grep(grepcmd: string = '')
             if menu.prompt != prompt
                 return [[], [[]]]
             endif
-            this.prev_grep = prompt
+            prev_grep = prompt
             win_execute(menu.id, "syn clear ScopeFilterMenuMatch")
             echo ''
             if prompt != null_string
-                var cmd = (grepcmd ?? this.GrepCmd()) .. ' ' .. prompt
+                var cmd = (grepcmd ?? GrepCmd()) .. ' ' .. prompt
                 cmd = cmd->escape('*')
                 echo cmd
                 # do not convert cmd to list, as this will not quote space characters correctly.
