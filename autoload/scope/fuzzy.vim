@@ -3,9 +3,6 @@ vim9script
 import './task.vim'
 import './popup.vim'
 
-# some chunks shamelessly ripped from habamax
-# https://github.com/habamax/.vim/blob/master/autoload/fuzzy.vim
-
 export def FilterItems(lst: list<dict<any>>, prompt: string): list<any>
     def PrioritizeFilename(matches: list<any>): list<any>
         # prefer matching filenames over matching directory names
@@ -477,3 +474,6 @@ export def Window()
             hi def link ScopeFilterMenuCurrent Statement
         })
 enddef
+
+# some chunks shamelessly ripped from habamax
+# https://github.com/habamax/.vim/blob/master/autoload/fuzzy.vim

@@ -1,8 +1,5 @@
 vim9script
 
-# some chunks shamelessly ripped from habamax
-#   https://github.com/habamax/.vim/blob/master/autoload/popup.vim
-
 export var options = {
     borderchars: ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
     bordercharsp: ['─', '│', '═', '│', '┌', '┐', '╡', '╞'],
@@ -252,3 +249,7 @@ export class FilterMenu
         endif
     enddef
 endclass
+
+# some chunks shamelessly ripped from habamax
+#   https://github.com/habamax/.vim/blob/master/autoload/popup.vim
+
