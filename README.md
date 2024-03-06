@@ -23,7 +23,7 @@ It is easy to extend the functionality to <a href="#Search-Interesting-Things">f
 
 Map the following functions to your favorite keys.
 
-#### Find File
+### Find File
 
 Search for files in the current working directory.
 
@@ -53,7 +53,7 @@ nnoremap <leader>ff <scriptcmd>fuzzy.File('fd -tf --follow')<CR>
 > Function `fuzzy.Find()` takes a string argument. Set this to the command used for finding files.
 > Directories are traversed by a spawned job, so Vim remains responsive when gathering large directories.
 
-### Grep
+### Live Grep
 
 Live grep in the directory.
 
@@ -74,7 +74,7 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <leader>G <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
 ```
 
-### Switch Buffers
+### Switch Buffer
 
 ```
 vim9script
