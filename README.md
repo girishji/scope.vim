@@ -20,6 +20,8 @@ There are already good implementations of this kind, such as [fuzzyy](https://gi
 
 Map the following functions to your favorite keys.
 
+In the following examples, replace `<your_key>` with the desired key combination.
+
 ### Find File
 
 Search for files in the current working directory.
@@ -27,7 +29,7 @@ Search for files in the current working directory.
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <leader><space> <scriptcmd>fuzzy.File()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
 ```
 
 Search for installed Vim files.
@@ -35,7 +37,7 @@ Search for installed Vim files.
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <leader>fv <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
 ```
 
 Use [fd](https://github.com/sharkdp/fd) instead of `find` command.
@@ -43,32 +45,31 @@ Use [fd](https://github.com/sharkdp/fd) instead of `find` command.
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <leader>ff <scriptcmd>fuzzy.File('fd -tf --follow')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow')<CR>
 ```
 
 > [!NOTE]
-> Function `fuzzy.Find()` takes a string argument. Set this to the command used for finding files.
-> Directories are traversed by a spawned job, so Vim remains responsive when gathering large directories.
+> The `fuzzy.Find()` function accepts a string argument. Set this string to the command used for finding files. The directories are traversed by a spawned job, ensuring Vim remains responsive even when dealing with large directories.
 
 ### Live Grep
 
 Live grep in the directory.
 
-> [!NOTE]
-> To grep the same keyword the second time, it is not necessary to type again. Prompt already contains the previous grep string as virtual text. Simply type `<Right>` or `<PgDn>` key to fill in and continue, or type over it to dismiss.
-
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <leader>g <scriptcmd>fuzzy.Grep()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
 ```
+
+> [!NOTE]
+> To grep the same keyword a second time, there's no need to retype it. The prompt already contains the previous grep string as virtual text. Simply type `<Right>` or `<PgDn>` key to fill in and continue, or type over it to dismiss.
 
 Define your own grep command.
 
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <leader>G <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
 ```
 
 ### Switch Buffer
@@ -76,7 +77,7 @@ nnoremap <leader>G <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude=
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <leader><bs> <scriptcmd>fuzzy.Buffer()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Buffer()<CR>
 ```
 
 Search unlisted buffers as well.
@@ -84,8 +85,10 @@ Search unlisted buffers as well.
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <leader><bs> <scriptcmd>fuzzy.Buffer(true)<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<CR>
 ```
+
+See `autoload/scope/fuzzy.vim` for implementation.
 
 ### Others
 
@@ -113,9 +116,7 @@ See `autoload/scope/fuzzy.vim` for implementation.
 
 ### Search Interesting Things
 
-This is just an example. To fuzzy search for function definitions, classes, and other
-useful artifacts in Python code, put the following in
-`~/.vim/after/ftplugin/python.vim`.
+This is just an example. To perform a fuzzy search for function definitions, classes, and other useful artifacts in Python code, add the following lines to `~/.vim/after/ftplugin/python.vim`:
 
 ```
 if exists('g:loaded_scope')
@@ -139,7 +140,8 @@ if exists('g:loaded_scope')
                 hi def link FilterMenuLineNr Comment
             })
     enddef
-    nnoremap <buffer> <space>/ <scriptcmd>Things()<CR>
+    # Example mapping, replace <your_key> with your preferred key combination
+    nnoremap <buffer> <your_key> <scriptcmd>Things()<CR>
 endif
 ```
 
