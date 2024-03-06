@@ -11,13 +11,10 @@
 
 ![Demo](img/demo.jpeg)
 
-There are already some good implementations of this kind. See
-[fuzzyy](https://github.com/Donaldttt/fuzzyy) and
-[fzf](https://github.com/junegunn/fzf). This plugin is minimal but has all the features except
-for the preview window (which I do not find useful). The core functionality is implemented in two files, with a
-total of ~300 lines of code.
+There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and
+[fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The core functionality is implemented in two files, totaling approximately 300 lines of code.
 
-It is easy to extend the functionality to <a href="#Search-Interesting-Things">fuzzy search anything</a>.
+<a href="#Search-Interesting-Things">Extending the functionality</a> for fuzzy searching anything is straightforward.
 
 ## Usage
 
