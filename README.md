@@ -9,7 +9,7 @@
   <a href="#configuration">Configuration</a>
 </p>
 
-![Demo](img/demo.jpeg)
+![Demo](img/demo.gif)
 
 There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and
 [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The core functionality is implemented in two files, totaling approximately 300 lines of code.
@@ -105,11 +105,10 @@ Method|Description
 `fuzzy.Help()` | Help topics
 `fuzzy.Highlight()` | Highlight groups
 `fuzzy.Window()` | Open windows
-`fuzzy.Template()` | Files in `~/.vim/templates` directory
 `fuzzy.CmdHistory()` | Command history
 `fuzzy.Filetype()` | File types
 `fuzzy.Colorscheme()` | Available color schemes
-`fuzzy.GitFile()` | Git files
+`fuzzy.GitFile()` | Files under git
 `fuzzy.MRU()` | `:h v:oldfiles`
 
 See `autoload/scope/fuzzy.vim` for implementation.
@@ -208,8 +207,10 @@ To set border of popup window to `Comment` highlight group:
 g:ScopePopupOptionsSet({borderhighlight: ['Comment']})
 ```
 
-`ScopeMenuMatch` highlight group modifies the look of characters searched so far.
-`ScopeMenuVirtualText` is for the virtual text in Grep window. For other groups
+`ScopeMenuMatch` highlight group modifies the look of characters searched so
+far. It is linked to `Special` by default.
+`ScopeMenuVirtualText` is for the virtual text in Grep window.
+For other groups
 see `autoload/scope/fuzzy.vim`.
 
 ### Credits

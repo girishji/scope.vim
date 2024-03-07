@@ -75,7 +75,7 @@ export class FilterMenu
 
     def new(title: string, items_dict: list<dict<any>>, Callback: func(any, string), Setup: func(number, number) = null_function, GetFilteredItems: func(list<any>, string): list<any> = null_function, Cleanup: func() = null_function, maximize: bool = false)
         if empty(prop_type_get('ScopeMenuMatch'))
-            :highlight default ScopeMenuMatch term=bold cterm=bold gui=bold
+            :highlight default link ScopeMenuMatch Special
             prop_type_add('ScopeMenuMatch', {highlight: "ScopeMenuMatch", override: true, priority: 1000, combine: true})
         endif
         if hlget('ScopeMenuCursor')->empty()

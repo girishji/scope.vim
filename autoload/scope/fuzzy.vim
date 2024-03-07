@@ -90,8 +90,8 @@ export def File(findCmd: string = null_string, count: number = 10000)  # list at
             endif
         },
         (winid, _) => {
-            win_execute(winid, "syn match ScopeFilterMenuDirectorySubtle '^.*[\\/]'")
-            hi def link ScopeFilterMenuDirectorySubtle Comment
+            win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
+            hi def link ScopeMenuDirectorySubtle Comment
         },
         FilterItems)
 
@@ -133,7 +133,7 @@ var prev_grep = null_string
 # live grep, not fuzzy search.
 # before typing <space> use '\' to escape.
 # (grep pattern is: grep <pat> <path1, path2, ...>, so it will interpret second word as path)
-export def Grep(grepcmd: string = '')
+export def Grep(grepcmd: string = '', ignorecase: bool = true)
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
@@ -150,16 +150,16 @@ export def Grep(grepcmd: string = '')
             endif
         },
         (id, idp) => {
-            win_execute(id, $"syn match ScopeFilterMenuFilenameSubtle \".*:\\d\\+:\"")
+            win_execute(id, $"syn match ScopeMenuFilenameSubtle \".*:\\d\\+:\"")
             # note: it is expensive to regex match. even though following pattern
             #   is more accurate vim throws 'redrawtime exceeded' and stops
             # win_execute(menu.id, $"syn match FilterMenuMatch \"[^:]\\+:\\d\\+:\"")
-            hi def link ScopeFilterMenuFilenameSubtle Comment
+            hi def link ScopeMenuFilenameSubtle Comment
             if prev_grep != null_string
                 idp->popup_settext($'{popup.options.promptchar} {prev_grep}')
                 idp->clearmatches()
-                matchaddpos('ScopeFilterMenuCursor', [[1, 3]], 10, -1, {window: idp})
-                matchaddpos('ScopeFilterMenuVirtualText', [[1, 4, 999]], 10, -1, {window: idp})
+                matchaddpos('ScopeMenuCursor', [[1, 3]], 10, -1, {window: idp})
+                matchaddpos('ScopeMenuVirtualText', [[1, 4, 999]], 10, -1, {window: idp})
             endif
         },
         (lst: list<dict<any>>, prompt: string): list<any> => {
@@ -172,7 +172,7 @@ export def Grep(grepcmd: string = '')
                 return [[], [[]]]
             endif
             prev_grep = prompt
-            win_execute(menu.id, "syn clear ScopeFilterMenuMatch")
+            win_execute(menu.id, "syn clear ScopeMenuMatch")
             echo ''
             if prompt != null_string
                 var cmd = (grepcmd ?? GrepCmd()) .. ' ' .. prompt
@@ -204,7 +204,11 @@ export def Grep(grepcmd: string = '')
                 if pat[-1 : -1] == '\'
                     pat = $'{pat}\'
                 endif
-                win_execute(menu.id, $"syn match ScopeFilterMenuMatch \"{pat}\"")
+                if ignorecase
+                    win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
+                else
+                    win_execute(menu.id, $"syn match ScopeMenuMatch \"{pat}\"")
+                endif
             endif
             var items_dict = []
             return [items_dict, [items_dict]]
@@ -243,8 +247,8 @@ export def Buffer(list_all_buffers: bool = false)
             endif
         },
         (winid, _) => {
-            win_execute(winid, "syn match ScopeFilterMenuDirectorySubtle '^.*[\\/]'")
-            hi def link ScopeFilterMenuDirectorySubtle Comment
+            win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
+            hi def link ScopeMenuDirectorySubtle Comment
         },
         FilterItems)
 enddef
@@ -283,8 +287,8 @@ export def MRU()
             endif
         },
         (winid, _) => {
-            win_execute(winid, "syn match ScopeFilterMenuDirectorySubtle '^.*[\\/]'")
-            hi def link ScopeFilterMenuDirectorySubtle Comment
+            win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
+            hi def link ScopeMenuDirectorySubtle Comment
         })
 enddef
 
@@ -335,8 +339,8 @@ export def JumpToWord()
             normal! zz
         },
         (winid, _) => {
-            win_execute(winid, 'syn match ScopeFilterMenuLineNr "(\d\+)$"')
-            hi def link ScopeFilterMenuLineNr Comment
+            win_execute(winid, 'syn match ScopeMenuLineNr "(\d\+)$"')
+            hi def link ScopeMenuLineNr Comment
         })
 enddef
 
@@ -344,7 +348,9 @@ export def GitFile(path: string = "")
     var path_e = path->empty() ? "" : $"{path}/"
     var git_cmd = 'git ls-files --other --full-name --cached --exclude-standard'
     var cd_cmd = path->empty() ? "" : $"cd {path} && "
-    var git_files = systemlist($'{cd_cmd}{git_cmd}')
+    var git_files = systemlist($'{cd_cmd}{git_cmd}')->mapnew((_, v) => {
+        return {text: v}
+    })
     popup.FilterMenu.new("Git File", git_files,
         (res, key) => {
             if key == "\<c-t>"
@@ -358,21 +364,23 @@ export def GitFile(path: string = "")
             endif
         },
         (winid, _) => {
-            win_execute(winid, "syn match ScopeFilterMenuDirectorySubtle '^.*[\\/]'")
-            hi def link ScopeFilterMenuDirectorySubtle Comment
+            win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
+            hi def link ScopeMenuDirectorySubtle Comment
         })
 enddef
 
 export def Colorscheme()
     popup.FilterMenu.new("Colorscheme",
-        getcompletion("", "color"),
+        getcompletion("", "color")->mapnew((_, v) => {
+            return {text: v}
+        }),
         (res, key) => {
             exe $":colorscheme {res.text}"
         },
         (winid, _) => {
             if exists("g:colors_name")
-                win_execute(winid, $'syn match ScopeFilterMenuCurrent "^{g:colors_name}$"')
-                hi def link ScopeFilterMenuCurrent Statement
+                win_execute(winid, $'syn match ScopeMenuCurrent "^{g:colors_name}$"')
+                hi def link ScopeMenuCurrent Statement
             endif
         })
 enddef
@@ -414,8 +422,8 @@ export def Highlight()
             feedkeys($":{res.value}\<C-f>")
         },
         (winid, _) => {
-            win_execute(winid, 'syn match ScopeFilterMenuHiLinksTo "\(links to\)\|\(cleared\)"')
-            hi def link ScopeFilterMenuHiLinksTo Comment
+            win_execute(winid, 'syn match ScopeMenuHiLinksTo "\(links to\)\|\(cleared\)"')
+            hi def link ScopeMenuHiLinksTo Comment
             for h in hl
                 win_execute(winid, $'syn match {h.name} "^xxx\ze {h.name}\>"')
             endfor
@@ -466,12 +474,12 @@ export def Window()
             win_gotoid(res.winid)
         },
         (winid, _) => {
-            win_execute(winid, 'syn match ScopeFilterMenuRegular "^ (.\{-}):.*(\d\+)$" contains=ScopeFilterMenuBraces')
-            win_execute(winid, 'syn match ScopeFilterMenuCurrent "^\*(.\{-}):.*(\d\+)$" contains=ScopeFilterMenuBraces')
-            win_execute(winid, 'syn match ScopeFilterMenuBraces "(\d\+)$" contained')
-            win_execute(winid, 'syn match ScopeFilterMenuBraces "^[* ](.\{-}):" contained')
-            hi def link ScopeFilterMenuBraces Comment
-            hi def link ScopeFilterMenuCurrent Statement
+            win_execute(winid, 'syn match ScopeMenuRegular "^ (.\{-}):.*(\d\+)$" contains=ScopeMenuBraces')
+            win_execute(winid, 'syn match ScopeMenuCurrent "^\*(.\{-}):.*(\d\+)$" contains=ScopeMenuBraces')
+            win_execute(winid, 'syn match ScopeMenuBraces "(\d\+)$" contained')
+            win_execute(winid, 'syn match ScopeMenuBraces "^[* ](.\{-}):" contained')
+            hi def link ScopeMenuBraces Comment
+            hi def link ScopeMenuCurrent Statement
         })
 enddef
 
