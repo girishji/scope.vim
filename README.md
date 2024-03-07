@@ -1,6 +1,6 @@
 <h1 align="center"> Scope </h1>
 
-<h4 align="center">Fast, async, and extensible fuzzy finder for Vim. </h4>
+<h4 align="center">Minimal, fast, and extensible fuzzy finder for Vim. </h4>
 
 <p align="center">
   <a href="#usage">Usage</a> •
