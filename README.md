@@ -197,23 +197,24 @@ packadd scope.vim
 
 ## Configuration
 
-Popup window appearance can be configured. `borderchars`, `borderhighlight`, `highlight`,
-`scrollbarhighlight`, `thumbhighlight` and  other `:h popup_create-arguments` can be
-configured using `g:ScopePopupOptionsSet()`.
+The appearance of the popup window can be customized using `borderchars`,
+`borderhighlight`, `highlight`, `scrollbarhighlight`, `thumbhighlight`, and
+other `:h popup_create-arguments`. To configure these settings, use
+`g:ScopePopupOptionsSet()`.
 
-To set border of popup window to `Comment` highlight group:
+For example, to set the border of the popup window to the `Comment` highlight group:
 
-```
+```vim
 g:ScopePopupOptionsSet({borderhighlight: ['Comment']})
 ```
 
-`ScopeMenuMatch` highlight group modifies the look of characters searched so
-far. It is linked to `Special` by default.
+The `ScopeMenuMatch` highlight group modifies the appearance of characters
+searched so far and is linked to `Special` by default.
 
-`ScopeMenuVirtualText` is for the virtual text in Grep window.
+`ScopeMenuVirtualText` is used for the virtual text in the Grep window.
 
 ### Credits
 
-Some chunks shamelessly ripped from [habamax](https://github.com/habamax/.vim/blob/master/autoload/).
+Some portions of this code are shamelessly ripped from [habamax](https://github.com/habamax/.vim/blob/master/autoload/).
 
-**Open an issue if you encounter errors.**
+If you encounter any errors, please open an issue.
