@@ -1,0 +1,191 @@
+*scope.txt*	Fast, async, and extensible fuzzy finder
+
+Author: Girish Palya (girishji AT gmail DOT com)
+For Vim version 9.0 and above
+
+==============================================================================
+CONTENTS                                            *scope-contents*
+
+     1. Overview ................................. |scope-overview|
+     2. Requirements ............................. |scope-requirements|
+     3. Installation ............................. |scope-installation|
+     4. Configuration............................. |scope-configuration|
+
+==============================================================================
+1. Overview					*scope-overview*
+
+Map the following functions to your favorite keys.
+
+In the following examples, replace `<your_key>` with the desired key
+combination.
+
+Find File ~
+
+Search for files in the current working directory.
+>
+	vim9script
+	import autoload 'scope/fuzzy.vim'
+	nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
+<
+Search for installed Vim files.
+>
+	vim9script
+	import autoload 'scope/fuzzy.vim'
+	nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
+<
+Use [fd](https://github.com/sharkdp/fd) instead of `find` command.
+>
+	vim9script
+	import autoload 'scope/fuzzy.vim'
+	nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow')<CR>
+<
+> [!NOTE]
+> The `fuzzy.Find()` function accepts a string argument. Set this string to
+> the command used for finding files. The directories are traversed by a
+> spawned job, ensuring Vim remains responsive even when dealing with large
+> directories.
+
+Live Grep ~
+
+Live grep in the directory.
+>
+	vim9script
+	import autoload 'scope/fuzzy.vim'
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
+<
+> [!NOTE]
+> To grep the same keyword a second time, there's no need to retype it. The
+> prompt already contains the previous grep string as virtual text. Simply
+> type `<Right>` or `<PgDn>` key to fill in and continue, or type over it to
+> dismiss.
+
+Define your own grep command.
+>
+	vim9script
+	import autoload 'scope/fuzzy.vim'
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
+<
+Switch Buffer ~
+>
+	vim9script
+	import autoload 'scope/fuzzy.vim'
+	nnoremap <your_key> <scriptcmd>fuzzy.Buffer()<CR>
+<
+Search unlisted buffers as well.
+
+>
+	vim9script
+	import autoload 'scope/fuzzy.vim'
+	nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<CR>
+<
+See `autoload/scope/fuzzy.vim` for implementation.
+
+Others ~
+
+You can map the following functions to keys.
+>
+	vim9script
+	import autoload 'scope/fuzzy.vim'
+<
+Method               |  Description
+---------------------|--------------------------
+`fuzzy.Keymap()`       |  Key mappings
+`fuzzy.Help()`         |  Help topics
+`fuzzy.Highlight()`    |  Highlight groups
+`fuzzy.Window()`       |  Open windows
+`fuzzy.CmdHistory()`   |  Command history
+`fuzzy.Filetype()`     |  File types
+`fuzzy.Colorscheme()`  |  Available color schemes
+`fuzzy.GitFile()`      |  Files under git
+`fuzzy.MRU()`          |  `:h v:oldfiles`
+
+See `autoload/scope/fuzzy.vim` for implementation.
+
+Search Interesting Things ~
+
+This is just an example. To perform a fuzzy search for function definitions,
+classes, and other useful artifacts in Python code, add the following lines to
+`~/.vim/after/ftplugin/python.vim`:
+>
+	if exists('g:loaded_scope')
+	    import autoload 'scope/fuzzy.vim'
+	    def Things()
+	        var things = []
+	        for nr in range(1, line('$'))
+	            var line = getline(nr)
+	            if line =~ '\(^\|\s\)\(def\|class\) \k\+('
+	                    || line =~ 'if __name__ == "__main__":'
+	                things->add({text: $"{line} ({nr})", linenr: nr})
+	            endif
+	        endfor
+	        fuzzy.FilterMenu.new("Py Things", things,
+	            (res, key) => {
+	                exe $":{res.linenr}"
+	                normal! zz
+	            },
+	            (winid, _) => {
+	                win_execute(winid, $"syn match FilterMenuLineNr '(\\d\\+)$'")
+	                hi def link FilterMenuLineNr Comment
+	            })
+	    enddef
+	    # Example mapping, replace <your_key> with your preferred key combination
+	    nnoremap <buffer> <your_key> <scriptcmd>Things()<CR>
+	endif
+<
+See `autoload/scope/fuzzy.vim` for inspiration.
+
+==============================================================================
+2. Requirements					*scope-requirements*
+
+- Vim >= 9.1
+
+==============================================================================
+3. Installation					*scope-installation*
+
+Install using vim-plug (https://github.com/junegunn/vim-plug)
+>
+	vim9script
+	plug#begin()
+	Plug 'girishji/scope.vim'
+	plug#end()
+
+Legacy script:
+>
+	call plug#begin()
+	Plug 'girishji/scope.vim'
+	call plug#end()
+
+Install using Vim's built-in package manager.
+>
+	$ mkdir -p $HOME/.vim/pack/downloads/opt
+	$ cd $HOME/.vim/pack/downloads/opt
+	$ git clone https://github.com/girishji/scope.vim.git
+
+Add the following line to your $HOME/.vimrc file.
+>
+	packadd scope.vim
+<
+==============================================================================
+4. Configuration				*scope-configuration*
+
+Popup window appearance can be configured. `borderchars`, `borderhighlight`,
+`highlight`, `scrollbarhighlight`, `thumbhighlight` and  other `:h popup_create-arguments` 
+can be configured using `g:ScopePopupOptionsSet()`.
+
+To set border of popup window to `Comment` highlight group:
+>
+	g:ScopePopupOptionsSet({borderhighlight: ['Comment']})
+<
+`ScopeMenuMatch` highlight group modifies the look of characters searched so
+far. It is linked to `Special` by default.
+
+`ScopeMenuVirtualText` is for the virtual text in Grep window.
+
+==============================================================================
+
+Credits ~
+
+Some chunks shamelessly ripped from habamax
+(https://github.com/habamax/.vim/blob/master/autoload/).
+
+vim:tw=78:ts=8:noet:ft=help:norl:

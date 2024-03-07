@@ -1,6 +1,6 @@
 <h1 align="center"> Scope </h1>
 
-<h4 align="center"> Minimal, fast, and async fuzzy finder for Vim. </h4>
+<h4 align="center">Fast, async, and extensible fuzzy finder for Vim. </h4>
 
 <p align="center">
   <a href="#usage">Usage</a> •
@@ -209,9 +209,8 @@ g:ScopePopupOptionsSet({borderhighlight: ['Comment']})
 
 `ScopeMenuMatch` highlight group modifies the look of characters searched so
 far. It is linked to `Special` by default.
+
 `ScopeMenuVirtualText` is for the virtual text in Grep window.
-For other groups
-see `autoload/scope/fuzzy.vim`.
 
 ### Credits
 
