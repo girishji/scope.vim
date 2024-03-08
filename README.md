@@ -217,4 +217,14 @@ searched so far and is linked to `Special` by default.
 
 Some portions of this code are shamelessly ripped from [habamax](https://github.com/habamax/.vim/blob/master/autoload/).
 
-If you encounter any errors, please open an issue.
+## Other Plugins to Enhance Your Workflow
+
+1. [**devdocs.vim**](https://github.com/girishji/devdocs.vim) - browse documentation from [devdocs.io](https://devdocs.io).
+
+2. [**easyjump.vim**](https://github.com/girishji/easyjump.vim) - makes code navigation a breeze.
+
+3. [**fFtT.vim**](https://github.com/girishji/fFtT.vim) - accurately target words in a line.
+
+4. [**autosuggest.vim**](https://github.com/girishji/autosuggest.vim) - live autocompletion for Vim's command line.
+
+5. [**vimcomplete**](https://github.com/girishji/vimcomplete) - enhances autocompletion in Vim.
