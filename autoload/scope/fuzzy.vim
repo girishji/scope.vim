@@ -483,5 +483,5 @@ export def Window()
         })
 enddef
 
-# some chunks shamelessly ripped from habamax
+# chunks of code shamelessly ripped from habamax
 # https://github.com/habamax/.vim/blob/master/autoload/fuzzy.vim
