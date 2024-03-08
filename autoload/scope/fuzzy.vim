@@ -35,6 +35,7 @@ enddef
 
 export def FindCmdExcludeDirs(): string
     # exclude dirs from .config/fd/ignore and .gitignore
+    # var sep = has("win32") ? '\' : '/'
     var excludes = []
     var ignore_files = [getenv('HOME') .. '/.config/fd/ignore', '.gitignore']
     for ignore in ignore_files
@@ -44,7 +45,7 @@ export def FindCmdExcludeDirs(): string
     endfor
     var exclcmds = []
     for item in excludes
-        var idx = item->strridx(sep)
+        var idx = item->strridx('/')
         if idx == item->len() - 1
             exclcmds->add($'-type d -path */{item}* -prune')
         else
@@ -56,7 +57,6 @@ export def FindCmdExcludeDirs(): string
 enddef
 
 export def FindCmd(): list<any>
-    var sep = has("win32") ? '\' : '/'
     if executable('fd')
         return 'fd -tf --follow'->split()
     else
