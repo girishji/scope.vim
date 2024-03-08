@@ -14,7 +14,7 @@
 There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and
 [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The core functionality is implemented in two files, totaling approximately 300 lines of code.
 
-<a href="#Search-Interesting-Things">Extending the functionality</a> for fuzzy searching anything is straightforward.
+<a href="#Search-Interesting-Things">Extending the functionality</a> to perform fuzzy searches for other items is straightforward.
 
 ## Usage
 
