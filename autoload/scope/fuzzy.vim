@@ -483,5 +483,21 @@ export def Window()
         })
 enddef
 
+export def VimCommand()
+    var cmds = getcompletion('', 'command')->mapnew((_, v) => {
+        return {text: v}
+    })
+    popup.FilterMenu.new("Commands", cmds,
+        (res, key) => {
+            if key == "\<c-t>"
+                exe $":tab {res.text}"
+            elseif key == "\<c-v>"
+                exe $":vert {res.text}"
+            else
+                exe $":{res.text}"
+            endif
+        })
+enddef
+
 # chunks of code shamelessly ripped from habamax
 # https://github.com/habamax/.vim/blob/master/autoload/fuzzy.vim

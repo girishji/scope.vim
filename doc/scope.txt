@@ -98,6 +98,7 @@ Method               |  Description
 `fuzzy.Colorscheme()`  |  Available color schemes
 `fuzzy.GitFile()`      |  Files under git
 `fuzzy.MRU()`          |  `:h v:oldfiles`
+`fuzzy.VimCommand()`   |  Vim commands
 
 See `autoload/scope/fuzzy.vim` for implementation.
 
