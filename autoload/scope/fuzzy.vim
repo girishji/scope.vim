@@ -3,6 +3,14 @@ vim9script
 import './task.vim'
 import './popup.vim'
 
+export var options: dict<any> = {
+    grep_echo_cmd: true,
+}
+
+export def OptionsSet(opt: dict<any>)
+    options->extend(opt)
+enddef
+
 export def FilterItems(lst: list<dict<any>>, prompt: string): list<any>
     def PrioritizeFilename(matches: list<any>): list<any>
         # prefer matching filenames over matching directory names
@@ -133,6 +141,7 @@ var prev_grep = null_string
 # live grep, not fuzzy search.
 # before typing <space> use '\' to escape.
 # (grep pattern is: grep <pat> <path1, path2, ...>, so it will interpret second word as path)
+# `grep_highlight_ignore_case` ensures case-insensitive text highlighting in the popup window. Despite potentially seeming redundant, it is vital due to challenges in incorporating colored `grep` output into Vim. Instead of parsing complex color codes, I opted to disable colored output from `grep` in favor of Vim's syntax highlighting. As Vim lacks awareness of `grep`'s ignore-case flag, explicit instruction is needed for accurate highlighting. This option is set to `true` by default.
 export def Grep(grepcmd: string = '', ignorecase: bool = true)
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new('Grep', [],
@@ -173,11 +182,15 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
             endif
             prev_grep = prompt
             win_execute(menu.id, "syn clear ScopeMenuMatch")
-            echo ''
+            if options.grep_echo_cmd
+                echo ''
+            endif
             if prompt != null_string
                 var cmd = (grepcmd ?? GrepCmd()) .. ' ' .. prompt
                 cmd = cmd->escape('*')
-                echo cmd
+                if options.grep_echo_cmd
+                    echo cmd
+                endif
                 # do not convert cmd to list, as this will not quote space characters correctly.
                 var job: task.AsyncCmd
                 job = task.AsyncCmd.new(cmd,
@@ -214,7 +227,9 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
             return [items_dict, [items_dict]]
         },
         () => {
-            :echo ''
+            if options.grep_echo_cmd
+                echo ''
+            endif
         }, true)
 enddef
 

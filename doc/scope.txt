@@ -54,10 +54,12 @@ Live grep in the directory.
 	nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
 <
 > [!NOTE]
-> To grep the same keyword a second time, there's no need to retype it. The
+> 1. To grep the same keyword a second time, there's no need to retype it. The
 > prompt already contains the previous grep string as virtual text. Simply
 > type `<Right>` or `<PgDn>` key to fill in and continue, or type over it to
 > dismiss.
+> 2. Escape spaces with backslash when searching multiple words (e.g., `foo\ bar`
+> to grep for 'foo bar')
 
 Define your own grep command.
 >
@@ -182,6 +184,13 @@ far. It is linked to `Special` by default.
 
 `ScopeMenuVirtualText` is for the virtual text in Grep window.
 
+The appearance of `Grep()` function output can be modified as follows:
+
+>
+    scope#fuzzy#OptionsSet({
+        grep_echo_cmd: true,
+    })
+<
 ==============================================================================
 
 Credits ~

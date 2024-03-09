@@ -24,7 +24,7 @@ In the following examples, replace `<your_key>` with the desired key combination
 
 ### Find File
 
-Explore file searches in the current working directory with dynamic updates. Files are retrieved through an external job, and the window seamlessly refreshes to display real-time results.
+Find files in the current working directory. Files are retrieved through an external job, and the window seamlessly refreshes to display real-time results.
 
 ```
 vim9script
@@ -32,7 +32,7 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
 ```
 
-Search for installed Vim files.
+Search for installed Vim files:
 
 ```
 vim9script
@@ -40,16 +40,13 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
 ```
 
-Use [fd](https://github.com/sharkdp/fd) instead of `find` command.
+Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 100,000 (default is 10,000):
 
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
 ```
-
-> [!NOTE]
-> The `fuzzy.Find()` function accepts a string argument. Set this string to the command used for finding files. The directories are traversed by a spawned job, ensuring Vim remains responsive even when dealing with large directories.
 
 ### Live Grep
 
@@ -62,15 +59,18 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
 ```
 
 > [!NOTE]
-> To grep the same keyword a second time, there's no need to retype it. The prompt already contains the previous grep string as virtual text. Simply type `<Right>` or `<PgDn>` key to fill in and continue, or type over it to dismiss.
+> 1. Escape spaces with backslash when searching multiple words (e.g., `foo\ bar` to grep for 'foo bar')
+> 2. To grep the same keyword a second time, there's no need to retype it. The prompt already contains the previous grep string as virtual text. Simply type `<Right>` or `<PgDn>` key to fill in and continue, or type over it to dismiss.
 
-Define your own grep command.
+Define your own grep command:
 
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
 ```
+
+`grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).
 
 ### Switch Buffer
 
@@ -220,6 +220,23 @@ The `ScopeMenuMatch` highlight group modifies the appearance of characters
 searched so far and is linked to `Special` by default.
 
 `ScopeMenuVirtualText` is used for the virtual text in the Grep window.
+
+The appearance of `Grep()` function output can be modified as follows:
+
+```
+scope#fuzzy#OptionsSet({
+    grep_echo_cmd: true,
+})
+```
+
+or
+
+```
+import autoload 'scope/fuzzy.vim'
+fuzzy.OptionsSet({
+    grep_echo_cmd: true, # whether to display the grep command string on the command line
+})
+```
 
 ### Credits
 
