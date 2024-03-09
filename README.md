@@ -24,7 +24,7 @@ In the following examples, replace `<your_key>` with the desired key combination
 
 ### Find File
 
-Search for files in the current working directory.
+Explore file searches in the current working directory with dynamic updates. Files are retrieved through an external job, and the window seamlessly refreshes to display real-time results.
 
 ```
 vim9script
@@ -53,7 +53,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow')<CR>
 
 ### Live Grep
 
-Live grep in the directory.
+Unlike fuzzy search `grep`, command is executed  after each keystroke in a dedicated external job. Result updates occur every 100 milliseconds, ensuring real-time feedback. To maintain Vim's responsiveness, lengthy processes may be terminated. An ideal scenario involves launching Vim within the project directory, initiating a grep search, and iteratively refining your query until you pinpoint the desired result. Notably, when editing multiple files, you need not re-enter the grep string for each file. Refer to the note below for further details.
 
 ```
 vim9script
@@ -207,6 +207,13 @@ For example, to set the border of the popup window to the `Comment` highlight gr
 
 ```vim
 scope#popup#OptionsSet({borderhighlight: ['Comment']})
+```
+
+or,
+
+```
+import autoload 'scope/popup.vim'
+popup.OptionsSet({borderhighlight: ['Comment']})
 ```
 
 The `ScopeMenuMatch` highlight group modifies the appearance of characters
