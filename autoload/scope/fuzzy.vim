@@ -141,7 +141,12 @@ var prev_grep = null_string
 # live grep, not fuzzy search.
 # before typing <space> use '\' to escape.
 # (grep pattern is: grep <pat> <path1, path2, ...>, so it will interpret second word as path)
-# `grep_highlight_ignore_case` ensures case-insensitive text highlighting in the popup window. Despite potentially seeming redundant, it is vital due to challenges in incorporating colored `grep` output into Vim. Instead of parsing complex color codes, I opted to disable colored output from `grep` in favor of Vim's syntax highlighting. As Vim lacks awareness of `grep`'s ignore-case flag, explicit instruction is needed for accurate highlighting. This option is set to `true` by default.
+# `ignorecase` argument ensures case-insensitive text highlighting in the popup
+# window. Incorporating colored `grep` output into Vim is a challenge. Instead
+# of parsing color codes (control characters), I opted to disable colored output
+# from `grep` in favor of Vim's syntax highlighting. As Vim lacks awareness of
+# `grep`'s ignore-case flag, explicit instruction is needed for accurate
+# highlighting.
 export def Grep(grepcmd: string = '', ignorecase: bool = true)
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new('Grep', [],
