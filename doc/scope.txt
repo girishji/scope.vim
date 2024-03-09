@@ -171,11 +171,11 @@ Add the following line to your $HOME/.vimrc file.
 
 Popup window appearance can be configured. `borderchars`, `borderhighlight`,
 `highlight`, `scrollbarhighlight`, `thumbhighlight` and  other `:h popup_create-arguments` 
-can be configured using `g:ScopePopupOptionsSet()`.
+can be configured using `scope#popup#OptionsSet()`.
 
 To set border of popup window to `Comment` highlight group:
 >
-	g:ScopePopupOptionsSet({borderhighlight: ['Comment']})
+	scope#popup#OptionsSet({borderhighlight: ['Comment']})
 <
 `ScopeMenuMatch` highlight group modifies the look of characters searched so
 far. It is linked to `Special` by default.

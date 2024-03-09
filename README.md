@@ -201,12 +201,12 @@ packadd scope.vim
 The appearance of the popup window can be customized using `borderchars`,
 `borderhighlight`, `highlight`, `scrollbarhighlight`, `thumbhighlight`, and
 other `:h popup_create-arguments`. To configure these settings, use
-`g:ScopePopupOptionsSet()`.
+`scope#popup#OptionsSet()`.
 
 For example, to set the border of the popup window to the `Comment` highlight group:
 
 ```vim
-g:ScopePopupOptionsSet({borderhighlight: ['Comment']})
+scope#popup#OptionsSet({borderhighlight: ['Comment']})
 ```
 
 The `ScopeMenuMatch` highlight group modifies the appearance of characters
