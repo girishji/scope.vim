@@ -151,7 +151,6 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
-            # callback
             var fl = res.text->split()[0]->split(':')
             if key == "\<C-j>"
                 exe $"split +{fl[1]} {fl[0]}"
@@ -228,8 +227,7 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
                     win_execute(menu.id, $"syn match ScopeMenuMatch \"{pat}\"")
                 endif
             endif
-            var items_dict = []
-            return [items_dict, [items_dict]]
+            return [[], [[]]]
         },
         () => {
             if options.grep_echo_cmd
@@ -450,20 +448,58 @@ export def Highlight()
         })
 enddef
 
-export def Help()
-    var help_tags = globpath(&rtp, "doc/tags", 1, 1)
-        ->mapnew((_, v) => readfile(v)->mapnew((_, line) => ({text: line->split("\t")[0]})))
-        ->flattennew()
-    popup.FilterMenu.new("Help", help_tags,
+def GetCompletionItems(s: string, type: string): list<dict<any>>
+    var saved = &wildoptions
+    var items: list<string> = []
+    try
+        :set wildoptions=fuzzy
+        items = getcompletion(s, type)
+    finally
+        exe $'set wildoptions={saved}'
+    endtry
+    return items->mapnew((_, v) => {
+        return {text: v}
+    })
+enddef
+
+export def DoVimCompletion(title: string, cmd: string, type: string)
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new(title, [],
         (res, key) => {
             if key == "\<c-t>"
-                exe $":tab help {res.text}"
+                exe $":tab {cmd} {res.text}"
             elseif key == "\<c-v>"
-                exe $":vert help {res.text}"
+                exe $":vert {cmd} {res.text}"
             else
-                exe $":help {res.text}"
+                echom $":{cmd} {res.text}"
+                exe $":{cmd} {res.text}"
             endif
-        })
+        },
+        null_function,
+        (lst: list<dict<any>>, prompt: string): list<any> => {
+            # This function is called everytime when user types something.
+            # see comment above why a sleep is appropriate here
+            sleep 1m
+            if menu.prompt != prompt
+                return [[], [[]]]
+            endif
+            win_execute(menu.id, "syn clear ScopeMenuMatch")
+            var items_dict: list<dict<any>> = []
+            if prompt != null_string
+                items_dict = GetCompletionItems(prompt, type)
+                var pat = prompt->escape('~')
+                win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
+            endif
+            return [items_dict, [items_dict]]
+        }, null_function, true)
+enddef
+
+export def Help()
+    DoVimCompletion('Help', 'help', 'help')
+enddef
+
+export def Tag()
+    DoVimCompletion('Tag', 'tag', 'tag')
 enddef
 
 export def CmdHistory()
@@ -509,13 +545,7 @@ export def VimCommand()
     })
     popup.FilterMenu.new("Commands", cmds,
         (res, key) => {
-            if key == "\<c-t>"
-                exe $":tab {res.text}"
-            elseif key == "\<c-v>"
-                exe $":vert {res.text}"
-            else
-                exe $":{res.text}"
-            endif
+            exe $":{res.text}"
         })
 enddef
 
