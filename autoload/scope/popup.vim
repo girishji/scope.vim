@@ -179,6 +179,7 @@ export class FilterMenu
                     return true
                 },
                 callback: (id, result) => {
+                    popup_close(this.idp, -1)
                     if result->type() == v:t_number
                         if result > 0
                             Callback(this.filtered_items[0][result - 1], "")
