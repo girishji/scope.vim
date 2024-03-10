@@ -373,7 +373,7 @@ export def MRU()
         # use non-filtered v:oldfiles
         mru = v:oldfiles
     else
-        mru = v:oldfiles->filter((_, v) => filereadable(fnamemodify(v, ":p")))
+        mru = v:oldfiles->copy()->filter((_, v) => filereadable(fnamemodify(v, ":p")))
     endif
     mru->map((_, v) => {
         return {text: v}
