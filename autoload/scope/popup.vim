@@ -128,9 +128,13 @@ export class FilterMenu
                             Cleanup()
                         endif
                     elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>"]->index(key) > -1
-                            && this.filtered_items[0]->len() > 0 && items_count > 0
                         popup_close(this.idp, -1)
-                        popup_close(id, {idx: getcurpos(id)[1], key: key})
+                        if this.filtered_items[0]->len() > 0 && items_count > 0
+                            popup_close(id, {idx: getcurpos(id)[1], key: key})
+                        else
+                            # close the popup window for <cr> when popup window is empty
+                            popup_close(id, -1)
+                        endif
                     elseif key == "\<Right>" || key == "\<PageDown>"
                         if this.idp->getmatches()->indexof((_, v) => v.group == 'ScopeMenuVirtualText') != -1
                             # virtual text present. grep using virtual text.

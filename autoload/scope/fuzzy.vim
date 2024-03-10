@@ -177,14 +177,9 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
                     if menu.Closed()
                         job.Stop()
                     endif
-                    var items_dict: list<dict<any>>
-                    if items->len() < 1
-                        items_dict = [{text: ""}]
-                    else
-                        items_dict = items->mapnew((_, v) => {
-                            return {text: v}
-                        })
-                    endif
+                    var items_dict: list<dict<any>> = items->mapnew((_, v) => {
+                        return {text: v}
+                    })
                     if !menu.SetText(items_dict,
                             (_, _): list<any> => {
                                 return [items_dict, [items_dict]]
