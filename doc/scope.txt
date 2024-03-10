@@ -1,6 +1,6 @@
 *scope.txt*	Fast, async, and extensible fuzzy finder
 
-Author: Girish Palya (girishji AT gmail DOT com)
+Author: Girish (girishji AT gmail DOT com)
 For Vim version 9.1 and above
 
 ==============================================================================
