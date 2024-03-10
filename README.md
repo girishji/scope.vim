@@ -226,7 +226,7 @@ fuzzy.OptionsSet({
 })
 ```
 
-### Credits
+## Credits
 
 Some portions of this code are shamelessly ripped from [habamax](https://github.com/habamax/.vim/blob/master/autoload/).
 
