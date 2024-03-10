@@ -111,6 +111,7 @@ Method|Description
 `fuzzy.GitFile()` | Files under git
 `fuzzy.MRU()` | `:h v:oldfiles`
 `fuzzy.VimCommand()` | Vim commands
+`fuzzy.Tag()` | Tags search
 
 See `autoload/scope/fuzzy.vim` for implementation.
 
