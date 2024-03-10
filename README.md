@@ -121,7 +121,8 @@ See `autoload/scope/fuzzy.vim` for implementation.
 The search functionality encompasses four fundamental patterns:
 
 1. **Obtaining a List and Fuzzy Searching:**
-   - This represents the simplest use case, where a list of items is acquired, and fuzzy search is performed on them.
+
+   - This represents the simplest use case, where a list of items is acquired, and fuzzy search is performed on them. Check out this [gist](https://gist.github.com/girishji/e3479918da89890b6e85b9efc4e95da5) for a practical example.
 
 2. **Asynchronous List Update with Fuzzy Search:**
    - In scenarios like file searching, the list of all items is updated asynchronously while concurrently conducting a fuzzy search.
