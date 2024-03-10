@@ -101,17 +101,18 @@ import autoload 'scope/fuzzy.vim'
 
 Method|Description
 ------|-----------
-`fuzzy.Keymap()` | Key mappings
+`fuzzy.CmdHistory()` | Command history
+`fuzzy.Colorscheme()` | Available color schemes
+`fuzzy.CscopeEgrep()` | egrep cscope db (`:cs find e <pat>`)
+`fuzzy.Filetype()` | File types
+`fuzzy.GitFile()` | Files under git
 `fuzzy.Help()` | Help topics
 `fuzzy.Highlight()` | Highlight groups
-`fuzzy.Window()` | Open windows
-`fuzzy.CmdHistory()` | Command history
-`fuzzy.Filetype()` | File types
-`fuzzy.Colorscheme()` | Available color schemes
-`fuzzy.GitFile()` | Files under git
+`fuzzy.Keymap()` | Key mappings
 `fuzzy.MRU()` | `:h v:oldfiles`
+`fuzzy.Tag()` | `:h ctags` search
 `fuzzy.VimCommand()` | Vim commands
-`fuzzy.Tag()` | Tags search
+`fuzzy.Window()` | Open windows
 
 See `autoload/scope/fuzzy.vim` for implementation.
 

@@ -277,21 +277,8 @@ export def Buffer(list_all_buffers: bool = false)
         FilterItems)
 enddef
 
-def GetCompletionItems(s: string, type: string): list<dict<any>>
-    var saved = &wildoptions
-    var items: list<string> = []
-    try
-        :set wildoptions=fuzzy
-        items = getcompletion(s, type)
-    finally
-        exe $'set wildoptions={saved}'
-    endtry
-    return items->mapnew((_, v) => {
-        return {text: v}
-    })
-enddef
-
-export def DoVimCompletion(title: string, cmd: string, type: string)
+# export def DoVimItems(title: string, cmd: string, GetItemsFn: function(string): list<string>)
+export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list<string>)
     var menu: popup.FilterMenu
 
     def DoCompletionItems(prompt: string, timer: number)
@@ -304,7 +291,9 @@ export def DoVimCompletion(title: string, cmd: string, type: string)
         win_execute(menu.id, "syn clear ScopeMenuMatch")
         var items_dict: list<dict<any>> = []
         if prompt != null_string
-            items_dict = GetCompletionItems(prompt, type)
+            items_dict = GetItemsFn(prompt)->mapnew((_, v) => {
+                return {text: v}
+                })
             menu.SetText(items_dict,
                 (_, _): list<any> => {
                 return [items_dict, [items_dict]]
@@ -332,12 +321,30 @@ export def DoVimCompletion(title: string, cmd: string, type: string)
         }, null_function, true)
 enddef
 
+def GetCompletionItems(s: string, type: string): list<string>
+    var saved = &wildoptions
+    var items: list<string> = []
+    try
+        :set wildoptions=fuzzy
+        items = getcompletion(s, type)
+    finally
+        exe $'set wildoptions={saved}'
+    endtry
+    return items
+enddef
+
 export def Help()
-    DoVimCompletion('Help', 'help', 'help')
+    DoVimItems('Help', 'help', (p: string) => GetCompletionItems(p, 'help'))
 enddef
 
 export def Tag()
-    DoVimCompletion('Tag', 'tag', 'tag')
+    DoVimItems('Tag', 'tag', (p: string) => GetCompletionItems(p, 'tag'))
+enddef
+
+export def CscopeEgrep()
+    DoVimItems('Cscope egrep', 'edit', (p: string) => {
+        return execute($'cscope find e {p}')->split("\n")
+       })
 enddef
 
 export def VimCommand()
