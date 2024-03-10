@@ -9,7 +9,7 @@
   <a href="#configuration">Configuration</a>
 </p>
 
-![Demo](img/demo.gif)
+![Demo](https://gist.githubusercontent.com/girishji/40e35cd669626212a9691140de4bd6e7/raw/6041405e45072a7fbc4e352cbd461e450a7af90e/scope-demo.gif)
 
 There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and
 [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The core functionality is implemented in two files, totaling approximately 300 lines of code.
