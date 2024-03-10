@@ -132,8 +132,8 @@ export def File(findCmd: string = null_string, count: number = 10000)  # list at
 enddef
 
 def GrepCmd(): string
-    var cmd = 'grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged'
-    return &grepprg ?? cmd
+    return 'grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged'
+    # return &grepprg ?? cmd
 enddef
 
 var prev_grep = null_string
