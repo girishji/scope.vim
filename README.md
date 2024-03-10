@@ -125,7 +125,7 @@ The search functionality encompasses four fundamental patterns:
    - This represents the simplest use case, where a list of items is acquired, and fuzzy search is performed on them. Check out this [gist](https://gist.github.com/girishji/e3479918da89890b6e85b9efc4e95da5) for a practical example.
 
 2. **Asynchronous List Update with Fuzzy Search:**
-   - In scenarios like file searching, the list of all items is updated asynchronously while concurrently conducting a fuzzy search.
+   - In scenarios like file searching, the list of all items is updated asynchronously while concurrently conducting a fuzzy search. See this [gist](https://gist.github.com/girishji/e4dbcb61c1f7292eb884799bc3251b26) for an example.
 
 3. **Dynamic List Update on User Input:**
    - Certain cases, such as handling tags or Vim commands, involve waiting for a new list of items every time the user inputs something.
