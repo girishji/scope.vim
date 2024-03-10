@@ -131,7 +131,7 @@ The search functionality encompasses four fundamental patterns:
 4. **Asynchronous Relevant Items Update on User Input:**
    - For dynamic searches like live grep, the list is updated asynchronously, but exclusively with relevant items, each time the user types something.
 
-Boilerplate code for each of these patterns can be found in `autoload/scope/fuzzy.vim`. Understand how it handles the different patterns and adapt or extend it according to your use case.
+Boilerplate code for each of these patterns can be found in `autoload/scope/fuzzy.vim`. Understand how it handles the different patterns and adapt or extend it according to your use case. Everything is exported.
 
 ## Requirements
 
