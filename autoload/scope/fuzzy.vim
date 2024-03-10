@@ -140,15 +140,70 @@ var prev_grep = null_string
 
 # live grep, not fuzzy search.
 # before typing <space> use '\' to escape.
-# (grep pattern is: grep <pat> <path1, path2, ...>, so it will interpret second word as path)
+# (grep pattern is: grep <pat> <path1, path2, ...>, so it will interpret second
+# word as path)
+#
 # `ignorecase` argument ensures case-insensitive text highlighting in the popup
 # window. Incorporating colored `grep` output into Vim is a challenge. Instead
-# of parsing color codes (control characters), I opted to disable colored output
-# from `grep` in favor of Vim's syntax highlighting. As Vim lacks awareness of
-# `grep`'s ignore-case flag, explicit instruction is needed for accurate
-# highlighting.
+# of parsing color codes, Vim's syntax highlighting is used. As Vim lacks
+# awareness of `grep`'s ignore-case flag, explicit instruction is needed for
+# accurate highlighting.
 export def Grep(grepcmd: string = '', ignorecase: bool = true)
     var menu: popup.FilterMenu
+
+    def DoGrep(prompt: string, timer: number)
+        # during pasting from clipboard to prompt window, spawning a new job for
+        # every character input causes hiccups. return the control back to Vim's
+        # main loop and let typehead catch up.
+        if menu.prompt != prompt
+            timer_start(1, function(DoGrep, [menu.prompt]))
+            return
+        endif
+        prev_grep = prompt
+        win_execute(menu.id, "syn clear ScopeMenuMatch")
+        if options.grep_echo_cmd
+            echo ''
+        endif
+        if prompt != null_string
+            var cmd = (grepcmd ?? GrepCmd()) .. ' ' .. prompt
+            cmd = cmd->escape('*')
+            if options.grep_echo_cmd
+                echo cmd
+            endif
+            # do not convert cmd to list, as this will not quote space characters correctly.
+            var job: task.AsyncCmd
+            job = task.AsyncCmd.new(cmd,
+                (items: list<string>) => {
+                    if menu.Closed()
+                        job.Stop()
+                    endif
+                    var items_dict: list<dict<any>>
+                    if items->len() < 1
+                        items_dict = [{text: ""}]
+                    else
+                        items_dict = items->mapnew((_, v) => {
+                            return {text: v}
+                        })
+                    endif
+                    if !menu.SetText(items_dict,
+                            (_, _): list<any> => {
+                                return [items_dict, [items_dict]]
+                            }, 100)  # max 100 items, and then kill the job
+                        job.Stop()
+                    endif
+                })
+            var pat = prompt->escape('~')
+            if pat[-1 : -1] == '\'
+                pat = $'{pat}\'
+            endif
+            if ignorecase
+                win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
+            else
+                win_execute(menu.id, $"syn match ScopeMenuMatch \"{pat}\"")
+            endif
+        endif
+    enddef
+
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
             var fl = res.text->split()[0]->split(':')
@@ -177,56 +232,7 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
         },
         (lst: list<dict<any>>, prompt: string): list<any> => {
             # This function is called everytime when user types something
-            # when text is pasted to prompt window, spawning a new job for
-            # every character input causes hiccups. sleep for a short period
-            # and bail if prompt has changed.
-            sleep 1m
-            if menu.prompt != prompt
-                return [[], [[]]]
-            endif
-            prev_grep = prompt
-            win_execute(menu.id, "syn clear ScopeMenuMatch")
-            if options.grep_echo_cmd
-                echo ''
-            endif
-            if prompt != null_string
-                var cmd = (grepcmd ?? GrepCmd()) .. ' ' .. prompt
-                cmd = cmd->escape('*')
-                if options.grep_echo_cmd
-                    echo cmd
-                endif
-                # do not convert cmd to list, as this will not quote space characters correctly.
-                var job: task.AsyncCmd
-                job = task.AsyncCmd.new(cmd,
-                    (items: list<string>) => {
-                        if menu.Closed()
-                            job.Stop()
-                        endif
-                        var items_dict: list<dict<any>>
-                        if items->len() < 1
-                            items_dict = [{text: ""}]
-                        else
-                            items_dict = items->mapnew((_, v) => {
-                                return {text: v}
-                            })
-                        endif
-                        if !menu.SetText(items_dict,
-                                (_, _): list<any> => {
-                                    return [items_dict, [items_dict]]
-                                }, 100)  # max 100 items, and then kill the job
-                            job.Stop()
-                        endif
-                    })
-                var pat = prompt->escape('~')
-                if pat[-1 : -1] == '\'
-                    pat = $'{pat}\'
-                endif
-                if ignorecase
-                    win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
-                else
-                    win_execute(menu.id, $"syn match ScopeMenuMatch \"{pat}\"")
-                endif
-            endif
+            timer_start(1, function(DoGrep, [prompt]))
             return [[], [[]]]
         },
         () => {
@@ -269,6 +275,79 @@ export def Buffer(list_all_buffers: bool = false)
             hi def link ScopeMenuDirectorySubtle Comment
         },
         FilterItems)
+enddef
+
+def GetCompletionItems(s: string, type: string): list<dict<any>>
+    var saved = &wildoptions
+    var items: list<string> = []
+    try
+        :set wildoptions=fuzzy
+        items = getcompletion(s, type)
+    finally
+        exe $'set wildoptions={saved}'
+    endtry
+    return items->mapnew((_, v) => {
+        return {text: v}
+    })
+enddef
+
+export def DoVimCompletion(title: string, cmd: string, type: string)
+    var menu: popup.FilterMenu
+
+    def DoCompletionItems(prompt: string, timer: number)
+        if menu.prompt != prompt
+            # to avoid hiccups when pasting from clipboard, return the control back to Vim's
+            # main loop and let typehead catch up.
+            timer_start(1, function(DoCompletionItems, [menu.prompt]))
+            return
+        endif
+        win_execute(menu.id, "syn clear ScopeMenuMatch")
+        var items_dict: list<dict<any>> = []
+        if prompt != null_string
+            items_dict = GetCompletionItems(prompt, type)
+            menu.SetText(items_dict,
+                (_, _): list<any> => {
+                return [items_dict, [items_dict]]
+                }, 100)  # max 100 items
+            var pat = prompt->escape('~')
+            win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
+        endif
+    enddef
+
+    menu = popup.FilterMenu.new(title, [],
+        (res, key) => {
+            if key == "\<c-t>"
+                exe $":tab {cmd} {res.text}"
+            elseif key == "\<c-v>"
+                exe $":vert {cmd} {res.text}"
+            else
+                echom $":{cmd} {res.text}"
+                exe $":{cmd} {res.text}"
+            endif
+        },
+        null_function,
+        (lst: list<dict<any>>, prompt: string): list<any> => {
+            timer_start(1, function(DoCompletionItems, [menu.prompt]))
+            return [[], [[]]]
+        }, null_function, true)
+enddef
+
+export def Help()
+    DoVimCompletion('Help', 'help', 'help')
+enddef
+
+export def Tag()
+    DoVimCompletion('Tag', 'tag', 'tag')
+enddef
+
+export def VimCommand()
+    var cmds = getcompletion('', 'command')->mapnew((_, v) => {
+        return {text: v}
+    })
+    popup.FilterMenu.new("Commands", cmds,
+        (res, key) => {
+            exe $":{res.text}"
+        })
 enddef
 
 export def Keymap()
@@ -448,60 +527,6 @@ export def Highlight()
         })
 enddef
 
-def GetCompletionItems(s: string, type: string): list<dict<any>>
-    var saved = &wildoptions
-    var items: list<string> = []
-    try
-        :set wildoptions=fuzzy
-        items = getcompletion(s, type)
-    finally
-        exe $'set wildoptions={saved}'
-    endtry
-    return items->mapnew((_, v) => {
-        return {text: v}
-    })
-enddef
-
-export def DoVimCompletion(title: string, cmd: string, type: string)
-    var menu: popup.FilterMenu
-    menu = popup.FilterMenu.new(title, [],
-        (res, key) => {
-            if key == "\<c-t>"
-                exe $":tab {cmd} {res.text}"
-            elseif key == "\<c-v>"
-                exe $":vert {cmd} {res.text}"
-            else
-                echom $":{cmd} {res.text}"
-                exe $":{cmd} {res.text}"
-            endif
-        },
-        null_function,
-        (lst: list<dict<any>>, prompt: string): list<any> => {
-            # This function is called everytime when user types something.
-            # see comment above why a sleep is appropriate here
-            sleep 1m
-            if menu.prompt != prompt
-                return [[], [[]]]
-            endif
-            win_execute(menu.id, "syn clear ScopeMenuMatch")
-            var items_dict: list<dict<any>> = []
-            if prompt != null_string
-                items_dict = GetCompletionItems(prompt, type)
-                var pat = prompt->escape('~')
-                win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
-            endif
-            return [items_dict, [items_dict]]
-        }, null_function, true)
-enddef
-
-export def Help()
-    DoVimCompletion('Help', 'help', 'help')
-enddef
-
-export def Tag()
-    DoVimCompletion('Tag', 'tag', 'tag')
-enddef
-
 export def CmdHistory()
     var cmd_history = [{text: histget("cmd")}] + range(1, histnr("cmd"))->mapnew((i, _) => {
         return {text: histget("cmd", i), idx: i}
@@ -536,16 +561,6 @@ export def Window()
             win_execute(winid, 'syn match ScopeMenuBraces "^[* ](.\{-}):" contained')
             hi def link ScopeMenuBraces Comment
             hi def link ScopeMenuCurrent Statement
-        })
-enddef
-
-export def VimCommand()
-    var cmds = getcompletion('', 'command')->mapnew((_, v) => {
-        return {text: v}
-    })
-    popup.FilterMenu.new("Commands", cmds,
-        (res, key) => {
-            exe $":{res.text}"
         })
 enddef
 

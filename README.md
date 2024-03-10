@@ -14,7 +14,7 @@
 There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and
 [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The core functionality is implemented in two files, totaling approximately 300 lines of code.
 
-<a href="#Search-Interesting-Things">Extending the functionality</a> to perform fuzzy searches for other items is straightforward.
+<a href="#Writing-Your-Own-Extension">Extending the functionality</a> to perform fuzzy searches for other items is straightforward.
 
 ## Usage
 
@@ -114,38 +114,23 @@ Method|Description
 
 See `autoload/scope/fuzzy.vim` for implementation.
 
-### Search Interesting Things
+### Writing Your Own Extension
 
-This is just an example. To perform a fuzzy search for function definitions, classes, and other useful artifacts in Python code, add the following lines to `~/.vim/after/ftplugin/python.vim`:
+The search functionality encompasses four fundamental patterns:
 
-```
-if exists('g:loaded_scope')
-    import autoload 'scope/fuzzy.vim'
-    def Things()
-        var things = []
-        for nr in range(1, line('$'))
-            var line = getline(nr)
-            if line =~ '\(^\|\s\)\(def\|class\) \k\+('
-                    || line =~ 'if __name__ == "__main__":'
-                things->add({text: $"{line} ({nr})", linenr: nr})
-            endif
-        endfor
-        fuzzy.FilterMenu.new("Py Things", things,
-            (res, key) => {
-                exe $":{res.linenr}"
-                normal! zz
-            },
-            (winid, _) => {
-                win_execute(winid, $"syn match FilterMenuLineNr '(\\d\\+)$'")
-                hi def link FilterMenuLineNr Comment
-            })
-    enddef
-    # Example mapping, replace <your_key> with your preferred key combination
-    nnoremap <buffer> <your_key> <scriptcmd>Things()<CR>
-endif
-```
+1. **Obtaining a List and Fuzzy Searching:**
+   - This represents the simplest use case, where a list of items is acquired, and fuzzy search is performed on them.
 
-See `autoload/scope/fuzzy.vim` for inspiration.
+2. **Asynchronous List Update with Fuzzy Search:**
+   - In scenarios like file searching, the list of all items is updated asynchronously while concurrently conducting a fuzzy search.
+
+3. **Dynamic List Update on User Input:**
+   - Certain cases, such as handling tags or Vim commands, involve waiting for a new list of items every time the user inputs something.
+
+4. **Asynchronous Relevant Items Update on User Input:**
+   - For dynamic searches like live grep, the list is updated asynchronously, but exclusively with relevant items, each time the user types something.
+
+Boilerplate code for each of these patterns can be found in `autoload/scope/fuzzy.vim`. Understand how it handles the different patterns and adapt or extend it according to your use case.
 
 ## Requirements
 
@@ -212,8 +197,8 @@ scope#popup#OptionsSet({borderhighlight: ['Comment']})
 or,
 
 ```
-import autoload 'scope/popup.vim'
-popup.OptionsSet({borderhighlight: ['Comment']})
+import autoload 'scope/popup.vim' as sp
+sp.OptionsSet({borderhighlight: ['Comment']})
 ```
 
 The `ScopeMenuMatch` highlight group modifies the appearance of characters
@@ -225,7 +210,7 @@ The appearance of `Grep()` function output can be modified as follows:
 
 ```
 scope#fuzzy#OptionsSet({
-    grep_echo_cmd: true,
+    grep_echo_cmd: true, # whether to display the grep command string on the command line
 })
 ```
 
