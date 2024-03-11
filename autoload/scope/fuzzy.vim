@@ -164,7 +164,7 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
             echo ''
         endif
         if prompt != null_string
-            var cmd = (grepcmd ?? GrepCmd()) .. ' ' .. prompt
+            var cmd = (grepcmd ?? GrepCmd()) .. ' ' .. prompt .. ' ./'
             cmd = cmd->escape('*')
             if options.grep_echo_cmd
                 echo cmd
