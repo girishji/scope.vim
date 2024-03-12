@@ -11,8 +11,7 @@
 
 ![Demo](https://gist.githubusercontent.com/girishji/40e35cd669626212a9691140de4bd6e7/raw/6041405e45072a7fbc4e352cbd461e450a7af90e/scope-demo.gif)
 
-There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and
-[fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The core functionality is implemented in two files, totaling approximately 300 lines of code.
+There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The feature set and key mappings align closely with [nvim-telescope](https://github.com/nvim-telescope/telescope.nvim). The main guts are in just two files, totaling around 300 lines of code. It's a concise and easy-to-understand.
 
 <a href="#Writing-Your-Own-Extension">Extending the functionality</a> to perform fuzzy searches for other items is straightforward.
 
@@ -48,6 +47,14 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
 ```
 
+##### API
+
+```
+# findCmd: <string> : Command string as you'd use in a shell. If omitted, uses 'find' or 'fd' (if installed).
+# count: <number> : Maximum number of files returned.
+def File(findCmd: string = null_string, count: number = 10000)
+```
+
 ### Live Grep
 
 Unlike fuzzy search `grep`, command is executed  after each keystroke in a dedicated external job. Result updates occur every 100 milliseconds, ensuring real-time feedback. To maintain Vim's responsiveness, lengthy processes may be terminated. An ideal scenario involves launching Vim within the project directory, initiating a grep search, and iteratively refining your query until you pinpoint the desired result. Notably, when editing multiple files, you need not re-enter the grep string for each file. Refer to the note below for further details.
@@ -72,6 +79,14 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude
 
 `grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).
 
+##### API
+
+```
+# grepCmd: <string> : Command string as you'd use in a shell. If omitted, uses 'grep'.
+# ignorecase: <bool> : Strictly for syntax highlighting. Should match the option given to 'grep'.
+def Grep(grepCmd: string = '', ignorecase: bool = true)
+```
+
 ### Switch Buffer
 
 ```
@@ -88,7 +103,29 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<CR>
 ```
 
-See `autoload/scope/fuzzy.vim` for implementation.
+##### API
+
+```
+# list_all_buffers: <bool> : If 'true', include unlisted buffers as well.
+def Buffer(list_all_buffers: bool = false)
+```
+
+### Search Current Buffer
+
+Enter a word in the prompt, and it will initiate a fuzzy search within the current buffer. The prompt conveniently displays the word under the cursor (`<cword>`) or the previously searched word as virtual text. Use `<Right>` or `<PgDn>` to auto-fill and continue, or type over it.
+
+```
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
+```
+
+##### API
+
+```
+# word_under_cursor: <bool> : If 'true', put the word under cursor into the prompt always.
+def BufSearch(word_under_cursor: bool = false)
+```
 
 ### Others
 
@@ -103,15 +140,19 @@ Method|Description
 ------|-----------
 `fuzzy.CmdHistory()` | Command history
 `fuzzy.Colorscheme()` | Available color schemes
-`fuzzy.CscopeEgrep()` | egrep cscope db (`:cs find e <pat>`)
 `fuzzy.Filetype()` | File types
 `fuzzy.GitFile()` | Files under git
 `fuzzy.Help()` | Help topics
 `fuzzy.Highlight()` | Highlight groups
 `fuzzy.Keymap()` | Key mappings
 `fuzzy.MRU()` | `:h v:oldfiles`
+`fuzzy.Tag()` | Tags created through `ctags`
 `fuzzy.Tag()` | `:h ctags` search
+`fuzzy.VimAutocmd()` | Vim autocommands, go to their declaration on <cr>
 `fuzzy.VimCommand()` | Vim commands
+`fuzzy.VimMark()` | Vim marks
+`fuzzy.VimOption()` | Vim options and their values
+`fuzzy.VimRegister()` | Vim registers, paste contents on <cr>
 `fuzzy.Window()` | Open windows
 
 See `autoload/scope/fuzzy.vim` for implementation.
@@ -134,6 +175,23 @@ The search functionality encompasses four fundamental patterns:
    - For dynamic searches like live grep, the list is updated asynchronously, but exclusively with relevant items, each time the user types something.
 
 Boilerplate code for each of these patterns can be found in `autoload/scope/fuzzy.vim`. Understand how it handles the different patterns and adapt or extend it according to your use case. Everything is exported.
+
+### Key Mappings
+
+When popup window is open the following key mappings can be used.
+
+Mapping | Action
+--------|-------
+`<Right>/<PageDown>` | Page down (or activate virtual text in prompt)
+`<Left>/<PageUp>` | Page up
+`<tab>/<C-n>/<Down>/<ScrollWheelDown>` | Next item
+`<S-tab>/<C-p>/<Up>/<ScrollWheelUp>` | Previous item
+`<Esc>/<C-c>` | Close
+`<CR>` | Confirm selection
+`<C-j>` | Go to file selection in a split window
+`<C-v>` | Go to file selection in a vertical split
+`<C-t>` | Go to file selection in a tab
+`<C-r><C-w>` | Insert word under cursor (<cword>) into prompt
 
 ## Requirements
 
@@ -204,12 +262,14 @@ import autoload 'scope/popup.vim' as sp
 sp.OptionsSet({borderhighlight: ['Comment']})
 ```
 
-The `ScopeMenuMatch` highlight group modifies the appearance of characters
-searched so far and is linked to `Special` by default.
+Following highlight groups modify the content of popup window:
 
-`ScopeMenuVirtualText` is used for the virtual text in the Grep window.
+- `ScopeMenuMatch`: Modifies characters searched so far. Default: Linked to `Special`.
+- `ScopeMenuVirtualText`: Virtual text in the Grep window. Default: Linked to 'Comment'
+- `ScopeMenuSubtle`: Line number, file name, and path. Default: Linked to 'Comment'.
+- `ScopeMenuCurrent`: Special item indicating current status (used only when relevant). Default: Linked to 'Statement'.
 
-The appearance of `Grep()` function output can be modified as follows:
+Finally, the appearance of `Grep()` function output can be modified as follows:
 
 ```
 scope#fuzzy#OptionsSet({

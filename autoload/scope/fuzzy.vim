@@ -2,6 +2,7 @@ vim9script
 
 import './task.vim'
 import './popup.vim'
+import './util.vim'
 
 export var options: dict<any> = {
     grep_echo_cmd: true,
@@ -11,101 +12,23 @@ export def OptionsSet(opt: dict<any>)
     options->extend(opt)
 enddef
 
-export def FilterItems(lst: list<dict<any>>, prompt: string): list<any>
-    def PrioritizeFilename(matches: list<any>): list<any>
-        # prefer matching filenames over matching directory names
-        var filtered = [[], [], []]
-        var pat = prompt->trim()
-        for Filterfn in [(x, y) => x =~ y, (x, y) => x !~ y]
-            for [i, v] in matches[0]->items()
-                if Filterfn(v.text->fnamemodify(':t'), $'^{pat}')
-                    filtered[0]->add(matches[0][i])
-                    filtered[1]->add(matches[1][i])
-                    filtered[2]->add(matches[2][i])
-                endif
-            endfor
-        endfor
-        return filtered
-    enddef
-    if prompt->empty()
-        return [lst, [lst]]
-    else
-        var pat = prompt->trim()
-        # var matches = lst->matchfuzzypos(pat, {key: "text", limit: 1000})
-        var matches = lst->matchfuzzypos(pat, {key: "text"})
-        if matches[0]->empty() || pat =~ '\s'
-            return [lst, matches]
-        else
-            return [lst, PrioritizeFilename(matches)]
-        endif
-    endif
-enddef
-
-export def FindCmdExcludeDirs(): string
-    # exclude dirs from .config/fd/ignore and .gitignore
-    # var sep = has("win32") ? '\' : '/'
-    var excludes = []
-    var ignore_files = [getenv('HOME') .. '/.config/fd/ignore', '.gitignore']
-    for ignore in ignore_files
-        if ignore->filereadable()
-            excludes->extend(readfile(ignore)->filter((_, v) => v != '' && v !~ '^#'))
-        endif
-    endfor
-    var exclcmds = []
-    for item in excludes
-        var idx = item->strridx('/')
-        if idx == item->len() - 1
-            exclcmds->add($'-type d -path */{item}* -prune')
-        else
-            exclcmds->add($'-path */{item}/* -prune')
-        endif
-    endfor
-    var cmd = 'find . ' .. (exclcmds->empty() ? '' : exclcmds->join(' -o '))
-    return cmd .. ' -o -name *.swp -prune -o -path */.* -prune -o -type f -print -follow'
-enddef
-
-export def FindCmd(): list<any>
-    if executable('fd')
-        return 'fd -tf --follow'->split()
-    else
-        var cmd = ['find', '.']
-        for fname in ['*.zwc', '*.swp', '.DS_Store']
-            cmd->extend(['-name', fname, '-prune', '-o'])
-        endfor
-        for fname in ['.git']  # matches .git/ and .gitrc through */git*
-            cmd->extend(['-path', $'*/{fname}*', '-prune', '-o'])
-        endfor
-        for dname in ['plugged', '.zsh_sessions']
-            cmd->extend(['-type', 'd', '-path', $'*/{dname}*', '-prune', '-o'])
-        endfor
-        return cmd->extend(['-type', 'f', '-print', '-follow'])
-    endif
-enddef
-
 # fuzzy find files (build a list of files once and then fuzzy search on them)
 export def File(findCmd: string = null_string, count: number = 10000)  # list at least 10k files to search on
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new("File", [],
         (res, key) => {
-            if key == "\<C-j>"
-                exe $"split {res.text}"
-            elseif key == "\<C-v>"
-                exe $"vert split {res.text}"
-            elseif key == "\<C-t>"
-                exe $"tabe {res.text}"
-            else
-                exe $"e {res.text}"
-            endif
+            util.VisitFile(key, res.text)
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
-            hi def link ScopeMenuDirectorySubtle Comment
+            hi def link ScopeMenuSubtle Comment
+            hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
         },
-        FilterItems)
+        util.FilterItems)
 
     var job: task.AsyncCmd
     var workaround = false
-    job = task.AsyncCmd.new(findCmd == null_string ? FindCmd() : findCmd->split(),
+    job = task.AsyncCmd.new(findCmd == null_string ? util.FindCmd() : findCmd->split(),
         (items: list<string>) => {
             if menu.Closed()
                 job.Stop()
@@ -118,10 +41,10 @@ export def File(findCmd: string = null_string, count: number = 10000)  # list at
                 items_dict = [{text: ""}]
             else
                 items_dict = items->mapnew((_, v) => {
-                    return {text: v}
+                    return {text: v, cmd: 'find'}
                 })
             endif
-            if !menu.SetText(items_dict, FilterItems, count)
+            if !menu.SetText(items_dict, util.FilterItems, count)
                 job.Stop()
             endif
             if !workaround
@@ -129,10 +52,6 @@ export def File(findCmd: string = null_string, count: number = 10000)  # list at
                 workaround = true
             endif
         })
-enddef
-
-def GrepCmd(): string
-    return 'grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged'
 enddef
 
 var prev_grep = null_string
@@ -147,7 +66,7 @@ var prev_grep = null_string
 # of parsing color codes, Vim's syntax highlighting is used. As Vim lacks
 # awareness of `grep`'s ignore-case flag, explicit instruction is needed for
 # accurate highlighting.
-export def Grep(grepcmd: string = '', ignorecase: bool = true)
+export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
     var menu: popup.FilterMenu
 
     def DoGrep(prompt: string, timer: number)
@@ -164,7 +83,7 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
             echo ''
         endif
         if prompt != null_string
-            var cmd = (grepcmd ?? GrepCmd()) .. ' ' .. prompt
+            var cmd = (grepCmd ?? util.GrepCmd()) .. ' ' .. prompt
             cmd = cmd->escape('*')
             if options.grep_echo_cmd
                 echo cmd
@@ -177,7 +96,7 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
                         job.Stop()
                     endif
                     var items_dict: list<dict<any>> = items->mapnew((_, v) => {
-                        return {text: v}
+                        return {text: v, cmd: 'grep'}
                     })
                     if !menu.SetText(items_dict,
                             (_, _): list<any> => {
@@ -200,23 +119,16 @@ export def Grep(grepcmd: string = '', ignorecase: bool = true)
 
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
-            var fl = res.text->split()[0]->split(':')
-            if key == "\<C-j>"
-                exe $"split +{fl[1]} {fl[0]}"
-            elseif key == "\<C-v>"
-                exe $"vert split +{fl[1]} {fl[0]}"
-            elseif key == "\<C-t>"
-                exe $"tabe +{fl[1]} {fl[0]}"
-            else
-                exe $":e +{fl[1]} {fl[0]}"
-            endif
+            var frags = res.text->split()[0]->split(':')
+            util.VisitFile(key, frags[0], frags[1])
         },
         (id, idp) => {
             win_execute(id, $"syn match ScopeMenuFilenameSubtle \".*:\\d\\+:\"")
             # note: it is expensive to regex match. even though following pattern
             #   is more accurate vim throws 'redrawtime exceeded' and stops
             # win_execute(menu.id, $"syn match FilterMenuMatch \"[^:]\\+:\\d\\+:\"")
-            hi def link ScopeMenuFilenameSubtle Comment
+            hi def link ScopeMenuSubtle Comment
+            hi def link ScopeMenuFilenameSubtle ScopeMenuSubtle
             if prev_grep != null_string
                 idp->popup_settext($'{popup.options.promptchar} {prev_grep}')
                 idp->clearmatches()
@@ -266,12 +178,12 @@ export def Buffer(list_all_buffers: bool = false)
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
-            hi def link ScopeMenuDirectorySubtle Comment
+            hi def link ScopeMenuSubtle Comment
+            hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
         },
-        FilterItems)
+        util.FilterItems)
 enddef
 
-# export def DoVimItems(title: string, cmd: string, GetItemsFn: function(string): list<string>)
 export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list<string>)
     var menu: popup.FilterMenu
 
@@ -285,9 +197,14 @@ export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list
         win_execute(menu.id, "syn clear ScopeMenuMatch")
         var items_dict: list<dict<any>> = []
         if prompt != null_string
-            items_dict = GetItemsFn(prompt)->mapnew((_, v) => {
-                return {text: v}
+            try
+                items_dict = GetItemsFn(prompt)->mapnew((_, v) => {
+                    return {text: v}
                 })
+            catch
+                echo 'Scope.vim exception' v:exception
+                return
+            endtry
             menu.SetText(items_dict,
                 (_, _): list<any> => {
                 return [items_dict, [items_dict]]
@@ -297,16 +214,29 @@ export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list
         endif
     enddef
 
+    def ExecCmd(key: string, tag: string, t: number)
+        if cmd == 'tag'
+            try
+                exe $"{cmd} {tag}"
+            catch  # :tag command throws E1050 (vim bug)
+            endtry
+        else
+            if key == "\<c-t>"
+                exe $"tab {cmd} {tag}"
+            elseif key == "\<c-v>"
+                exe $"vert {cmd} {tag}"
+            else
+                exe $"{cmd} {tag}"
+            endif
+        endif
+    enddef
+
     menu = popup.FilterMenu.new(title, [],
         (res, key) => {
-            if key == "\<c-t>"
-                exe $":tab {cmd} {res.text}"
-            elseif key == "\<c-v>"
-                exe $":vert {cmd} {res.text}"
-            else
-                echom $":{cmd} {res.text}"
-                exe $":{cmd} {res.text}"
-            endif
+            # when callback function is called in popup, the window and assciated buffer
+            # are not yet deleted, and it is visible when ':tag' is called, which
+            # opens a dialog split window. put this in a timer to let popup close.
+            timer_start(1, function(ExecCmd, [key, res.text]))
         },
         null_function,
         (lst: list<dict<any>>, prompt: string): list<any> => {
@@ -315,30 +245,12 @@ export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list
         }, null_function, true)
 enddef
 
-def GetCompletionItems(s: string, type: string): list<string>
-    var saved = &wildoptions
-    var items: list<string> = []
-    try
-        :set wildoptions=fuzzy
-        items = getcompletion(s, type)
-    finally
-        exe $'set wildoptions={saved}'
-    endtry
-    return items
-enddef
-
 export def Help()
-    DoVimItems('Help', 'help', (p: string) => GetCompletionItems(p, 'help'))
+    DoVimItems('Help', 'help', (p: string): list<string> => util.GetCompletionItems(p, 'help'))
 enddef
 
 export def Tag()
-    DoVimItems('Tag', 'tag', (p: string) => GetCompletionItems(p, 'tag'))
-enddef
-
-export def CscopeEgrep()
-    DoVimItems('Cscope egrep', 'edit', (p: string) => {
-        return execute($'cscope find e {p}')->split("\n")
-       })
+    DoVimItems('Tag', 'tag', (p: string): list<string> => util.GetCompletionItems(p, 'tag'))
 enddef
 
 export def VimCommand()
@@ -357,7 +269,8 @@ export def Keymap()
     })
     popup.FilterMenu.new("Keymap", items,
         (res, key) => {
-            })
+            echo res.text
+        })
 enddef
 
 export def MRU()
@@ -374,19 +287,12 @@ export def MRU()
     })
     popup.FilterMenu.new("MRU", mru,
         (res, key) => {
-            if key == "\<c-t>"
-                exe $":tabe {res.text}"
-            elseif key == "\<c-j>"
-                exe $":split {res.text}"
-            elseif key == "\<c-v>"
-                exe $":vert split {res.text}"
-            else
-                exe $":e {res.text}"
-            endif
+            util.VisitFile(key, res.text)
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
-            hi def link ScopeMenuDirectorySubtle Comment
+            hi def link ScopeMenuSubtle Comment
+            hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
         })
 enddef
 
@@ -421,25 +327,53 @@ export def Template()
         })
 enddef
 
-export def JumpToWord()
-    var word = expand("<cword>")
-    if empty(trim(word)) | return | endif
+var prev_bufsearch = null_string
+
+export def BufSearch(word_under_cursor: bool = false)
+    if prev_bufsearch == null_string || word_under_cursor
+        prev_bufsearch = expand("<cword>")->trim()
+    endif
     var lines = []
     for nr in range(1, line('$'))
         var line = getline(nr)
-        if line->stridx(word) > -1
-            lines->add({text: $"{line} ({nr})", linenr: nr})
-        endif
+        lines->add({text: $"{line} ({nr})", line: line, linenr: nr})
     endfor
-    popup.FilterMenu.new($'Jump to "{word}"', lines,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new($'Search', lines,
         (res, key) => {
-            exe $":{res.linenr}"
-            normal! zz
+            if key == "\<C-q>"
+                echo 'here'
+            else
+                exe $":{res.linenr}"
+                if menu.prompt != null_string
+                    var m = matchfuzzypos([res.line], menu.prompt)
+                    if m[1]->len() > 0 && m[1][0]->len() > 0
+                        setcharpos('.', [0, res.linenr, m[1][0][0] + 1])
+                    endif
+                endif
+                normal! zz
+                prev_bufsearch = menu.prompt
+            endif
         },
-        (winid, _) => {
+        (winid, idp) => {
             win_execute(winid, 'syn match ScopeMenuLineNr "(\d\+)$"')
-            hi def link ScopeMenuLineNr Comment
-        })
+            hi def link ScopeMenuLineNr ScopeMenuSubtle
+            hi def link ScopeMenuSubtle Comment
+            if prev_bufsearch != null_string
+                idp->popup_settext($'{popup.options.promptchar} {prev_bufsearch}')
+                idp->clearmatches()
+                matchaddpos('ScopeMenuCursor', [[1, 3]], 10, -1, {window: idp})
+                matchaddpos('ScopeMenuVirtualText', [[1, 4, 999]], 10, -1, {window: idp})
+            endif
+        },
+        (lst: list<dict<any>>, ctx: string): list<any> => {
+            if ctx->empty()
+                return [lst, [lst]]
+            else
+                var filtered = lst->matchfuzzypos(ctx, {key: "line"})
+                return [lst, filtered]
+            endif
+        }, null_function, true)
 enddef
 
 export def GitFile(path: string = "")
@@ -451,19 +385,12 @@ export def GitFile(path: string = "")
     })
     popup.FilterMenu.new("Git File", git_files,
         (res, key) => {
-            if key == "\<c-t>"
-                exe $":tabe {path_e}{res.text}"
-            elseif key == "\<c-j>"
-                exe $":split {path_e}{res.text}"
-            elseif key == "\<c-v>"
-                exe $":vert split {path_e}{res.text}"
-            else
-                exe $":e {path_e}{res.text}"
-            endif
+            util.VisitFile(key, $'{path_e}{res.text}')
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
-            hi def link ScopeMenuDirectorySubtle Comment
+            hi def link ScopeMenuSubtle Comment
+            hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
         })
 enddef
 
@@ -521,7 +448,8 @@ export def Highlight()
         },
         (winid, _) => {
             win_execute(winid, 'syn match ScopeMenuHiLinksTo "\(links to\)\|\(cleared\)"')
-            hi def link ScopeMenuHiLinksTo Comment
+            hi def link ScopeMenuHiLinksTo ScopeMenuSubtle
+            hi def link ScopeMenuSubtle Comment
             for h in hl
                 win_execute(winid, $'syn match {h.name} "^xxx\ze {h.name}\>"')
             endfor
@@ -560,8 +488,99 @@ export def Window()
             win_execute(winid, 'syn match ScopeMenuCurrent "^\*(.\{-}):.*(\d\+)$" contains=ScopeMenuBraces')
             win_execute(winid, 'syn match ScopeMenuBraces "(\d\+)$" contained')
             win_execute(winid, 'syn match ScopeMenuBraces "^[* ](.\{-}):" contained')
-            hi def link ScopeMenuBraces Comment
+            hi def link ScopeMenuSubtle Comment
+            hi def link ScopeMenuBraces ScopeMenuSubtle
             hi def link ScopeMenuCurrent Statement
+        })
+enddef
+
+# both local and global marks displayed
+export def VimMark()
+    var marks = 'marks'->execute()->split("\n")->slice(1)
+    var marks_dict = marks->mapnew((_, v) => {
+        return {text: v}
+    })
+    popup.FilterMenu.new("Mark (mark:line:col:file/text)", marks_dict,
+        (res, key) => {
+            var mark = (res.text)->matchstr('\v^\s*\zs\S+')
+            if key == "\<c-t>"
+                :tabe
+            elseif key == "\<c-j>"
+                :split
+            elseif key == "\<c-v>"
+                :vert split
+            endif
+            exe $"normal! '{mark}"
+        },
+        (winid, _) => {
+            win_execute(winid, "syn match ScopeMenuSubtle '^\\s*\\S\\+\\s*\\zs\\S\\+\\s\\+\\S\\+\\ze.*'")
+            hi def link ScopeMenuSubtle Comment
+        })
+enddef
+
+export def VimRegister()
+    var registers = 'registers'->execute()->split("\n")->slice(1)
+    var registers_dict = registers->mapnew((_, v) => {
+        return {text: v}
+    })
+    popup.FilterMenu.new("Register (Type:Name:Content)", registers_dict,
+        (res, key) => {
+            var reg = (res.text)->matchstr('\v^\s*\S+\s+\zs\S+')
+            exe $'normal! {reg}p'
+        },
+        (winid, _) => {
+            win_execute(winid, "syn match ScopeMenuSubtle '^\\s*\\S\\+\\ze.*'")
+            hi def link ScopeMenuSubtle Comment
+        })
+enddef
+
+export def VimOption()
+    var opts = getcompletion('', 'option')
+    opts->filter((_, v) => exists($'&{v}'))
+    var maxlen = opts->mapnew((_, v) => v->len())->max() + 2
+    var options_dict = opts->mapnew((_, v) => {
+        var optval = $'&{v}'->eval()
+        return {text: printf($"%-{maxlen}s %s", v, optval), opt: v, val: optval}
+    })
+    popup.FilterMenu.new("Option", options_dict,
+        (res, key) => {
+            echo $':setlocal {res.opt}={res.val}'
+        },
+        (winid, _) => {
+            win_execute(winid, "syn match ScopeMenuSubtle '^\\s*\\S\\+\\zs.*'")
+            hi def link ScopeMenuSubtle Comment
+        },
+        (lst: list<dict<any>>, ctx: string): list<any> => {
+            if ctx->empty()
+                return [lst, [lst]]
+            else
+                var filtered = lst->matchfuzzypos(ctx, {key: "opt"})
+                return [lst, filtered]
+            endif
+        })
+enddef
+
+export def VimAutocmd()
+    var aucmds = autocmd_get()
+    var maxevtlen = aucmds->mapnew((_, v) => v->get('event', '')->len())->max()
+    var aucmds_dict = aucmds->mapnew((_, v) => {
+        var text = printf($"%-{maxevtlen}s %-15s %-20s %s",
+            v->get('group', ''), v->get('event', ''), v->get('pattern', ''),
+            v->get('cmd', ''))
+        return {text: text, data: v}
+    })
+    popup.FilterMenu.new("Option", aucmds_dict,
+        (res, key) => {
+            var rd = res.data
+            var lines = execute($"verbose au {rd->get('group', '')} {rd->get('event', '')} {rd->get('pattern', '')}")->split("\n")
+            for line in lines
+                var m = line->matchlist('\v\s*Last set from (.+) line (\d+)')
+                if !m->empty() && m[1] != null_string && m[2] != null_string
+                    util.VisitFile(key, m[1], str2nr(m[2]))
+                    return
+                endif
+            endfor
+            echom lines->slice(1)->join(' | ')
         })
 enddef
 
