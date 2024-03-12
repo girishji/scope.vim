@@ -280,7 +280,7 @@ export def Keymap()
     })
     popup.FilterMenu.new("Keymap", items,
         (res, key) => {
-            var m = res.text->matchlist('\v^(\a)\s+(\S+)')
+            var m = res.text->matchlist('\v^(\a)?\s+(\S+)')
             if m->len() > 2
                 var cmd = $'verbose {m[1]}map {m[2]}'
                 if !util.VisitDeclaration(key, cmd)
