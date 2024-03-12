@@ -120,7 +120,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
             var frags = res.text->split()[0]->split(':')
-            util.VisitFile(key, frags[0], frags[1])
+            util.VisitFile(key, frags[0], str2nr(frags[1]))
         },
         (id, idp) => {
             win_execute(id, $"syn match ScopeMenuFilenameSubtle \".*:\\d\\+:\"")
