@@ -75,6 +75,10 @@ Define your own grep command:
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
+# ripgrep (place excluded paths in ~/.rgignore)
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<CR>
+# silvergrep
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<CR>
 ```
 
 `grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).

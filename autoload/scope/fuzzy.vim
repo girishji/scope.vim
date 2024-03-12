@@ -83,7 +83,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
             echo ''
         endif
         if prompt != null_string
-            var cmd = (grepCmd ?? util.GrepCmd()) .. ' ' .. prompt .. ' ./'
+            var cmd = (grepCmd == null_string) ? $'{util.GrepCmd()} {prompt}' : $'{grepCmd} {prompt} ./'
             cmd = cmd->escape('*')
             if options.grep_echo_cmd
                 echo cmd
@@ -120,7 +120,11 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
             var frags = res.text->split()[0]->split(':')
-            util.VisitFile(key, frags[0], str2nr(frags[1]))
+            if frags->len() > 2
+                util.VisitFile(key, frags[0], str2nr(frags[1]))
+            else
+                echoerr 'Incompatible:' res.text
+            endif
         },
         (id, idp) => {
             win_execute(id, $"syn match ScopeMenuFilenameSubtle \".*:\\d\\+:\"")
