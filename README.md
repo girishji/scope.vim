@@ -265,9 +265,9 @@ sp.OptionsSet({borderhighlight: ['Comment']})
 Following highlight groups modify the content of popup window:
 
 - `ScopeMenuMatch`: Modifies characters searched so far. Default: Linked to `Special`.
-- `ScopeMenuVirtualText`: Virtual text in the Grep window. Default: Linked to 'Comment'
-- `ScopeMenuSubtle`: Line number, file name, and path. Default: Linked to 'Comment'.
-- `ScopeMenuCurrent`: Special item indicating current status (used only when relevant). Default: Linked to 'Statement'.
+- `ScopeMenuVirtualText`: Virtual text in the Grep window. Default: Linked to `Comment`.
+- `ScopeMenuSubtle`: Line number, file name, and path. Default: Linked to `Comment`.
+- `ScopeMenuCurrent`: Special item indicating current status (used only when relevant). Default: Linked to `Statement`.
 
 Finally, the appearance of `Grep()` function output can be modified as follows:
 
