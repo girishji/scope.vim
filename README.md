@@ -148,11 +148,11 @@ Method|Description
 `fuzzy.Keymap()` | Key mappings
 `fuzzy.MRU()` | `:h v:oldfiles`
 `fuzzy.Tag()` | `:h ctags` search
-`fuzzy.VimAutocmd()` | Vim autocommands, go to their declaration on <cr>
+`fuzzy.VimAutocmd()` | Vim autocommands, go to their declaration on `<cr>`
 `fuzzy.VimCommand()` | Vim commands
 `fuzzy.VimMark()` | Vim marks
 `fuzzy.VimOption()` | Vim options and their values
-`fuzzy.VimRegister()` | Vim registers, paste contents on <cr>
+`fuzzy.VimRegister()` | Vim registers, paste contents on `<cr>`
 `fuzzy.Window()` | Open windows
 
 See `autoload/scope/fuzzy.vim` for implementation.
