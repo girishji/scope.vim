@@ -83,7 +83,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
             echo ''
         endif
         if prompt != null_string
-            var cmd = (grepCmd ?? util.GrepCmd()) .. ' ' .. prompt
+            var cmd = (grepCmd ?? util.GrepCmd()) .. ' ' .. prompt .. ' ./'
             cmd = cmd->escape('*')
             if options.grep_echo_cmd
                 echo cmd
