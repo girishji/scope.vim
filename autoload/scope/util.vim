@@ -82,7 +82,7 @@ export def FindCmdExcludeDirs(): string
 enddef
 
 export def GrepCmd(): string
-    return 'grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged'
+    return 'grep --color=never -REIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged'
 enddef
 
 export def GetCompletionItems(s: string, type: string): list<string>

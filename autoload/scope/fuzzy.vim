@@ -54,7 +54,6 @@ export def File(findCmd: string = null_string, count: number = 10000)  # list at
         })
 enddef
 
-
 var prev_grep = null_string
 
 # live grep, not fuzzy search.
