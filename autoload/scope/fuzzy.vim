@@ -280,7 +280,13 @@ export def Keymap()
     })
     popup.FilterMenu.new("Keymap", items,
         (res, key) => {
-            echo res.text
+            var m = res.text->matchlist('\v^(\a)\s+(\S+)')
+            if m->len() > 2
+                var cmd = $'verbose {m[1]}map {m[2]}'
+                if !util.VisitDeclaration(key, cmd)
+                    echom res.text
+                endif
+            endif
         })
 enddef
 
@@ -588,15 +594,10 @@ export def Autocmd()
     popup.FilterMenu.new("Option", aucmds_dict,
         (res, key) => {
             var rd = res.data
-            var lines = execute($"verbose au {rd->get('group', '')} {rd->get('event', '')} {rd->get('pattern', '')}")->split("\n")
-            for line in lines
-                var m = line->matchlist('\v\s*Last set from (.+) line (\d+)')
-                if !m->empty() && m[1] != null_string && m[2] != null_string
-                    util.VisitFile(key, m[1], str2nr(m[2]))
-                    return
-                endif
-            endfor
-            echom lines->slice(1)->join(' | ')
+            var cmd = $"verbose au {rd->get('group', '')} {rd->get('event', '')} {rd->get('pattern', '')}"
+            if !util.VisitDeclaration(key, cmd)
+                echom execute(cmd)->split("\n")->slice(1)->join(' | ')
+            endif
         })
 enddef
 

@@ -96,3 +96,15 @@ export def GetCompletionItems(s: string, type: string): list<string>
     endtry
     return items
 enddef
+
+export def VisitDeclaration(key: string, cmd: string): bool
+    var lines = execute(cmd)->split("\n")
+    for line in lines
+        var m = line->matchlist('\v\s*Last set from (.+) line (\d+)')
+        if !m->empty() && m[1] != null_string && m[2] != null_string
+            VisitFile(key, m[1], str2nr(m[2]))
+            return true
+        endif
+    endfor
+    return false
+enddef

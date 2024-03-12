@@ -149,7 +149,7 @@ Method|Description
 `fuzzy.GitFile()` | Files under git
 `fuzzy.Help()` | Help topics
 `fuzzy.Highlight()` | Highlight groups
-`fuzzy.Keymap()` | Key mappings
+`fuzzy.Keymap()` | Key mappings, to to their declaration on `<cr>`
 `fuzzy.MRU()` | `:h v:oldfiles`
 `fuzzy.Tag()` | `:h ctags` search
 `fuzzy.Autocmd()` | Vim autocommands, go to their declaration on `<cr>`
