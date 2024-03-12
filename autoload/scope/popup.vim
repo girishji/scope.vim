@@ -109,6 +109,7 @@ export class FilterMenu
         # this sequence of bytes are generated when left/right mouse is pressed and
         # mouse wheel is rolled
         var ignore_input_wtf = [128, 253, 100]
+        var ctrl_r_active = false
 
         this.idp = popup_create([$'{options.promptchar}  '],
             this._CommonProps(options.bordercharsp, pos_top, 1)->extend({
@@ -120,6 +121,11 @@ export class FilterMenu
             this._CommonProps(options.borderchars, pos_top + 3, height)->extend({
                 border: [0, 1, 1, 1],
                 filter: (id, key) => {
+                    if key == "\<C-r>"
+                        ctrl_r_active = true
+                    elseif key != "\<C-w>"
+                        ctrl_r_active = false
+                    endif
                     items_count = this.items_dict->len()
                     if key == "\<esc>"
                         popup_close(this.idp, -1)
@@ -127,7 +133,7 @@ export class FilterMenu
                         if Cleanup != null_function
                             Cleanup()
                         endif
-                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>"]->index(key) > -1
+                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>", "\<C-q>"]->index(key) > -1
                         popup_close(this.idp, -1)
                         if this.filtered_items[0]->len() > 0 && items_count > 0
                             popup_close(id, {idx: getcurpos(id)[1], key: key})
@@ -175,6 +181,11 @@ export class FilterMenu
                             endif
                         elseif key =~ '\p'
                             this.prompt = this.prompt .. key
+                        elseif key == "\<C-w>"
+                            if ctrl_r_active
+                                this.prompt = this.prompt .. expand("<cword>")->trim()
+                            endif
+                            ctrl_r_active = false
                         endif
                         var GetFilteredItemsFn = GetFilteredItems == null_function ? this._GetFilteredItems : GetFilteredItems
                         [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
