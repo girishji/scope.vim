@@ -31,7 +31,7 @@ export class AsyncCmd
             close_cb: (ch) =>  CallbackFn(items),
             err_cb: (chan: channel, msg: string) => {
                 # ignore errors
-                # :echohl ErrorMsg | echoerr $'error: {msg} from {cmd}' | echohl None
+                :echohl ErrorMsg | echoerr $'error: {msg} from {cmd}' | echohl None
             },
         }->extend(env != null_dict ? {env: env} : {}))
     enddef

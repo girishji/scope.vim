@@ -345,7 +345,12 @@ export def BufSearch(word_under_cursor: bool = false, recall: bool = true)
     menu = popup.FilterMenu.new($'Search', lines,
         (res, key) => {
             if key == "\<C-q>"
-                echo 'here'
+                if !menu.filtered_items[0]->empty()
+                    var items = menu.filtered_items[0]->mapnew((_, v) => {
+                        return {bufnr: bufnr(), lnum: v.linenr, text: v.line}
+                    })
+                    setqflist([], 'r', {items: items})
+                endif
             else
                 exe $":{res.linenr}"
                 if menu.prompt != null_string
