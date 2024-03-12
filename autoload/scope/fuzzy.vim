@@ -83,7 +83,11 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
             echo ''
         endif
         if prompt != null_string
-            var cmd = (grepCmd == null_string) ? $'{util.GrepCmd()} {prompt}' : $'{grepCmd} {prompt} ./'
+            var cmd = $'{grepCmd ?? util.GrepCmd()} {prompt}'
+            if grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
+                # 'rg' needs a './' at the end
+                cmd = $'{cmd} ./'
+            endif
             cmd = cmd->escape('*')
             if options.grep_echo_cmd
                 echo cmd
