@@ -329,7 +329,7 @@ enddef
 
 var prev_bufsearch = null_string
 
-export def BufSearch(word_under_cursor: bool = false)
+export def BufSearch(word_under_cursor: bool = false, recall: bool = true)
     if prev_bufsearch == null_string || word_under_cursor
         prev_bufsearch = expand("<cword>")->trim()
     endif
@@ -359,7 +359,7 @@ export def BufSearch(word_under_cursor: bool = false)
             win_execute(winid, 'syn match ScopeMenuLineNr "(\d\+)$"')
             hi def link ScopeMenuLineNr ScopeMenuSubtle
             hi def link ScopeMenuSubtle Comment
-            if prev_bufsearch != null_string
+            if recall && prev_bufsearch != null_string
                 idp->popup_settext($'{popup.options.promptchar} {prev_bufsearch}')
                 idp->clearmatches()
                 matchaddpos('ScopeMenuCursor', [[1, 3]], 10, -1, {window: idp})

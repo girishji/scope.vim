@@ -123,8 +123,9 @@ nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
 ##### API
 
 ```
-# word_under_cursor: <bool> : If 'true', put the word under cursor into the prompt always.
-def BufSearch(word_under_cursor: bool = false)
+# word_under_cursor: <bool> : Put the word under cursor (<cword>) into the prompt always.
+# recall: <bool> : Put previously searched word or <cword> into the prompt.
+def BufSearch(word_under_cursor: bool = false, recall: bool = true)
 ```
 
 ### Others
@@ -146,7 +147,6 @@ Method|Description
 `fuzzy.Highlight()` | Highlight groups
 `fuzzy.Keymap()` | Key mappings
 `fuzzy.MRU()` | `:h v:oldfiles`
-`fuzzy.Tag()` | Tags created through `ctags`
 `fuzzy.Tag()` | `:h ctags` search
 `fuzzy.VimAutocmd()` | Vim autocommands, go to their declaration on <cr>
 `fuzzy.VimCommand()` | Vim commands
@@ -182,7 +182,7 @@ When popup window is open the following key mappings can be used.
 
 Mapping | Action
 --------|-------
-`<Right>/<PageDown>` | Page down (or activate virtual text in prompt)
+`<Right>/<PageDown>` | Page down
 `<Left>/<PageUp>` | Page up
 `<tab>/<C-n>/<Down>/<ScrollWheelDown>` | Next item
 `<S-tab>/<C-p>/<Up>/<ScrollWheelUp>` | Previous item
