@@ -253,7 +253,7 @@ export def Tag()
     DoVimItems('Tag', 'tag', (p: string): list<string> => util.GetCompletionItems(p, 'tag'))
 enddef
 
-export def VimCommand()
+export def Command()
     var cmds = getcompletion('', 'command')->mapnew((_, v) => {
         return {text: v}
     })
@@ -261,6 +261,9 @@ export def VimCommand()
         (res, key) => {
             exe $":{res.text}"
         })
+enddef
+export def VimCommand()
+    Command()
 enddef
 
 export def Keymap()
@@ -495,7 +498,7 @@ export def Window()
 enddef
 
 # both local and global marks displayed
-export def VimMark()
+export def Mark()
     var marks = 'marks'->execute()->split("\n")->slice(1)
     var marks_dict = marks->mapnew((_, v) => {
         return {text: v}
@@ -518,7 +521,7 @@ export def VimMark()
         })
 enddef
 
-export def VimRegister()
+export def Register()
     var registers = 'registers'->execute()->split("\n")->slice(1)
     var registers_dict = registers->mapnew((_, v) => {
         return {text: v}
@@ -534,7 +537,7 @@ export def VimRegister()
         })
 enddef
 
-export def VimOption()
+export def Option()
     var opts = getcompletion('', 'option')
     opts->filter((_, v) => exists($'&{v}'))
     var maxlen = opts->mapnew((_, v) => v->len())->max() + 2
@@ -560,7 +563,7 @@ export def VimOption()
         })
 enddef
 
-export def VimAutocmd()
+export def Autocmd()
     var aucmds = autocmd_get()
     var maxevtlen = aucmds->mapnew((_, v) => v->get('event', '')->len())->max()
     var aucmds_dict = aucmds->mapnew((_, v) => {
