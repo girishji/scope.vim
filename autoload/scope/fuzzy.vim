@@ -6,6 +6,10 @@ import './util.vim'
 
 export var options: dict<any> = {
     grep_echo_cmd: true,
+    grep_throttle_len: 3,
+    grep_skip_len: 0,
+    grep_poll_interval: 20,
+    timer_delay: 20,
 }
 
 export def OptionsSet(opt: dict<any>)
@@ -57,6 +61,7 @@ enddef
 var prev_grep = null_string
 
 # live grep, not fuzzy search.
+#
 # `ignorecase` argument ensures case-insensitive text highlighting in the popup
 # window. Incorporating colored `grep` output into Vim is a challenge. Instead
 # of parsing color codes, Vim's syntax highlighting is used. As Vim lacks
@@ -64,13 +69,17 @@ var prev_grep = null_string
 # accurate highlighting.
 export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
     var menu: popup.FilterMenu
+    var timer_delay = max([1, options.timer_delay])
+    var grep_poll_interval = max([10, options.grep_poll_interval])
+    var grep_throttle_len = max([0, options.grep_throttle_len])
+    var grep_skip_len = max([0, options.grep_skip_len])
 
     def DoGrep(prompt: string, timer: number)
         # during pasting from clipboard to prompt window, spawning a new job for
         # every character input causes hiccups. return the control back to Vim's
         # main loop and let typehead catch up.
         if menu.prompt != prompt
-            timer_start(1, function(DoGrep, [menu.prompt]))
+            timer_start(timer_delay, function(DoGrep, [menu.prompt]))
             return
         endif
         prev_grep = prompt
@@ -78,14 +87,13 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
         if options.grep_echo_cmd
             echo ''
         endif
-        if prompt != null_string
-            # if escape char is being typed, do not execute grep
-            if prompt[-1 : -1] == '\'
-                return
-            endif
-            # 'grep' requires some characters escaped (not tested for 'rg', 'ug', and 'ag')
+        if prompt == null_string
+            menu.SetText([])
+        elseif prompt->len() > grep_skip_len
+            # 'grep' requires some characters to be escaped (not tested for 'rg', 'ug', and 'ag')
             var prompt_escaped = prompt->substitute('\[', '\\\\\\[', 'g')
             prompt_escaped = prompt_escaped->substitute('\([ "]\)', '\\\1', 'g')
+            prompt_escaped = prompt_escaped->substitute('\\', '\\\\\\\', 'g')
             prompt_escaped = prompt_escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
 
             var cmd = $'{grepCmd ?? util.GrepCmd()} {prompt_escaped}'
@@ -100,7 +108,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
             var job: task.AsyncCmd
             job = task.AsyncCmd.new(cmd,
                 (items: list<string>) => {
-                    if menu.Closed()
+                    if menu.prompt->len() <= grep_throttle_len || menu.Closed()
                         job.Stop()
                     endif
                     var items_dict: list<dict<any>> = items->mapnew((_, v) => {
@@ -112,7 +120,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
                             }, 100)  # max 100 items, and then kill the job
                         job.Stop()
                     endif
-                })
+                }, grep_poll_interval)
             var pat = util.Escape4Highlight(prompt)
             try
                 if ignorecase
@@ -121,7 +129,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
                     win_execute(menu.id, $"syn match ScopeMenuMatch \"{pat}\"")
                 endif
             catch
-                # suppress rogue exceptions. this is just syntax highlighting
+                # ignore any rogue exceptions. all special chars have been escaped though.
             endtry
         endif
     enddef
@@ -151,7 +159,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
         },
         (lst: list<dict<any>>, prompt: string): list<any> => {
             # This function is called everytime when user types something
-            timer_start(1, function(DoGrep, [prompt]))
+            timer_start(timer_delay, function(DoGrep, [prompt]))
             return [[], [[]]]
         },
         () => {
@@ -199,12 +207,13 @@ enddef
 
 export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list<string>)
     var menu: popup.FilterMenu
+    var timer_delay = options.timer_delay
 
     def DoCompletionItems(prompt: string, timer: number)
         if menu.prompt != prompt
             # to avoid hiccups when pasting from clipboard, return the control back to Vim's
             # main loop and let typehead catch up.
-            timer_start(1, function(DoCompletionItems, [menu.prompt]))
+            timer_start(timer_delay, function(DoCompletionItems, [menu.prompt]))
             return
         endif
         win_execute(menu.id, "syn clear ScopeMenuMatch")
@@ -252,11 +261,11 @@ export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list
             # when callback function is called in popup, the window and assciated buffer
             # are not yet deleted, and it is visible when ':tag' is called, which
             # opens a dialog split window. put this in a timer to let popup close.
-            timer_start(1, function(ExecCmd, [key, res.text]))
+            timer_start(timer_delay, function(ExecCmd, [key, res.text]))
         },
         null_function,
         (lst: list<dict<any>>, prompt: string): list<any> => {
-            timer_start(1, function(DoCompletionItems, [menu.prompt]))
+            timer_start(timer_delay, function(DoCompletionItems, [menu.prompt]))
             return [[], [[]]]
         }, null_function, true)
 enddef

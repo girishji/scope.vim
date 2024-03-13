@@ -9,7 +9,7 @@ export class AsyncCmd
         endif
     enddef
 
-    def new(cmd: any, CallbackFn: func(list<string>), env: dict<any> = null_dict)
+    def new(cmd: any, CallbackFn: func(list<string>), poll_interval: number = 100, env: dict<any> = null_dict)
         # ch_logfile('/tmp/channellog', 'w')
         # ch_log('BuildItemsList call')
         var items = []
@@ -20,17 +20,16 @@ export class AsyncCmd
         var start = reltime()
         this.job = job_start(cmd, {
             out_cb: (ch, str) => {
-                # out_cb is invoked when channel reads 1 line; if you don't care
+                # out_cb is invoked when channel reads a line; if you don't care
                 # about intermediate output use close_cb
                 items->add(str)
-                if start->reltime()->reltimefloat() * 1000 > 100 # update every 100ms
+                if start->reltime()->reltimefloat() * 1000 > poll_interval
                     CallbackFn(items)
                     start = reltime()
                 endif
             },
             close_cb: (ch) =>  CallbackFn(items),
             err_cb: (chan: channel, msg: string) => {
-                # ignore errors
                 :echohl ErrorMsg | echoerr $'error: {msg} from {cmd}' | echohl None
             },
         }->extend(env != null_dict ? {env: env} : {}))

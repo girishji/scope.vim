@@ -91,6 +91,37 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<CR>
 def Grep(grepCmd: string = '', ignorecase: bool = true)
 ```
 
+To optimize responsiveness, consider fine-tuning `Grep()` settings, particularly for larger projects and slower systems. For instance, adjusting `timer_delay` to a higher value can help alleviate jitteriness during fast typing or clipboard pasting. Additionally, `grep_poll_interval` dictates the initial responsiveness of the prompt for the first few typed characters.
+
+Here's a breakdown of available options:
+
+| Option             | Type    | Description
+|--------------------|---------|------------
+| grep_poll_interval | number  | Controls how frequently the pipe (of spawned job) is checked and results are displayed. Specified in milliseconds. Default: 20.
+| timer_delay        | number  | Delay (in milliseconds) before executing the grep command. Default: 20.
+| grep_throttle_len  | number  | Grep command is terminated after `grep_poll_interval` if the typed characters are below this threshold. Default: 3.
+| grep_skip_len      | number  | Specifies the minimum number of characters required to invoke the grep command. Default: 0.
+| grep_echo_cmd      | boolean | Determines whether to display the grep command string on the command line. Default: `true`.
+
+To optimize performance, adjust these options accordingly:
+
+```
+scope#fuzzy#OptionsSet({
+    grep_echo_cmd: false,
+    ...
+})
+```
+
+or
+
+```
+import autoload 'scope/fuzzy.vim'
+fuzzy.OptionsSet({
+    grep_echo_cmd: false,
+    ...
+})
+```
+
 ### Switch Buffer
 
 ```
@@ -272,23 +303,6 @@ Following highlight groups modify the content of popup window:
 - `ScopeMenuVirtualText`: Virtual text in the Grep window. Default: Linked to `Comment`.
 - `ScopeMenuSubtle`: Line number, file name, and path. Default: Linked to `Comment`.
 - `ScopeMenuCurrent`: Special item indicating current status (used only when relevant). Default: Linked to `Statement`.
-
-Finally, the appearance of `Grep()` function output can be modified as follows:
-
-```
-scope#fuzzy#OptionsSet({
-    grep_echo_cmd: true, # whether to display the grep command string on the command line
-})
-```
-
-or
-
-```
-import autoload 'scope/fuzzy.vim'
-fuzzy.OptionsSet({
-    grep_echo_cmd: true, # whether to display the grep command string on the command line
-})
-```
 
 ## Credits
 
