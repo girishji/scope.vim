@@ -124,7 +124,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
             var frags = res.text->split()[0]->split(':')
-            if frags->len() > 2
+            if frags->len() >= 2
                 util.VisitFile(key, frags[0], str2nr(frags[1]))
             else
                 echoerr 'Incompatible:' res.text
