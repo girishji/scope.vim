@@ -83,12 +83,20 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
             echo ''
         endif
         if prompt != null_string
-            var cmd = $'{grepCmd ?? util.GrepCmd()} {prompt}'
-            if grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
+            # if escape char is being typed, do not execute grep
+            if prompt[-1 : -1] == '\'
+                return
+            endif
+            # 'grep' requires some characters escaped (not tested for 'rg', 'ug', and 'ag')
+            var prompt_escaped = prompt->substitute('\[', '\\\\\\[', 'g')
+            prompt_escaped = prompt_escaped->substitute('\([ "]\)', '\\\1', 'g')
+            prompt_escaped = prompt_escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
+
+            var cmd = $'{grepCmd ?? util.GrepCmd()} {prompt_escaped}'
+            if grepCmd != null_string && grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
                 # 'rg' needs a './' at the end
                 cmd = $'{cmd} ./'
             endif
-            cmd = cmd->escape('*')
             if options.grep_echo_cmd
                 echo cmd
             endif
@@ -109,15 +117,16 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
                         job.Stop()
                     endif
                 })
-            var pat = prompt->escape('~')
-            if pat[-1 : -1] == '\'
-                pat = $'{pat}\'
-            endif
-            if ignorecase
-                win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
-            else
-                win_execute(menu.id, $"syn match ScopeMenuMatch \"{pat}\"")
-            endif
+            var pat = util.Escape4Highlight(prompt)
+            try
+                if ignorecase
+                    win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
+                else
+                    win_execute(menu.id, $"syn match ScopeMenuMatch \"{pat}\"")
+                endif
+            catch
+                # suppress rogue exceptions. this is just syntax highlighting
+            endtry
         endif
     enddef
 
@@ -217,8 +226,11 @@ export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list
                 (_, _): list<any> => {
                 return [items_dict, [items_dict]]
                 }, 100)  # max 100 items
-            var pat = prompt->escape('~')
-            win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
+            var pat = util.Escape4Highlight(prompt)
+            try
+                win_execute(menu.id, $"syn match ScopeMenuMatch \"\\c{pat}\"")
+            catch
+            endtry
         endif
     enddef
 

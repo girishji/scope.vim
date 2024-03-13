@@ -108,3 +108,11 @@ export def VisitDeclaration(key: string, cmd: string): bool
     endfor
     return false
 enddef
+
+export def Escape4Highlight(s: string): string
+    var pat = s->escape('~.[$^"')
+    if pat[-1 : -1] == '\'
+        pat = $'{pat}\'
+    endif
+    return pat
+enddef
