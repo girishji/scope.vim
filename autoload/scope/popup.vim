@@ -57,6 +57,7 @@ export class FilterMenu
             win_execute(this.id, "setl nonu nocursorline")
         else
             win_execute(this.id, "setl nu cursorline")
+            win_execute(this.id, "normal! gg")
         endif
         this.id->popup_settext(this._Printify(this.filtered_items))
         # this.idp->popup_settext($'{options.promptchar} {this.prompt}{options.cursorchar}')
