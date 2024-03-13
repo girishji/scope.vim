@@ -91,9 +91,9 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
             menu.SetText([])
         elseif prompt->len() > grep_skip_len
             # 'grep' requires some characters to be escaped (not tested for 'rg', 'ug', and 'ag')
-            var prompt_escaped = prompt->substitute('\[', '\\\\\\[', 'g')
+            var prompt_escaped = prompt->substitute('\\', '\\\\\\\', 'g')
+            prompt_escaped = prompt->substitute('\[', '\\\\\\[', 'g')
             prompt_escaped = prompt_escaped->substitute('\([ "]\)', '\\\1', 'g')
-            prompt_escaped = prompt_escaped->substitute('\\', '\\\\\\\', 'g')
             prompt_escaped = prompt_escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
 
             var cmd = $'{grepCmd ?? util.GrepCmd()} {prompt_escaped}'
