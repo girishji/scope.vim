@@ -57,10 +57,6 @@ enddef
 var prev_grep = null_string
 
 # live grep, not fuzzy search.
-# before typing <space> use '\' to escape.
-# (grep pattern is: grep <pat> <path1, path2, ...>, so it will interpret second
-# word as path)
-#
 # `ignorecase` argument ensures case-insensitive text highlighting in the popup
 # window. Incorporating colored `grep` output into Vim is a challenge. Instead
 # of parsing color codes, Vim's syntax highlighting is used. As Vim lacks

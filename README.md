@@ -66,8 +66,8 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
 ```
 
 > [!NOTE]
-> 1. Escape spaces with backslash when searching multiple words (e.g., `foo\ bar` to grep for 'foo bar')
-> 2. To perform a second grep with the same keyword, there's no need to retype it. The prompt conveniently retains the previous grep string as virtual text. Simply input `<Right>` or `<PgDn>` to auto-fill and proceed, or overwrite it as needed. For smaller projects, you can efficiently execute repeated greps without relying on the quickfix list.
+> 1. To perform a second grep with the same keyword, there's no need to retype it. The prompt conveniently retains the previous grep string as virtual text. Simply input `<Right>` or `<PgDn>` to auto-fill and proceed, or overwrite it as needed. For smaller projects, you can efficiently execute repeated greps without relying on the quickfix list.
+> 2. Special characters can be entered into the prompt window directly without requiring backslash escaping.
 
 Define your own grep command:
 
