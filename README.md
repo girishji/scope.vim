@@ -124,6 +124,8 @@ fuzzy.OptionsSet({
 
 ### Switch Buffer
 
+Switching buffers becomes effortless with fuzzy search. When no input is provided, it automatically selects the alternate buffer.
+
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
