@@ -97,10 +97,10 @@ Here's a breakdown of available options:
 
 | Option             | Type    | Description
 |--------------------|---------|------------
-| `grep_poll_interval` | `Number`  | Controls how frequently the pipe (of spawned job) is checked and results are displayed. Specified in milliseconds. Default: 20.
-| `timer_delay`        | `Number`  | Delay (in milliseconds) before executing the grep command. Default: 20.
-| `grep_throttle_len`  | `Number`  | Grep command is terminated after `grep_poll_interval` if the typed characters are below this threshold. Default: 3.
-| `grep_skip_len`      | `Number`  | Specifies the minimum number of characters required to invoke the grep command. Default: 0.
+| `grep_poll_interval` | `Number`  | Controls how frequently the pipe (of spawned job) is checked and results are displayed. Specified in milliseconds. Default: `20`.
+| `timer_delay`        | `Number`  | Delay (in milliseconds) before executing the grep command. Default: `20`.
+| `grep_throttle_len`  | `Number`  | Grep command is terminated after `grep_poll_interval` if the typed characters are below this threshold. Default: `3`.
+| `grep_skip_len`      | `Number`  | Specifies the minimum number of characters required to invoke the grep command. Default: `0`.
 | `grep_echo_cmd`      | `Boolean` | Determines whether to display the grep command string on the command line. Default: `true`.
 
 To optimize performance, adjust these options accordingly:
