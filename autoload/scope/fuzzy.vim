@@ -10,6 +10,7 @@ export var options: dict<any> = {
     grep_skip_len: 0,
     grep_poll_interval: 20,
     timer_delay: 20,
+    quickfix_stack: true,
 }
 
 export def OptionsSet(opt: dict<any>)
@@ -18,21 +19,27 @@ enddef
 
 # fuzzy find files (build a list of files once and then fuzzy search on them)
 export def File(findCmd: string = null_string, count: number = 10000)  # list at least 10k files to search on
+    var cmd = findCmd == null_string ? util.FindCmd() : findCmd->split()
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new("File", [],
         (res, key) => {
-            util.VisitFile(key, res.text)
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd->join(' '),
+                    (v: dict<any>) => {
+                        return {filename: v.text}
+                    })
+                util.VisitFile(key, res.text)
+            endif
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
             hi def link ScopeMenuSubtle Comment
             hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
         },
-        util.FilterItems)
+        util.FilterFilenames)
 
     var job: task.AsyncCmd
     var workaround = false
-    job = task.AsyncCmd.new(findCmd == null_string ? util.FindCmd() : findCmd->split(),
+    job = task.AsyncCmd.new(cmd,
         (items: list<string>) => {
             if menu.Closed()
                 job.Stop()
@@ -48,7 +55,7 @@ export def File(findCmd: string = null_string, count: number = 10000)  # list at
                     return {text: v, cmd: 'find'}
                 })
             endif
-            if !menu.SetText(items_dict, util.FilterItems, count)
+            if !menu.SetText(items_dict, util.FilterFilenames, count)
                 job.Stop()
             endif
             if !workaround
@@ -73,6 +80,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
     var grep_poll_interval = max([10, options.grep_poll_interval])
     var grep_throttle_len = max([0, options.grep_throttle_len])
     var grep_skip_len = max([0, options.grep_skip_len])
+    var cmd: string
 
     def DoGrep(prompt: string, timer: number)
         # during pasting from clipboard to prompt window, spawning a new job for
@@ -96,7 +104,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
             prompt_escaped = prompt_escaped->substitute('\([ "]\)', '\\\1', 'g')
             prompt_escaped = prompt_escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
 
-            var cmd = $'{grepCmd ?? util.GrepCmd()} {prompt_escaped}'
+            cmd = $'{grepCmd ?? util.GrepCmd()} {prompt_escaped}'
             if grepCmd != null_string && grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
                 # 'rg' needs a './' at the end
                 cmd = $'{cmd} ./'
@@ -136,11 +144,22 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
 
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
-            var frags = res.text->split()[0]->split(':')
-            if frags->len() >= 2
-                util.VisitFile(key, frags[0], str2nr(frags[1]))
-            else
-                echoerr 'Incompatible:' res.text
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd,
+                    (v: dict<any>) => {
+                        var frags = v.text->split(':')
+                        if frags->len() >= 2
+                            var text = frags->len() > 2 ? frags->slice(2)->join('') : ''
+                            return {filename: frags[0], lnum: str2nr(frags[1]), text: text}
+                        else
+                            return {text: v.text}
+                        endif
+                    })
+                var frags = res.text->split(':')
+                if frags->len() >= 2
+                    util.VisitFile(key, frags[0], str2nr(frags[1]))
+                else
+                    echoerr 'Scope.vim: Incompatible:' res.text
+                endif
             endif
         },
         (id, idp) => {
@@ -181,19 +200,25 @@ export def Buffer(list_all_buffers: bool = false)
     if buffer_list->len() > 1 && buffer_list[0].bufnr == bufnr()
         [buffer_list[0], buffer_list[1]] = [buffer_list[1], buffer_list[0]]
     endif
-    popup.FilterMenu.new("Buffer", buffer_list,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Buffer", buffer_list,
         (res, key) => {
-            if key == "\<c-t>"
-                exe $":tab sb {res.bufnr}"
-            elseif key == "\<c-j>"
-                exe $":sb {res.bufnr}"
-            elseif key == "\<c-v>"
-                exe $":vert sb {res.bufnr}"
-            else
-                if res.winid != -1
-                    win_gotoid(res.winid)
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Buffers',
+                    (v: dict<any>) => {
+                        return {bufnr: v.bufnr, text: v.text}
+                    })
+                if key == "\<c-t>"
+                    exe $":tab sb {res.bufnr}"
+                elseif key == "\<c-j>"
+                    exe $":sb {res.bufnr}"
+                elseif key == "\<c-v>"
+                    exe $":vert sb {res.bufnr}"
                 else
-                    exe $":b {res.bufnr}"
+                    if res.winid != -1
+                        win_gotoid(res.winid)
+                    else
+                        exe $":b {res.bufnr}"
+                    endif
                 endif
             endif
         },
@@ -202,7 +227,7 @@ export def Buffer(list_all_buffers: bool = false)
             hi def link ScopeMenuSubtle Comment
             hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
         },
-        util.FilterItems)
+        util.FilterFilenames)
 enddef
 
 export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list<string>)
@@ -258,10 +283,12 @@ export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list
 
     menu = popup.FilterMenu.new(title, [],
         (res, key) => {
-            # when callback function is called in popup, the window and assciated buffer
-            # are not yet deleted, and it is visible when ':tag' is called, which
-            # opens a dialog split window. put this in a timer to let popup close.
-            timer_start(timer_delay, function(ExecCmd, [key, res.text]))
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], title)
+                # when callback function is called in popup, the window and assciated buffer
+                # are not yet deleted, and it is visible when ':tag' is called, which
+                # opens a dialog split window. put this in a timer to let popup close.
+                timer_start(timer_delay, function(ExecCmd, [key, res.text]))
+            endif
         },
         null_function,
         (lst: list<dict<any>>, prompt: string): list<any> => {
@@ -275,6 +302,7 @@ export def Help()
 enddef
 
 export def Tag()
+    # taglist() is much slower (does regex match)
     DoVimItems('Tag', 'tag', (p: string): list<string> => util.GetCompletionItems(p, 'tag'))
 enddef
 
@@ -282,9 +310,12 @@ export def Command()
     var cmds = getcompletion('', 'command')->mapnew((_, v) => {
         return {text: v}
     })
-    popup.FilterMenu.new("Commands", cmds,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Commands", cmds,
         (res, key) => {
-            exe $":{res.text}"
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Vim Commands')
+                exe $":{res.text}"
+            endif
         })
 enddef
 export def VimCommand()
@@ -295,13 +326,16 @@ export def Keymap()
     var items = execute('map')->split("\n")->mapnew((_, v) => {
         return {text: v}
     })
-    popup.FilterMenu.new("Keymap", items,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Keymap", items,
         (res, key) => {
-            var m = res.text->matchlist('\v^(\a)?\s+(\S+)')
-            if m->len() > 2
-                var cmd = $'verbose {m[1]}map {m[2]}'
-                if !util.VisitDeclaration(key, cmd)
-                    echom res.text
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Keymap')
+                var m = res.text->matchlist('\v^(\a)?\s+(\S+)')
+                if m->len() > 2
+                    var cmd = $'verbose {m[1]}map {m[2]}'
+                    if !util.VisitDeclaration(key, cmd)
+                        echom res.text
+                    endif
                 endif
             endif
         })
@@ -319,9 +353,15 @@ export def MRU()
     mru->map((_, v) => {
         return {text: v}
     })
-    popup.FilterMenu.new("MRU", mru,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("MRU", mru,
         (res, key) => {
-            util.VisitFile(key, res.text)
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'v:oldfiles',
+                    (v: dict<any>) => {
+                        return {filename: v.text}
+                    })
+                util.VisitFile(key, res.text)
+            endif
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
@@ -347,8 +387,7 @@ export def Template()
     tmpls->map((_, v) => {
         return {text: v}
     })
-    popup.FilterMenu.new("Template",
-        tmpls,
+    popup.FilterMenu.new("Template", tmpls,
         (res, key) => {
             append(line('.'), readfile($"{path}/{res.text}")->mapnew((_, v) => {
                 return v->substitute('!!\(.\{-}\)!!', '\=eval(submatch(1))', 'g')
@@ -375,14 +414,10 @@ export def BufSearch(word_under_cursor: bool = false, recall: bool = true)
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new($'Search', lines,
         (res, key) => {
-            if key == "\<C-q>"
-                if !menu.filtered_items[0]->empty()
-                    var items = menu.filtered_items[0]->mapnew((_, v) => {
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'BufSearch',
+                    (v: dict<any>) => {
                         return {bufnr: bufnr(), lnum: v.linenr, text: v.line}
                     })
-                    setqflist([], 'r', {items: items})
-                endif
-            else
                 exe $":{res.linenr}"
                 if menu.prompt != null_string
                     var m = matchfuzzypos([res.line], menu.prompt)
@@ -406,12 +441,7 @@ export def BufSearch(word_under_cursor: bool = false, recall: bool = true)
             endif
         },
         (lst: list<dict<any>>, ctx: string): list<any> => {
-            if ctx->empty()
-                return [lst, [lst]]
-            else
-                var filtered = lst->matchfuzzypos(ctx, {key: "line"})
-                return [lst, filtered]
-            endif
+            return util.FilterItems(lst, ctx, 'line')
         }, null_function, true)
 enddef
 
@@ -422,9 +452,15 @@ export def GitFile(path: string = "")
     var git_files = systemlist($'{cd_cmd}{git_cmd}')->mapnew((_, v) => {
         return {text: v}
     })
-    popup.FilterMenu.new("Git File", git_files,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Git File", git_files,
         (res, key) => {
-            util.VisitFile(key, $'{path_e}{res.text}')
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'GitFile',
+                    (v: dict<any>) => {
+                        return {filename: $'{path_e}{v.text}'}
+                    })
+                util.VisitFile(key, $'{path_e}{res.text}')
+            endif
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
@@ -434,12 +470,15 @@ export def GitFile(path: string = "")
 enddef
 
 export def Colorscheme()
-    popup.FilterMenu.new("Colorscheme",
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Colorscheme",
         getcompletion("", "color")->mapnew((_, v) => {
             return {text: v}
         }),
         (res, key) => {
-            exe $":colorscheme {res.text}"
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Colorscheme')
+                exe $":colorscheme {res.text}"
+            endif
         },
         (winid, _) => {
             if exists("g:colors_name")
@@ -454,9 +493,12 @@ export def Filetype()
         ->mapnew((_, v) => ({text: fnamemodify(v, ":t:r")}))
         ->sort()
         ->uniq()
-    popup.FilterMenu.new("Filetype", ft_list,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Filetype", ft_list,
         (res, key) => {
-            exe $":set ft={res.text}"
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Filetype')
+                exe $":set ft={res.text}"
+            endif
         })
 enddef
 
@@ -481,9 +523,12 @@ export def Highlight()
                 value: $"hi {v.name}{guifg}{guibg}{gui}{ctermfg}{ctermbg}{cterm}{term}"}
         endif
     })
-    popup.FilterMenu.new("Highlight", hl,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Highlight", hl,
         (res, key) => {
-            feedkeys($":{res.value}\<C-f>")
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Highlight')
+                feedkeys($":{res.value}\<C-f>")
+            endif
         },
         (winid, _) => {
             win_execute(winid, 'syn match ScopeMenuHiLinksTo "\(links to\)\|\(cleared\)"')
@@ -499,12 +544,15 @@ export def CmdHistory()
     var cmd_history = [{text: histget("cmd")}] + range(1, histnr("cmd"))->mapnew((i, _) => {
         return {text: histget("cmd", i), idx: i}
     })->filter((_, v) => v.text !~ "^\s*$")->sort((el1, el2) => el1.idx == el2.idx ? 0 : el1.idx > el2.idx ? -1 : 1)
-    popup.FilterMenu.new("Command History", cmd_history,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Command History", cmd_history,
         (res, key) => {
-            if key == "\<c-j>"
-                feedkeys($":{res.text}\<C-f>", "n")
-            else
-                feedkeys($":{res.text}\<CR>", "nt")
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'CmdHistory')
+                if key == "\<c-j>"
+                    feedkeys($":{res.text}\<C-f>", "n")
+                else
+                    feedkeys($":{res.text}\<CR>", "nt")
+                endif
             endif
         })
 enddef
@@ -539,17 +587,20 @@ export def Mark()
     var marks_dict = marks->mapnew((_, v) => {
         return {text: v}
     })
-    popup.FilterMenu.new("Mark (mark:line:col:file/text)", marks_dict,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Mark (mark|line|col|file/text)", marks_dict,
         (res, key) => {
-            var mark = (res.text)->matchstr('\v^\s*\zs\S+')
-            if key == "\<c-t>"
-                :tabe
-            elseif key == "\<c-j>"
-                :split
-            elseif key == "\<c-v>"
-                :vert split
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Mark')
+                var mark = (res.text)->matchstr('\v^\s*\zs\S+')
+                if key == "\<c-t>"
+                    :tabe
+                elseif key == "\<c-j>"
+                    :split
+                elseif key == "\<c-v>"
+                    :vert split
+                endif
+                exe $"normal! '{mark}"
             endif
-            exe $"normal! '{mark}"
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuSubtle '^\\s*\\S\\+\\s*\\zs\\S\\+\\s\\+\\S\\+\\ze.*'")
@@ -562,10 +613,13 @@ export def Register()
     var registers_dict = registers->mapnew((_, v) => {
         return {text: v}
     })
-    popup.FilterMenu.new("Register (Type:Name:Content)", registers_dict,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Register (Type|Name|Content)", registers_dict,
         (res, key) => {
-            var reg = (res.text)->matchstr('\v^\s*\S+\s+\zs\S+')
-            exe $'normal! {reg}p'
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Register')
+                var reg = (res.text)->matchstr('\v^\s*\S+\s+\zs\S+')
+                exe $'normal! {reg}p'
+            endif
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuSubtle '^\\s*\\S\\+\\ze.*'")
@@ -581,21 +635,19 @@ export def Option()
         var optval = $'&{v}'->eval()
         return {text: printf($"%-{maxlen}s %s", v, optval), opt: v, val: optval}
     })
-    popup.FilterMenu.new("Option", options_dict,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Option", options_dict,
         (res, key) => {
-            echo $':setlocal {res.opt}={res.val}'
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Option')
+                echo $':setlocal {res.opt}={res.val}'
+            endif
         },
         (winid, _) => {
             win_execute(winid, "syn match ScopeMenuSubtle '^\\s*\\S\\+\\zs.*'")
             hi def link ScopeMenuSubtle Comment
         },
         (lst: list<dict<any>>, ctx: string): list<any> => {
-            if ctx->empty()
-                return [lst, [lst]]
-            else
-                var filtered = lst->matchfuzzypos(ctx, {key: "opt"})
-                return [lst, filtered]
-            endif
+            return util.FilterItems(lst, ctx, 'opt')
         })
 enddef
 
@@ -608,14 +660,96 @@ export def Autocmd()
             v->get('cmd', ''))
         return {text: text, data: v}
     })
-    popup.FilterMenu.new("Option", aucmds_dict,
+    var menu: popup.FilterMenu
+    menu = popup.FilterMenu.new("Option", aucmds_dict,
         (res, key) => {
-            var rd = res.data
-            var cmd = $"verbose au {rd->get('group', '')} {rd->get('event', '')} {rd->get('pattern', '')}"
-            if !util.VisitDeclaration(key, cmd)
-                echom execute(cmd)->split("\n")->slice(1)->join(' | ')
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Autocmd')
+                var rd = res.data
+                var cmd = $"verbose au {rd->get('group', '')} {rd->get('event', '')} {rd->get('pattern', '')}"
+                if !util.VisitDeclaration(key, cmd)
+                    echom execute(cmd)->split("\n")->slice(1)->join(' | ')
+                endif
             endif
         })
+enddef
+
+def XListHistory(qflist: bool = true)
+    var XList = qflist ? function('getqflist') : function('getloclist', [0])
+    const count: number = XList({nr: '$'}).nr
+    if count == 0
+        echo 'Current window has no error list'
+        return
+    endif
+    var items_dict = []
+    for i in range(1, count)
+        var title = XList({nr: i, title: 0}).title
+        var err_count = XList({nr: i, size: 0}).size
+        items_dict->add({text: printf("%-5d %s", err_count, title), index: i, title: title, size: err_count})
+    endfor
+    popup.FilterMenu.new($"{qflist ? 'Quickfix' : 'Loclist'} History (size|title)", items_dict,
+        (res, key) => {
+            const evt: string = qflist ? 'chistory' : 'lhistory'
+            silent execute $':{res.index}{evt}'
+            if exists($'#QuickFixCmdPost#{evt}')
+                execute $'doautocmd <nomodeline> QuickFixCmdPost {evt}'
+            endif
+        },
+        (winid, _) => {
+            win_execute(winid, "syn match ScopeMenuSubtle '^\\s*\\d\\+\\ze.*'")
+            hi def link ScopeMenuSubtle Comment
+        },
+        (lst: list<dict<any>>, ctx: string): list<any> => {
+            return util.FilterItems(lst, ctx, 'title')
+        })
+enddef
+
+export def QuickfixHistory()
+    XListHistory()
+enddef
+
+export def LoclistHistory()
+    XListHistory(false)
+enddef
+
+def XListSearch(qflist: bool = true)
+    var XList = qflist ? function('getqflist') : function('getloclist', [0])
+    const count: number = XList({size: 1}).size
+    if count == 0
+        echo 'Error list is empty'
+        return
+    endif
+    var cur_selected = XList({idx: 0}).idx
+    var items_dict = XList()->mapnew((idx, v) => {
+        var fname = null_string
+        if v->has_key('filename')
+            fname = v.filename
+        elseif v->has_key('bufnr')
+            fname = bufname(v.bufnr)
+        endif
+        var lnum = v->get('lnum', 0)
+        var fmt = (idx + 1 == cur_selected ? "(*)%s" : "%s")
+        var vtext = v->get('text', '')
+        var text = lnum > 0 ? printf($"{fmt}:%d: %s", fname, lnum, vtext) : printf($"{fmt}:: %s", fname, vtext)
+        return {text: text, filename: fname, lnum: lnum, index: idx + 1, data: v}
+    })
+
+    popup.FilterMenu.new($"{qflist ? 'Quickfix' : 'Loclist'} (file:line:text)", items_dict,
+        (res, key) => {
+            const cmd: string = qflist ? 'cc!' : 'll!'
+            silent execute $':{cmd} {res.index}'
+        },
+        (winid, _) => {
+            win_execute(winid, "syn match ScopeMenuSubtle '^\\((\\*)\\)\\?\\zs\\s*\\S\\+:\\d\\+: \\ze.*'")
+            hi def link ScopeMenuSubtle Comment
+        })
+enddef
+
+export def Quickfix()
+    XListSearch()
+enddef
+
+export def Loclist()
+    XListSearch(false)
 enddef
 
 # chunks of code shamelessly ripped from habamax

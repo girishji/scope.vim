@@ -11,7 +11,7 @@
 
 ![Demo](https://gist.githubusercontent.com/girishji/40e35cd669626212a9691140de4bd6e7/raw/6041405e45072a7fbc4e352cbd461e450a7af90e/scope-demo.gif)
 
-There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The feature set and key mappings align closely with [nvim-telescope](https://github.com/nvim-telescope/telescope.nvim). The main guts are in just two files, totaling around 300 lines of code. It's a concise and easy-to-understand.
+There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The emphasis is on performance -- pushing the essential features to their limits, and eliminating any unnecessary clutter. The feature set and key mappings align closely with [nvim-telescope](https://github.com/nvim-telescope/telescope.nvim). The code is concise and easy-to-understand.
 
 <a href="#Writing-Your-Own-Extension">Extending the functionality</a> to perform fuzzy searches for other items is straightforward.
 
@@ -165,34 +165,79 @@ nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
 def BufSearch(word_under_cursor: bool = false, recall: bool = true)
 ```
 
-### Others
+### Quickfix and Location List Integration
 
-You can map the following functions to keys.
+While the popup window is open, you can conveniently send all items (unfiltered) to a quickfix list by typing `<C-q>`. For filtered items, utilize `<C-Q>`. Likewise, to direct items to the location list, simply type `<C-l>` or `<C-L>`.
+
+Vim conveniently retains the ten most recently used quickfix and location lists for each window. When creating a new quickfix or location list, you can choose to either append it to the end of the stack or replace existing entries with new ones. This behavior is controlled by the `quickfix_stack` option, which can be set using `fuzzy.OptionsSet()`.
+
+| Option             | Type    | Description
+|--------------------|---------|------------
+| `quickfix_stack` | `Boolean`  | If `true` a new quickfix list (or location list) is created at the end of the stack and entries are added. Otherwise, replace existing entries in the current quickfix list (or location list) with new entries. Default: `true`.
+
+File list (`File()`), grep (`Grep()`), buffer list (`Buffer()`), word search in a buffer (`BufSearch()`), and git file list (`GitFile()`) provide formatted output containing filename information (and line numbers when available), facilitating seamless navigation. Other fuzzy search commands can also send output to the quickfix or location list, although their utility may be limited.
+
+You have the option to display the contents of the current quickfix or location list in a popup menu for efficient fuzzy searching and navigation. Use the following mappings:
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.Quickfix()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Loclist()<CR>
+```
+
+The current item (error) is highlighted with an asterisk. You can also navigate to the next error in the list by using the `:cnext` command instead of the popup window.
+
+The entire stack of quickfix and location lists can be displayed in a popup window. Use the following mappings:
 
 ```
 vim9script
 import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.QuickfixHistory()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.LoclistHistory()<CR>
 ```
+
+After selecting a list from the popup menu of `fuzzy.QuickfixHistory()` or `fuzzy.LoclistHistory()`, you can automatically open the quickfix or location-list window. Add the following autocmd group:
+
+```vim
+augroup scope-quickfix-history
+    autocmd!
+    autocmd QuickFixCmdPost chistory cwindow
+    autocmd QuickFixCmdPost lhistory lwindow
+augroup END
+```
+
+For automatic quickfix or location list window opening after `<C-q>` or `<C-l>` commands, replace `chistory|lhistory` above with `clist|llist`.
+
+### All Functions
+
+You can map the following functions to keys.
 
 Method|Description
 ------|-----------
+`fuzzy.Autocmd()` | Vim autocommands, go to their declaration on `<cr>`
+`fuzzy.BufSearch()` | Words in current buffer
+`fuzzy.Buffer()` | Open buffers (option to search 'unlisted' buffers)
 `fuzzy.CmdHistory()` | Command history
 `fuzzy.Colorscheme()` | Available color schemes
+`fuzzy.Command()` | Vim commands
+`fuzzy.File()` | Files in current working directory
 `fuzzy.Filetype()` | File types
 `fuzzy.GitFile()` | Files under git
+`fuzzy.Grep()` | Live grep in current working directory (spaces allowed)
 `fuzzy.Help()` | Help topics
 `fuzzy.Highlight()` | Highlight groups
-`fuzzy.Keymap()` | Key mappings, to to their declaration on `<cr>`
+`fuzzy.Keymap()` | Key mappings, go to their declaration on `<cr>`
+`fuzzy.Loclist()` | Items in the location list (sets 'current entry')
+`fuzzy.LoclistHistory()` | Entries in the location list stack
 `fuzzy.MRU()` | `:h v:oldfiles`
-`fuzzy.Tag()` | `:h ctags` search
-`fuzzy.Autocmd()` | Vim autocommands, go to their declaration on `<cr>`
-`fuzzy.Command()` | Vim commands
 `fuzzy.Mark()` | Vim marks (`:h mark-motions`)
 `fuzzy.Option()` | Vim options and their values
+`fuzzy.Quickfix()` | Items in the quickfix list (sets 'current entry') 
+`fuzzy.QuickfixHistory()` | Entries in the quickfix list stack
 `fuzzy.Register()` | Vim registers, paste contents on `<cr>`
+`fuzzy.Tag()` | `:h ctags` search
 `fuzzy.Window()` | Open windows
-
-See `autoload/scope/fuzzy.vim` for implementation.
 
 ### Writing Your Own Extension
 
@@ -211,7 +256,7 @@ The search functionality encompasses four fundamental patterns:
 4. **Asynchronous Relevant Items Update on User Input:**
    - For dynamic searches like live grep, the list is updated asynchronously, but exclusively with relevant items, each time the user types something.
 
-Boilerplate code for each of these patterns can be found in `autoload/scope/fuzzy.vim`. Understand how it handles the different patterns and adapt or extend it according to your use case. Everything is exported.
+Representative code for each of these patterns can be found in `autoload/scope/fuzzy.vim`.
 
 ### Key Mappings
 
@@ -228,6 +273,10 @@ Mapping | Action
 `<C-j>` | Go to file selection in a split window
 `<C-v>` | Go to file selection in a vertical split
 `<C-t>` | Go to file selection in a tab
+`<C-q>` | Send all unfiltered items to the quickfix list (`:h quickfix.txt`)
+`<C-Q>` | Send only filtered items to the quickfix list
+`<C-l>` | Send all unfiltered items to the location list (`:h location-list`)
+`<C-L>` | Send only filtered items to the location list
 `<C-r><C-w>` | Insert word under cursor (<cword>) into prompt
 
 ## Requirements
@@ -321,3 +370,7 @@ Some portions of this code are shamelessly ripped from [habamax](https://github.
 4. [**autosuggest.vim**](https://github.com/girishji/autosuggest.vim) - live autocompletion for Vim's command line.
 
 5. [**vimcomplete**](https://github.com/girishji/vimcomplete) - enhances autocompletion in Vim.
+
+## Contributing
+
+Open an issue if you encounter problems. Pull requests are welcomed.

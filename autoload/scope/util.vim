@@ -1,5 +1,7 @@
 vim9script
 
+import './fuzzy.vim'
+
 export def VisitFile(key: string, filename: string, lnum: number = -1)
     var cmd = {"\<C-j>": 'split', "\<C-v>": 'vert split', "\<C-t>": 'tabe'}
     if lnum > 0
@@ -9,7 +11,7 @@ export def VisitFile(key: string, filename: string, lnum: number = -1)
     endif
 enddef
 
-export def FilterItems(lst: list<dict<any>>, prompt: string): list<any>
+export def FilterItems(lst: list<dict<any>>, prompt: string, search_key: string = 'text', prioritize_files: bool = false): list<any>
     def PrioritizeFilename(matches: list<any>): list<any>
         # prioritize matched filenames over matched directory names
         var filtered = [[], [], []]
@@ -30,13 +32,16 @@ export def FilterItems(lst: list<dict<any>>, prompt: string): list<any>
     else
         var pat = prompt->trim()
         # var matches = lst->matchfuzzypos(pat, {key: "text", limit: 1000})
-        var matches = lst->matchfuzzypos(pat, {key: "text"})
-        if matches[0]->empty() || pat =~ '\s'
-            return [lst, matches]
-        else
+        var matches = lst->matchfuzzypos(pat, {key: search_key})
+        if prioritize_files && !matches[0]->empty()
             return [lst, PrioritizeFilename(matches)]
         endif
+        return [lst, matches]
     endif
+enddef
+
+export def FilterFilenames(lst: list<dict<any>>, prompt: string): list<any>
+    return FilterItems(lst, prompt, 'text', true)
 enddef
 
 export def FindCmd(): list<any>
@@ -115,4 +120,33 @@ export def Escape4Highlight(s: string): string
         pat = $'{pat}\'
     endif
     return pat
+enddef
+
+export def Send2Qickfix(key: string, unfiltered: list<dict<any>>, filtered: list<dict<any>>,
+        title: string, MapFn: func(dict<any>): dict<any> = null_function): bool
+    if ["\<C-q>", "\<C-Q>", "\<C-l>", "\<C-L>"]->index(key) == -1
+        return false
+    endif
+    var lst = ["\<C-q>", "\<C-l>"]->index(key) != -1 ? filtered : unfiltered
+    var qflist = ["\<C-q>", "\<C-Q>"]->index(key) != -1
+    var SetXList = qflist ? function('setqflist') : function('setloclist', [0])
+    if !lst->empty()
+        var items = lst->mapnew((_, v) => {
+            if MapFn == null_function
+                return {text: v.text}
+            else
+                return MapFn(v)
+            endif
+        })
+        if fuzzy.options.quickfix_stack
+            SetXList([], ' ', {nr: '$', title: title, items: items})
+        else
+            SetXList([], 'r', {title: title, items: items})
+        endif
+        const evt: string = qflist ? 'clist' : 'llist'
+        if exists($'#QuickFixCmdPost#{evt}')
+            execute $'doautocmd <nomodeline> QuickFixCmdPost {evt}'
+        endif
+    endif
+    return true
 enddef

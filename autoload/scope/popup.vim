@@ -134,7 +134,7 @@ export class FilterMenu
                         if Cleanup != null_function
                             Cleanup()
                         endif
-                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>", "\<C-q>"]->index(key) > -1
+                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>", "\<C-q>", "\<C-Q>", "\<C-l>", "\<C-L>"]->index(key) > -1
                         popup_close(this.idp, -1)
                         if this.filtered_items[0]->len() > 0 && items_count > 0
                             popup_close(id, {idx: getcurpos(id)[1], key: key})
@@ -196,11 +196,7 @@ export class FilterMenu
                 },
                 callback: (id, result) => {
                     popup_close(this.idp, -1)  # when <c-c> is pressed explicitly close the second popup
-                    if result->type() == v:t_number
-                        if result > 0
-                            Callback(this.filtered_items[0][result - 1], "")
-                        endif
-                    else
+                    if result->type() == v:t_dict
                         Callback(this.filtered_items[0][result.idx - 1], result.key)
                     endif
                 }
