@@ -25,7 +25,7 @@ In the following examples, replace `<your_key>` with the desired key combination
 
 Find files in the current working directory. Files are retrieved through an external job, and the window seamlessly refreshes to display real-time results.
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
@@ -33,7 +33,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
 
 Search for installed Vim files:
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
@@ -41,7 +41,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -p
 
 Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 100,000 (default is 10,000):
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
@@ -49,7 +49,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
 
 ##### API
 
-```
+```vim
 # findCmd: <string> : Command string as you'd use in a shell. If omitted, uses 'find' or 'fd' (if installed).
 # count: <number> : Maximum number of files returned.
 def File(findCmd: string = null_string, count: number = 10000)
@@ -59,7 +59,7 @@ def File(findCmd: string = null_string, count: number = 10000)
 
 Unlike fuzzy search `grep`, command is executed  after each keystroke in a dedicated external job. Result updates occur every 100 milliseconds, ensuring real-time feedback. To maintain Vim's responsiveness, lengthy processes may be terminated. An ideal scenario involves launching Vim within the project directory, initiating a grep search, and iteratively refining your query until you pinpoint the desired result. Notably, when editing multiple files, you need not re-enter the grep string for each file. Refer to the note below for further details.
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
@@ -71,7 +71,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
 
 Define your own grep command:
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
@@ -85,7 +85,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<CR>
 
 ##### API
 
-```
+```vim
 # grepCmd: <string> : Command string as you'd use in a shell. If omitted, uses 'grep'.
 # ignorecase: <bool> : Strictly for syntax highlighting. Should match the option given to 'grep'.
 def Grep(grepCmd: string = '', ignorecase: bool = true)
@@ -105,7 +105,7 @@ Here's a breakdown of available options:
 
 To optimize performance, adjust these options accordingly:
 
-```
+```vim
 scope#fuzzy#OptionsSet({
     grep_echo_cmd: false,
     # ...
@@ -114,7 +114,7 @@ scope#fuzzy#OptionsSet({
 
 or
 
-```
+```vim
 import autoload 'scope/fuzzy.vim'
 fuzzy.OptionsSet({
     grep_echo_cmd: false,
@@ -126,7 +126,7 @@ fuzzy.OptionsSet({
 
 Switching buffers becomes effortless with fuzzy search. When no input is provided, it automatically selects the alternate buffer.
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Buffer()<CR>
@@ -134,7 +134,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Buffer()<CR>
 
 Search unlisted buffers as well.
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<CR>
@@ -142,7 +142,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<CR>
 
 ##### API
 
-```
+```vim
 # list_all_buffers: <bool> : If 'true', include unlisted buffers as well.
 def Buffer(list_all_buffers: bool = false)
 ```
@@ -151,7 +151,7 @@ def Buffer(list_all_buffers: bool = false)
 
 Enter a word in the prompt, and it will initiate a fuzzy search within the current buffer. The prompt conveniently displays the word under the cursor (`<cword>`) or the previously searched word as virtual text. Use `<Right>` or `<PgDn>` to auto-fill and continue, or type over it.
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
@@ -159,7 +159,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
 
 ##### API
 
-```
+```vim
 # word_under_cursor: <bool> : Put the word under cursor (<cword>) into the prompt always.
 # recall: <bool> : Put previously searched word or <cword> into the prompt.
 def BufSearch(word_under_cursor: bool = false, recall: bool = true)
@@ -186,11 +186,11 @@ nnoremap <your_key> <scriptcmd>fuzzy.Quickfix()<CR>
 nnoremap <your_key> <scriptcmd>fuzzy.Loclist()<CR>
 ```
 
-The current item (error) is highlighted with an asterisk. You can also navigate to the next error in the list by using the `:cnext` command instead of the popup window.
+The current item is highlighted with an asterisk. You can also navigate to the next error in the list by using the `:cnext` command instead of the popup window.
 
 The entire stack of quickfix and location lists can be displayed in a popup window. Use the following mappings:
 
-```
+```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.QuickfixHistory()<CR>
@@ -343,7 +343,7 @@ scope#popup#OptionsSet({borderhighlight: ['Comment']})
 
 or,
 
-```
+```vim
 import autoload 'scope/popup.vim' as sp
 sp.OptionsSet({borderhighlight: ['Comment']})
 ```
