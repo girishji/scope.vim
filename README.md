@@ -211,7 +211,7 @@ For automatic quickfix or location list window opening after `<C-q>` or `<C-l>` 
 
 ### All Functions
 
-You can map the following functions to keys.
+You can map the following fuzzy search functions to keys.
 
 Method|Description
 ------|-----------
