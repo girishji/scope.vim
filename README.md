@@ -108,7 +108,7 @@ To optimize performance, adjust these options accordingly:
 ```
 scope#fuzzy#OptionsSet({
     grep_echo_cmd: false,
-    ...
+    # ...
 })
 ```
 
@@ -118,7 +118,7 @@ or
 import autoload 'scope/fuzzy.vim'
 fuzzy.OptionsSet({
     grep_echo_cmd: false,
-    ...
+    # ...
 })
 ```
 
