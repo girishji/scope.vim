@@ -74,7 +74,7 @@ var prev_grep = null_string
 # of parsing color codes, Vim's syntax highlighting is used. As Vim lacks
 # awareness of `grep`'s ignore-case flag, explicit instruction is needed for
 # accurate highlighting.
-export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
+export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string = null_string)
     var menu: popup.FilterMenu
     var timer_delay = max([1, options.timer_delay])
     var grep_poll_interval = max([10, options.grep_poll_interval])
@@ -100,7 +100,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
         elseif prompt->len() > grep_skip_len
             # 'grep' requires some characters to be escaped (not tested for 'rg', 'ug', and 'ag')
             var prompt_escaped = prompt->substitute('\\', '\\\\\\\', 'g')
-            prompt_escaped = prompt->substitute('\[', '\\\\\\[', 'g')
+            prompt_escaped = prompt_escaped->substitute('\[', '\\\\\\[', 'g')
             prompt_escaped = prompt_escaped->substitute('\([ "]\)', '\\\1', 'g')
             prompt_escaped = prompt_escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
 
@@ -163,6 +163,16 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true)
             endif
         },
         (id, idp) => {
+            if cword != null_string
+                def SetPrompt(s: string, timer: number)
+                    menu.SetPrompt(s)
+                enddef
+                var str = expand(cword)
+                if str != null_string
+                    timer_start(0, function(SetPrompt, [str]))
+                    timer_start(1, function(DoGrep, [str]))
+                endif
+            endif
             win_execute(id, $"syn match ScopeMenuFilenameSubtle \".*:\\d\\+:\"")
             # note: it is expensive to regex match. even though following pattern
             #   is more accurate vim throws 'redrawtime exceeded' and stops
@@ -402,8 +412,8 @@ enddef
 
 var prev_bufsearch = null_string
 
-export def BufSearch(word_under_cursor: bool = false, recall: bool = true)
-    if prev_bufsearch == null_string || word_under_cursor
+export def BufSearch(cword: string = null_string, recall: bool = true)
+    if prev_bufsearch == null_string
         prev_bufsearch = expand("<cword>")->trim()
     endif
     var lines = []
@@ -430,6 +440,19 @@ export def BufSearch(word_under_cursor: bool = false, recall: bool = true)
             endif
         },
         (winid, idp) => {
+            if cword != null_string
+                def SetPrompt(s: string, timer: number)
+                    menu.SetPrompt(s)
+                enddef
+                def SetText(timer: number)
+                    menu.SetText(menu.items_dict)
+                enddef
+                var str = expand(cword)
+                if str != null_string
+                    timer_start(0, function(SetPrompt, [str]))
+                    timer_start(5, function(SetText))
+                endif
+            endif
             win_execute(winid, 'syn match ScopeMenuLineNr "(\d\+)$"')
             hi def link ScopeMenuLineNr ScopeMenuSubtle
             hi def link ScopeMenuSubtle Comment

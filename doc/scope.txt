@@ -43,9 +43,10 @@ Use [fd](https://github.com/sharkdp/fd) instead of `find` command.
 <
 API ~
 >
-    # findCmd: <string> : Command string as you'd use in a shell. If omitted, uses 'find' or 'fd' (if installed).
-    # count: <number> : Maximum number of files returned.
-    def File(findCmd: string = null_string, count: number = 10000)
+	# findCmd: String : Command string as you'd enter in a shell. If omitted, uses
+	#                   'fd' (if installed) or 'find'.
+	# count: Number : Maximum number of files returned.
+	def File(findCmd: string = null_string, count: number = 10000)
 <
 Live Grep ~
 
@@ -68,16 +69,25 @@ Define your own grep command.
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -RESIHin --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged')<CR>
+	# ripgrep
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<CR>
+	# silvergrep
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<CR>
+	# Search the word under cursor
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<CR>
 <
 `grep` command string is echoed in the command line after each search. You can
 set an option to turn this off (see below).
 
 API ~
 >
-    # grepCmd: <string> : Command string as you'd use in a shell. If omitted, uses 'grep'.
-    # ignorecase: <bool> : Strictly for syntax highlighting. Should match the option given to 'grep'.
-    def Grep(grepCmd: string = '', ignorecase: bool = true)
+	# grepCmd: String : Command string as you'd use in a shell. If omitted, uses 'grep'.
+	# ignorecase: Boolean : Strictly for syntax highlighting. Should match the 'ignorecase'
+	#                       option given to 'grep'.
+	# cword: String : If not null_string, put the word under cursor into the prompt.
+	#                 Allowable values are '<cword>' and '<cWORD>'.
+	def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string = null_string)
 <
 To optimize responsiveness, consider fine-tuning `Grep()` settings,
 particularly for larger projects and slower systems. For instance, adjusting
@@ -136,7 +146,7 @@ Search unlisted buffers as well.
 <
 API ~
 >
-	# list_all_buffers: <bool> : If 'true', include unlisted buffers as well.
+	# list_all_buffers: Boolean : If 'true', include unlisted buffers as well.
 	def Buffer(list_all_buffers: bool = false)
 
 Search Current Buffer ~
@@ -149,12 +159,15 @@ current buffer. The prompt conveniently displays the word under the cursor
 	vim9script
 	import autoload 'scope/fuzzy.vim'
 	nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
+	# Search the word under cursor
+	nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<CR>
 
 API ~
 >
-	# word_under_cursor: <bool> : Put the word under cursor (<cword>) into the prompt always.
-	# recall: <bool> : Put previously searched word or <cword> into the prompt.
-	def BufSearch(word_under_cursor: bool = false, recall: bool = true)
+	# cword: String : If not null_string, put the word under cursor into the prompt.
+	#                 Allowable values are '<cword>' and '<cWORD>'.
+	# recall: Boolean : Put previously searched word or <cword> into the prompt.
+	def BufSearch(cword: string = null_string, recall: bool = true)
 
 Quickfix and Location List Integration ~
 
@@ -321,10 +334,10 @@ Add the following line to your $HOME/.vimrc file.
 ==============================================================================
 4. Configuration				*scope-configuration*
 
-
 The appearance of the popup window can be customized using `borderchars`,
 `borderhighlight`, `highlight`, `scrollbarhighlight`, `thumbhighlight`, and
-other `:h popup_create-arguments`. To configure these settings, use
+other `:h popup_create-arguments`. To wrap long lines set `wrap` to `true`
+(default is `false`). To configure these settings, use
 `scope#popup#OptionsSet()`.
 
 For example, to set the border of the popup window to the `Comment` highlight

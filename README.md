@@ -50,8 +50,9 @@ nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
 ##### API
 
 ```vim
-# findCmd: <string> : Command string as you'd use in a shell. If omitted, uses 'find' or 'fd' (if installed).
-# count: <number> : Maximum number of files returned.
+# findCmd: String : Command string as you'd enter in a shell. If omitted, uses
+#                   'fd' (if installed) or 'find'.
+# count: Number : Maximum number of files returned.
 def File(findCmd: string = null_string, count: number = 10000)
 ```
 
@@ -79,6 +80,8 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude=
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<CR>
 # silvergrep
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<CR>
+# Search the word under cursor
+nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<CR>
 ```
 
 `grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).
@@ -86,9 +89,12 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<CR>
 ##### API
 
 ```vim
-# grepCmd: <string> : Command string as you'd use in a shell. If omitted, uses 'grep'.
-# ignorecase: <bool> : Strictly for syntax highlighting. Should match the option given to 'grep'.
-def Grep(grepCmd: string = '', ignorecase: bool = true)
+# grepCmd: String : Command string as you'd use in a shell. If omitted, uses 'grep'.
+# ignorecase: Boolean : Strictly for syntax highlighting. Should match the 'ignorecase'
+#                       option given to 'grep'.
+# cword: String : If not null_string, put the word under cursor into the prompt.
+#                 Allowable values are '<cword>' and '<cWORD>'.
+def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string = null_string)
 ```
 
 To optimize responsiveness, consider fine-tuning `Grep()` settings, particularly for larger projects and slower systems. For instance, adjusting `timer_delay` to a higher value can help alleviate jitteriness during fast typing or clipboard pasting. Additionally, `grep_poll_interval` dictates the initial responsiveness of the prompt for the first few typed characters.
@@ -143,7 +149,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<CR>
 ##### API
 
 ```vim
-# list_all_buffers: <bool> : If 'true', include unlisted buffers as well.
+# list_all_buffers: Boolean : If 'true', include unlisted buffers as well.
 def Buffer(list_all_buffers: bool = false)
 ```
 
@@ -155,14 +161,17 @@ Enter a word in the prompt, and it will initiate a fuzzy search within the curre
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
+# Search the word under cursor
+nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<CR>
 ```
 
 ##### API
 
 ```vim
-# word_under_cursor: <bool> : Put the word under cursor (<cword>) into the prompt always.
-# recall: <bool> : Put previously searched word or <cword> into the prompt.
-def BufSearch(word_under_cursor: bool = false, recall: bool = true)
+# cword: String : If not null_string, put the word under cursor into the prompt.
+#                 Allowable values are '<cword>' and '<cWORD>'.
+# recall: Boolean : Put previously searched word or <cword> into the prompt.
+def BufSearch(cword: string = null_string, recall: bool = true)
 ```
 
 ### Quickfix and Location List Integration

@@ -30,6 +30,10 @@ export class FilterMenu
     var maxwidth: number
     var maximize: bool
 
+    def SetPrompt(s: string)
+        this.prompt = s
+    enddef
+
     def _CommonProps(borderchars: list<string>, top_pos: number, winheight: number): dict<any>
         return {
             line: top_pos,
