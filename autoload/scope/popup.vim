@@ -7,6 +7,9 @@ export var options = {
     highlight: 'Normal',
     scrollbarhighlight: 'PmenuSbar',
     thumbhighlight: 'PmenuThumb',
+    drag: 0,
+    wrap: 0,
+    padding: [0, 1, 0, 1],
     promptchar: '>',
     # cursorchar: '█',
 }
@@ -40,10 +43,10 @@ export class FilterMenu
             highlight: options.highlight,
             scrollbarhighlight: options.scrollbarhighlight,
             thumbhighlight: options.thumbhighlight,
-            drag: 0,
-            wrap: 0,
+            drag: options.drag,
+            wrap: options.wrap,
             cursorline: false,
-            padding: [0, 1, 0, 1],
+            padding: options.padding,
             mapping: 0,
             hidden: !this.maximize,
         }->extend(this.maximize ? {col: (&columns - this.maxwidth) / 2 - 1} : {})
