@@ -148,8 +148,14 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: s
                     (v: dict<any>) => {
                         var frags = v.text->split(':')
                         if frags->len() >= 2
-                            var text = frags->len() > 2 ? frags->slice(2)->join('') : ''
-                            return {filename: frags[0], lnum: str2nr(frags[1]), text: text}
+                            var text: string
+                            if cmd->match('^\S*rg\s.*--vimgrep\|^\S*rg\s.*--column') != -1
+                                text = frags->slice(3)->join('')
+                                return {filename: frags[0], lnum: str2nr(frags[1]), col: str2nr(frags[2]), text: text}
+                            else
+                                text = frags->len() > 2 ? frags->slice(2)->join('') : ''
+                                return {filename: frags[0], lnum: str2nr(frags[1]), text: text}
+                            endif
                         else
                             return {text: v.text}
                         endif
