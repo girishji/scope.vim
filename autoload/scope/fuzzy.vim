@@ -144,25 +144,12 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: s
 
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
-            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd,
-                    (v: dict<any>) => {
-                        var frags = v.text->split(':')
-                        if frags->len() >= 2
-                            var text: string
-                            if cmd->match('^\S*rg\s.*--vimgrep\|^\S*rg\s.*--column') != -1
-                                text = frags->slice(3)->join('')
-                                return {filename: frags[0], lnum: str2nr(frags[1]), col: str2nr(frags[2]), text: text}
-                            else
-                                text = frags->len() > 2 ? frags->slice(2)->join('') : ''
-                                return {filename: frags[0], lnum: str2nr(frags[1]), text: text}
-                            endif
-                        else
-                            return {text: v.text}
-                        endif
-                    })
-                var frags = res.text->split(':')
-                if frags->len() >= 2
-                    util.VisitFile(key, frags[0], str2nr(frags[1]))
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd, null_function, true)
+                # let quicfix parse output of 'grep' for filename, line, column.
+                # it deals with ':' in filename and other corner cases.
+                var qfitem = getqflist({lines: [res.text]}).items[0]
+                if qfitem->has_key('bufnr')
+                    util.VisitBuffer(key, qfitem.bufnr, qfitem.lnum, qfitem.col, qfitem.vcol > 0)
                 else
                     echoerr 'Scope.vim: Incompatible:' res.text
                 endif
@@ -223,18 +210,10 @@ export def Buffer(list_all_buffers: bool = false)
                     (v: dict<any>) => {
                         return {bufnr: v.bufnr, text: v.text}
                     })
-                if key == "\<c-t>"
-                    exe $":tab sb {res.bufnr}"
-                elseif key == "\<c-j>"
-                    exe $":sb {res.bufnr}"
-                elseif key == "\<c-v>"
-                    exe $":vert sb {res.bufnr}"
+                if res.winid != -1
+                    win_gotoid(res.winid)
                 else
-                    if res.winid != -1
-                        win_gotoid(res.winid)
-                    else
-                        exe $":b {res.bufnr}"
-                    endif
+                    util.VisitBuffer(key, res.bufnr)
                 endif
             endif
         },
@@ -709,11 +688,13 @@ def XListHistory(qflist: bool = true)
         echo 'Current window has no error list'
         return
     endif
+    const current: number = XList({nr: 0}).nr
     var items_dict = []
     for i in range(1, count)
         var title = XList({nr: i, title: 0}).title
         var err_count = XList({nr: i, size: 0}).size
-        items_dict->add({text: printf("%-5d %s", err_count, title), index: i, title: title, size: err_count})
+        var cur = (i == current) ? '> ' : '  '
+        items_dict->add({text: printf("%s%-5d %s", cur, err_count, title), index: i, title: title, size: err_count})
     endfor
     popup.FilterMenu.new($"{qflist ? 'Quickfix' : 'Loclist'} History (size|title)", items_dict,
         (res, key) => {
@@ -724,7 +705,7 @@ def XListHistory(qflist: bool = true)
             endif
         },
         (winid, _) => {
-            win_execute(winid, "syn match ScopeMenuSubtle '^\\s*\\d\\+\\ze.*'")
+            win_execute(winid, "syn match ScopeMenuSubtle '^>\\?\\s\\+\\zs\\d\\+\\ze.*'")
             hi def link ScopeMenuSubtle Comment
         },
         (lst: list<dict<any>>, ctx: string): list<any> => {
@@ -755,10 +736,20 @@ def XListSearch(qflist: bool = true)
         elseif v->has_key('bufnr')
             fname = bufname(v.bufnr)
         endif
-        var lnum = v->get('lnum', 0)
-        var fmt = (idx + 1 == cur_selected ? "(*)%s" : "%s")
+        var fmt = (idx + 1 == cur_selected ? "> %s" : "  %s")
         var vtext = v->get('text', '')
-        var text = lnum > 0 ? printf($"{fmt}:%d: %s", fname, lnum, vtext) : printf($"{fmt}:: %s", fname, vtext)
+        var text: string
+        var lnum = v->get('lnum', 0)
+        if lnum > 0
+            var col = v->get('col', 0)
+            if col > 0
+                text = printf($"{fmt}:%d:%d:%s", fname, lnum, col, vtext)
+            else
+                text = printf($"{fmt}:%d:%s", fname, lnum, vtext)
+            endif
+        else
+            text = printf($"{fmt}:%s", fname, vtext)
+        endif
         return {text: text, filename: fname, lnum: lnum, index: idx + 1, data: v}
     })
 
@@ -768,7 +759,7 @@ def XListSearch(qflist: bool = true)
             silent execute $':{cmd} {res.index}'
         },
         (winid, _) => {
-            win_execute(winid, "syn match ScopeMenuSubtle '^\\((\\*)\\)\\?\\zs\\s*\\S\\+:\\d\\+: \\ze.*'")
+            win_execute(winid, "syn match ScopeMenuSubtle '\\zs\\(:\\d\\+\\)\\{0,2}:\\ze.*'")
             hi def link ScopeMenuSubtle Comment
         })
 enddef

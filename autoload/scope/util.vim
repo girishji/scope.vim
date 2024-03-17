@@ -11,6 +11,20 @@ export def VisitFile(key: string, filename: string, lnum: number = -1)
     endif
 enddef
 
+export def VisitBuffer(key: string, bufnr: number, lnum: number = -1, col: number = -1, visualcol: bool = false)
+    var cmd = {"\<C-j>": 'sb', "\<C-v>": 'vert sb', "\<C-t>": 'tab sb'}
+    var cmdstr = cmd->get(key, 'b')
+    if lnum > 0
+        if col > 0
+            var pos = visualcol ? 'setcharpos' : 'setpos'
+            cmdstr = $'{cmdstr} +call\ {pos}(".",\ [0,\ {lnum},\ {col},\ 0])'
+        else
+            cmdstr = $'{cmdstr} +{lnum}'
+        endif
+    endif
+    exe $":{cmdstr} {bufnr}"
+enddef
+
 export def FilterItems(lst: list<dict<any>>, prompt: string, search_key: string = 'text', prioritize_files: bool = false): list<any>
     def PrioritizeFilename(matches: list<any>): list<any>
         # prioritize matched filenames over matched directory names
@@ -123,25 +137,30 @@ export def Escape4Highlight(s: string): string
 enddef
 
 export def Send2Qickfix(key: string, unfiltered: list<dict<any>>, filtered: list<dict<any>>,
-        title: string, MapFn: func(dict<any>): dict<any> = null_function): bool
+        title: string, MapFn: func(dict<any>): dict<any> = null_function, formatted: bool = false): bool
     if ["\<C-q>", "\<C-Q>", "\<C-l>", "\<C-L>"]->index(key) == -1
         return false
     endif
     var lst = ["\<C-q>", "\<C-l>"]->index(key) != -1 ? filtered : unfiltered
     var qflist = ["\<C-q>", "\<C-Q>"]->index(key) != -1
     var SetXList = qflist ? function('setqflist') : function('setloclist', [0])
+    var qf_stack = fuzzy.options.quickfix_stack
+    var action = qf_stack ? ' ' : 'r'
+    var what: dict<any> = qf_stack ? {nr: '$', title: title} : {title: title}
     if !lst->empty()
-        var items = lst->mapnew((_, v) => {
-            if MapFn == null_function
-                return {text: v.text}
+        if MapFn == null_function
+            if formatted
+                var lines = lst->mapnew((_, v) => v.text)
+                SetXList([], action, what->extend({lines: lines}))
             else
-                return MapFn(v)
+                var items = lst->mapnew((_, v) => {
+                    return {text: v.text}
+                })
+                SetXList([], action, what->extend({items: items}))
             endif
-        })
-        if fuzzy.options.quickfix_stack
-            SetXList([], ' ', {nr: '$', title: title, items: items})
         else
-            SetXList([], 'r', {title: title, items: items})
+            var items = lst->mapnew((_, v) => MapFn(v))
+            SetXList([], action, what->extend({items: items}))
         endif
         const evt: string = qflist ? 'clist' : 'llist'
         if exists($'#QuickFixCmdPost#{evt}')
