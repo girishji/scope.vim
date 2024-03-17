@@ -9,7 +9,7 @@
   <a href="#configuration">Configuration</a>
 </p>
 
-![Demo](https://gist.githubusercontent.com/girishji/40e35cd669626212a9691140de4bd6e7/raw/6041405e45072a7fbc4e352cbd461e450a7af90e/scope-demo.gif)
+![Demo](https://gist.githubusercontent.com/girishji/40e35cd669626212a9691140de4bd6e7/raw/afd35c9db9bdfacf77f8240f467b49e28562ace3/scope-demo.gif)
 
 There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The emphasis is on performance -- pushing the essential features to their limits, and eliminating any unnecessary clutter. The feature set and key mappings align closely with [nvim-telescope](https://github.com/nvim-telescope/telescope.nvim). The code is concise and easy-to-understand.
 

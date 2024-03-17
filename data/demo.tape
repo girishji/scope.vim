@@ -123,6 +123,24 @@ Enter
 Sleep 3s
 Type "q"
 
+Type "o* Send Items from Grep to Quickfix List" Enter Escape Sleep 2s
+Space Type "g"
+Sleep 2
+Type "e" Sleep 1s Type "x" Sleep 1s
+Ctrl+q
+Sleep 2
+
+Type "o* Fuzzy Search Quickfix List" Enter Escape Sleep 2s
+Space Type "fq"
+Type "i" Sleep 1s Type "d" Sleep 1s Type "x" Sleep 1s
+Tab
+Sleep 2s
+Enter
+Sleep 4s
+Type ":bd" Sleep 1s
+Enter
+Sleep 2s
+
 Type "o* See README for more examples!" Enter Escape Sleep 2s
 Type ":qa!"
 Sleep 2s
