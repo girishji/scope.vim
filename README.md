@@ -75,7 +75,7 @@ Define your own grep command:
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc")<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude={"*.git*","*.swp","*.zwc"}')<CR>
 # ripgrep
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<CR>
 # silvergrep
