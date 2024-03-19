@@ -69,7 +69,7 @@ export def FindCmd(): list<any>
         for fname in ['.git']  # matches .git/ and .gitrc through */git*
             cmd->extend(['-path', $'*/{fname}*', '-prune', '-o'])
         endfor
-        for dname in ['plugged', '.zsh_sessions']
+        for dname in ['.zsh_sessions']
             cmd->extend(['-type', 'd', '-path', $'*/{dname}*', '-prune', '-o'])
         endfor
         return cmd->extend(['-type', 'f', '-print', '-follow'])
@@ -101,7 +101,7 @@ export def FindCmdExcludeDirs(): string
 enddef
 
 export def GrepCmd(): string
-    return 'grep --color=never -REIHins --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc" --exclude-dir=plugged'
+    return 'grep --color=never -REIHins --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc"'
 enddef
 
 export def GetCompletionItems(s: string, type: string): list<string>
