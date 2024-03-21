@@ -174,6 +174,16 @@ export class FilterMenu
                         endif
                     elseif key == "\<PageUp>"
                         win_execute(id, 'normal! ' .. "\<C-u>")
+                    elseif key == "\<C-Left>"
+                        if this.cursorpos > 3
+                            this.cursorpos = 3
+                            this._CursorSet()
+                        endif
+                    elseif key == "\<C-Right>"
+                        if this.cursorpos < (3 + this.prompt->strcharlen())
+                            this.cursorpos = 3 + this.prompt->strcharlen()
+                            this._CursorSet()
+                        endif
                     elseif key == "\<tab>" || key == "\<C-n>" || key == "\<Down>" || key == "\<ScrollWheelDown>"
                         var ln = getcurpos(id)[1]
                         win_execute(id, "normal! j")

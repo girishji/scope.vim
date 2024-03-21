@@ -276,8 +276,8 @@ When popup window is open the following key mappings can be used.
 
 Mapping | Action
 --------|-------
-`<Right>/<PageDown>` | Page down
-`<Left>/<PageUp>` | Page up
+`<PageDown>` | Page down
+`<PageUp>` | Page up
 `<tab>/<C-n>/<Down>/<ScrollWheelDown>` | Next item
 `<S-tab>/<C-p>/<Up>/<ScrollWheelUp>` | Previous item
 `<Esc>/<C-c>` | Close
@@ -290,6 +290,10 @@ Mapping | Action
 `<C-l>` | Send all unfiltered items to the location list (`:h location-list`)
 `<C-L>` | Send only filtered items to the location list
 `<C-r><C-w>` | Insert word under cursor (<cword>) into prompt
+`<Left>` | Move cursor to the left in the prompt window
+`<Right>` | Move cursor to the right in the prompt window
+`<C-Left>` | Move cursor to the end of line in the prompt window
+`<C-Right>` | Move cursor to the beginning of line in the prompt window
 
 ## Requirements
 
