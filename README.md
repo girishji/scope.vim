@@ -255,25 +255,6 @@ Method|Description
 `fuzzy.Tag()` | `:h ctags` search
 `fuzzy.Window()` | Open windows
 
-### Writing Your Own Extension
-
-The search functionality encompasses four fundamental patterns:
-
-1. **Obtaining a List and Fuzzy Searching:**
-
-   - This represents the simplest use case, where a list of items is acquired, and fuzzy search is performed on them. Check out this [gist](https://gist.github.com/girishji/e3479918da89890b6e85b9efc4e95da5) for a practical example.
-
-2. **Asynchronous List Update with Fuzzy Search:**
-   - In scenarios like file searching, the list of all items is updated asynchronously while concurrently conducting a fuzzy search. See this [gist](https://gist.github.com/girishji/e4dbcb61c1f7292eb884799bc3251b26) for an example.
-
-3. **Dynamic List Update on User Input:**
-   - Certain cases, such as handling tags or Vim commands, involve waiting for a new list of items every time the user inputs something.
-
-4. **Asynchronous Relevant Items Update on User Input:**
-   - For dynamic searches like live grep, the list is updated asynchronously, but exclusively with relevant items, each time the user types something.
-
-Representative code for each of these patterns can be found in `autoload/scope/fuzzy.vim`.
-
 ### Key Mappings
 
 When popup window is open the following key mappings can be used.
@@ -389,6 +370,25 @@ Following highlight groups modify the content of popup window:
 - `ScopeMenuVirtualText`: Virtual text in the Grep window. Default: Linked to `Comment`.
 - `ScopeMenuSubtle`: Line number, file name, and path. Default: Linked to `Comment`.
 - `ScopeMenuCurrent`: Special item indicating current status (used only when relevant). Default: Linked to `Statement`.
+
+### Writing Your Own Extension
+
+The search functionality encompasses four fundamental patterns:
+
+1. **Obtaining a List and Fuzzy Searching:**
+
+   - This represents the simplest use case, where a list of items is acquired, and fuzzy search is performed on them. Check out this [gist](https://gist.github.com/girishji/e3479918da89890b6e85b9efc4e95da5) for a practical example.
+
+2. **Asynchronous List Update with Fuzzy Search:**
+   - In scenarios like file searching, the list of all items is updated asynchronously while concurrently conducting a fuzzy search. See this [gist](https://gist.github.com/girishji/e4dbcb61c1f7292eb884799bc3251b26) for an example.
+
+3. **Dynamic List Update on User Input:**
+   - Certain cases, such as handling tags or Vim commands, involve waiting for a new list of items every time the user inputs something.
+
+4. **Asynchronous Relevant Items Update on User Input:**
+   - For dynamic searches like live grep, the list is updated asynchronously, but exclusively with relevant items, each time the user types something.
+
+Representative code for each of these patterns can be found in `autoload/scope/fuzzy.vim`.
 
 ## Credits
 
