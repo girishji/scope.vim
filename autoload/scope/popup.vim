@@ -29,6 +29,7 @@ export class FilterMenu
     var minwidth: number
     var maxwidth: number
     var maximize: bool
+    var cursorpos: number = 3  # based on character index, not byte index
 
     def SetPrompt(s: string)
         this.prompt = s
@@ -69,8 +70,7 @@ export class FilterMenu
         this.id->popup_settext(this._Printify(this.filtered_items))
         # this.idp->popup_settext($'{options.promptchar} {this.prompt}{options.cursorchar}')
         this.idp->popup_settext($'{options.promptchar} {this.prompt} ')
-        this.idp->clearmatches()
-        matchaddpos('ScopeMenuCursor', [[1, 3 + this.prompt->len()]], 10, -1, {window: this.idp})
+        this._CursorSet()
 
         var pos = this.id->popup_getpos()
         var new_width = pos.core_width
@@ -123,7 +123,7 @@ export class FilterMenu
             this._CommonProps(options.bordercharsp, pos_top, 1)->extend({
             title: $" ({items_count}/{items_count}) {this.title} ",
             }))
-        matchaddpos('ScopeMenuCursor', [[1, 3]], 10, -1, {window: this.idp})
+        this._CursorSet()
 
         this.id = popup_create([],
             this._CommonProps(options.borderchars, pos_top + 3, height)->extend({
@@ -136,30 +136,43 @@ export class FilterMenu
                     endif
                     items_count = this.items_dict->len()
                     if key == "\<esc>"
-                        popup_close(this.idp, -1)
-                        popup_close(id, -1)
+                        this.idp->popup_close(-1)
+                        id->popup_close(-1)
                         if Cleanup != null_function
                             Cleanup()
                         endif
                     elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>", "\<C-q>", "\<C-Q>", "\<C-l>", "\<C-L>"]->index(key) > -1
-                        popup_close(this.idp, -1)
+                        this.idp->popup_close(-1)
                         if this.filtered_items[0]->len() > 0 && items_count > 0
-                            popup_close(id, {idx: getcurpos(id)[1], key: key})
+                            id->popup_close({idx: getcurpos(id)[1], key: key})
                         else
                             # close the popup window for <cr> when popup window is empty
-                            popup_close(id, -1)
+                            id->popup_close(-1)
                         endif
                     elseif key == "\<Right>" || key == "\<PageDown>"
                         if this.idp->getmatches()->indexof((_, v) => v.group == 'ScopeMenuVirtualText') != -1
                             # virtual text present. grep using virtual text.
                             this.prompt = this.idp->getwininfo()[0].bufnr->getbufline(1)[0]->slice(2)
+                            this.cursorpos = this.cursorpos + this.prompt->strcharlen()
                             var GetFilteredItemsFn = GetFilteredItems == null_function ? this._GetFilteredItems : GetFilteredItems
                             [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
                             this._SetPopupContent()
                         else
-                            win_execute(id, 'normal! ' .. "\<C-d>")
+                            if key == "\<Right>"
+                                if this.cursorpos < (3 + this.prompt->strcharlen())
+                                    this.cursorpos = this.cursorpos + 1
+                                    this._CursorSet()
+                                endif
+                            else
+                                win_execute(id, 'normal! ' .. "\<C-d>")
+                            endif
                         endif
-                    elseif key == "\<Left>" || key == "\<PageUp>"
+                    elseif key == "\<Left>"
+                        if this.cursorpos > 3
+                            this.cursorpos = this.cursorpos - 1
+                            this._CursorSet()
+                        endif
+                    elseif key == "\<PageUp>"
                         win_execute(id, 'normal! ' .. "\<C-u>")
                     elseif key == "\<tab>" || key == "\<C-n>" || key == "\<Down>" || key == "\<ScrollWheelDown>"
                         var ln = getcurpos(id)[1]
@@ -174,24 +187,30 @@ export class FilterMenu
                             win_execute(id, "normal! G")
                         endif
                     # Ignoring fancy events and double clicks, which are 6 char long: `<80><fc> <80><fd>.`
-                    elseif ignore_input->index(key) == -1 && strcharlen(key) != 6 && str2list(key) != ignore_input_wtf
+                    elseif ignore_input->index(key) == -1 && strchars(key) != 6 && str2list(key) != ignore_input_wtf
                         if key == "\<C-U>"
-                            if this.prompt == ""
+                            if this.prompt == null_string
                                 return true
                             endif
-                            this.prompt = ""
+                            this.prompt = null_string
+                            this.cursorpos = 3
                         elseif (key == "\<C-h>" || key == "\<bs>")
-                            if this.prompt == ""
+                            if this.prompt == null_string
                                 return true
                             endif
-                            if this.prompt != null_string
-                                this.prompt = this.prompt->strcharpart(0, this.prompt->strchars() - 1)
-                            endif
+                            this.cursorpos = this.cursorpos - 1
+                            var pos = this.cursorpos - 3
+                            this.prompt = this.prompt->slice(0, pos) .. this.prompt->slice(pos + 1)
                         elseif key =~ '\p'
-                            this.prompt = this.prompt .. key
+                            var pos = this.cursorpos - 3
+                            this.prompt = this.prompt->slice(0, pos) .. key .. this.prompt->slice(pos)
+                            this.cursorpos = this.cursorpos + 1
                         elseif key == "\<C-w>"
                             if ctrl_r_active
-                                this.prompt = this.prompt .. expand("<cword>")->trim()
+                                # vim bug: ..= and += are not working (https://github.com/vim/vim/issues/14236)
+                                var cword = expand("<cword>")->trim()
+                                this.prompt = this.prompt .. cword
+                                this.cursorpos = this.cursorpos + cword->strcharlen()
                             endif
                             ctrl_r_active = false
                         endif
@@ -202,7 +221,7 @@ export class FilterMenu
                     return true
                 },
                 callback: (id, result) => {
-                    popup_close(this.idp, -1)  # when <c-c> is pressed explicitly close the second popup
+                    this.idp->popup_close(-1)  # when <c-c> is pressed explicitly close the second popup
                     if result->type() == v:t_dict
                         Callback(this.filtered_items[0][result.idx - 1], result.key)
                     endif
@@ -271,6 +290,13 @@ export class FilterMenu
                 })
             endif
         endif
+    enddef
+
+    def _CursorSet()
+        this.idp->clearmatches()
+        var bytepos = options.promptchar->strcharlen() + 2 +
+            this.prompt->strcharpart(0, this.cursorpos - 3)->len()
+        matchaddpos('ScopeMenuCursor', [[1, bytepos]], 10, -1, {window: this.idp})
     enddef
 endclass
 

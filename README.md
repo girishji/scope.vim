@@ -47,6 +47,9 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
 ```
 
+> [!NOTE]
+> If you are using legacy script to map keys, use `scope#fuzzy#File()` instead. Same pattern applies to other mappings also.
+
 ##### API
 
 ```vim
