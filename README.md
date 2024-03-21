@@ -289,11 +289,25 @@ Mapping | Action
 `<C-Q>` | Send only filtered items to the quickfix list
 `<C-l>` | Send all unfiltered items to the location list (`:h location-list`)
 `<C-L>` | Send only filtered items to the location list
+
+Prompt window editor key mappings align with Vim's default mappings for command-line editing.
+
+Mapping | Action
+--------|-------
+`<Left>` | Cursor one character left
+`<Right>` | Cursor one character right
+`<C-e>/<End>` | Move cursor to the end of line
+`<C-b>/<Home>` | Move cursor to the beginning of line
+`<C-u>` | Delete characters between cursor and beginning of line
+`<C-w>` | Delete word before the cursor
+`<S-Left>/<C-Left>` | Cursor one WORD left
+`<S-Right>/<C-Right>` | Cursor one WORD right
+`<C-Up>/<S-Up>` | Recall history previous
+`<C-Down>/<S-Down>` | Recall history next
 `<C-r><C-w>` | Insert word under cursor (<cword>) into prompt
-`<Left>` | Move cursor to the left in the prompt window
-`<Right>` | Move cursor to the right in the prompt window
-`<C-Left>` | Move cursor to the end of line in the prompt window
-`<C-Right>` | Move cursor to the beginning of line in the prompt window
+`<C-r><C-a>` | Insert WORD under cursor (<cWORD>) into prompt
+`<C-r><C-l>` | Insert line under cursor into prompt
+`<C-r>` {register} | Insert the contents of a numbered or named register. Between typing CTRL-R and the second character '"' will be displayed to indicate that you are expected to enter the name of a register.
 
 ## Requirements
 

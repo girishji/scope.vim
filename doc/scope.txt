@@ -285,24 +285,42 @@ Representative code for each of these patterns can be found in
 
 When popup window is open the following key mappings can be used.
 
-`<Right>/<PageDown>` | Page down
-`<Left>/<PageUp>` | Page up
-`<tab>/<C-n>/<Down>/<ScrollWheelDown>` | Next item
-`<S-tab>/<C-p>/<Up>/<ScrollWheelUp>` | Previous item
-`<Esc>/<C-c>` | Close
-`<CR>` | Confirm selection
-`<C-j>` | Go to file selection in a split window
-`<C-v>` | Go to file selection in a vertical split
-`<C-t>` | Go to file selection in a tab
-`<C-q>` | Send all unfiltered items to the quickfix list (`:h quickfix.txt`)
-`<C-Q>` | Send only filtered items to the quickfix list
-`<C-l>` | Send all unfiltered items to the location list (`:h location-list`)
-`<C-L>` | Send only filtered items to the location list
-`<C-r><C-w>` | Insert word under cursor (<cword>) into prompt
-`<Left>` | Move cursor to the left in the prompt window
-`<Right>` | Move cursor to the right in the prompt window
-`<C-Left>` | Move cursor to the end of line in the prompt window
-`<C-Right>` | Move cursor to the beginning of line in the prompt window
+`<Right>/<PageDown>`     Page down
+`<Left>/<PageUp>`        Page up
+`<tab>/<C-n>/<Down>/<ScrollWheelDown>`	Next item
+`<S-tab>/<C-p>/<Up>/<ScrollWheelUp>`	Previous item
+`<Esc>/<C-c>`            Close
+`<CR>`                   Confirm selection
+`<C-j>`                  Go to file selection in a split window
+`<C-v>`                  Go to file selection in a vertical split
+`<C-t>`                  Go to file selection in a tab
+`<C-q>`                  Send all unfiltered items to the quickfix 
+		       list (`:h quickfix.txt`)
+`<C-Q>`                  Send only filtered items to the quickfix list
+`<C-l>`                  Send all unfiltered items to the location
+		       list (`:h location-list`)
+`<C-L>`                  Send only filtered items to the location list
+
+Prompt window editor key mappings align with Vim's default mappings for
+command-line editing.
+
+`<Left>`                 Cursor one character left
+`<Right>`                Cursor one character right
+`<C-e>/<End>`            Move cursor to the end of line
+`<C-b>/<Home>`           Move cursor to the beginning of line
+`<C-u>`                  Delete characters b/w cursor and beginning of line
+`<C-w>`                  Delete word before the cursor
+`<S-Left>/<C-Left>`      Cursor one WORD left
+`<S-Right>/<C-Right>`    Cursor one WORD right
+`<C-Up>/<S-Up>`          Recall history previous
+`<C-Down>/<S-Down>`      Recall history next
+`<C-r><C-w>`             Insert word under cursor (<cword>) into prompt
+`<C-r><C-a>`             Insert WORD under cursor (<cWORD>) into prompt
+`<C-r><C-l>`             Insert line under cursor into prompt
+`<C-r>` {register}       Insert the contents of a numbered or named register.
+		       Between typing CTRL-R and the second character '"' will
+		       be displayed to indicate that you are expected to enter
+		       the name of a register.
 
 ==============================================================================
 2. Requirements					*scope-requirements*

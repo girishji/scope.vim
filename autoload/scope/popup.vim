@@ -18,6 +18,8 @@ export def OptionsSet(opt: dict<any>)
     options->extend(opt)
 enddef
 
+var history: dict<list<string>> = {}
+
 export class FilterMenu
 
     var prompt: string = ''
@@ -30,6 +32,7 @@ export class FilterMenu
     var maxwidth: number
     var maximize: bool
     var cursorpos: number = 3  # based on character index, not byte index
+    var history_idx: number
 
     def SetPrompt(s: string)
         this.prompt = s
@@ -106,6 +109,7 @@ export class FilterMenu
         if maximize
             this.minwidth = this.maxwidth
         endif
+        this.history_idx = -1
         var ignore_input = ["\<cursorhold>", "\<ignore>", "\<Nul>",
                     \ "\<LeftMouse>", "\<LeftRelease>", "\<LeftDrag>", $"\<2-LeftMouse>",
                     \ "\<RightMouse>", "\<RightRelease>", "\<RightDrag>", "\<2-RightMouse>",
@@ -131,7 +135,7 @@ export class FilterMenu
                 filter: (id, key) => {
                     if key == "\<C-r>"
                         ctrl_r_active = true
-                    elseif key != "\<C-w>"
+                    elseif ["\<C-w>", "\<C-a>", "\<C-l>"]->index(key) == -1 && key !~ '\p'
                         ctrl_r_active = false
                     endif
                     items_count = this.items_dict->len()
@@ -141,7 +145,8 @@ export class FilterMenu
                         if Cleanup != null_function
                             Cleanup()
                         endif
-                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>", "\<C-q>", "\<C-Q>", "\<C-l>", "\<C-L>"]->index(key) > -1
+                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>", "\<C-Q>"]->index(key) > -1 ||
+                            (!ctrl_r_active && key == "\<C-L>")  # <C-L> matches both <C-L> and <C-l>
                         this.idp->popup_close(-1)
                         if this.filtered_items[0]->len() > 0 && items_count > 0
                             id->popup_close({idx: getcurpos(id)[1], key: key})
@@ -172,25 +177,47 @@ export class FilterMenu
                             this.cursorpos = this.cursorpos - 1
                             this._CursorSet()
                         endif
+                    elseif key == "\<C-Right>" || key == "\<S-Right>"
+                        if this.cursorpos < (3 + this.prompt->strcharlen())
+                            var pos = this.cursorpos - 3
+                            var byteidx = this.prompt->stridx(' ', this.prompt->byteidx(pos) + 1)
+                            if byteidx != -1
+                                this.cursorpos = 3 + this.prompt->charidx(byteidx)
+                            else
+                                this.cursorpos = 3 + this.prompt->strcharlen()
+                            endif
+                            this._CursorSet()
+                        endif
+                    elseif key == "\<C-Left>" || key == "\<S-Left>"
+                        if this.cursorpos > 3
+                            var pos = this.cursorpos - 3
+                            if pos > 1 && this.prompt[pos - 1] == ' ' && this.prompt[pos - 2] == ' '
+                                this.cursorpos = this.cursorpos - 1
+                            else
+                                var left = this.prompt->slice(0, pos)->matchstr('.*\s\+\ze\k\+\s*$')
+                                this.cursorpos = 3 + left->strcharlen()
+                            endif
+                            this._CursorSet()
+                        endif
                     elseif key == "\<PageUp>"
                         win_execute(id, 'normal! ' .. "\<C-u>")
-                    elseif key == "\<C-Left>"
+                    elseif key == "\<Home>" || key == "\<C-b>"
                         if this.cursorpos > 3
                             this.cursorpos = 3
                             this._CursorSet()
                         endif
-                    elseif key == "\<C-Right>"
+                    elseif key == "\<End>" || key == "\<C-e>" 
                         if this.cursorpos < (3 + this.prompt->strcharlen())
                             this.cursorpos = 3 + this.prompt->strcharlen()
                             this._CursorSet()
                         endif
-                    elseif key == "\<tab>" || key == "\<C-n>" || key == "\<Down>" || key == "\<ScrollWheelDown>"
+                    elseif ["\<tab>", "\<C-n>", "\<Down>", "\<ScrollWheelDown>"]->index(key) > -1
                         var ln = getcurpos(id)[1]
                         win_execute(id, "normal! j")
                         if ln == getcurpos(id)[1]
                             win_execute(id, "normal! gg")
                         endif
-                    elseif key == "\<S-tab>" || key == "\<C-p>" || key == "\<Up>" || key == "\<ScrollWheelUp>"
+                    elseif ["\<S-tab>", "\<C-p>", "\<Up>", "\<ScrollWheelUp>"]->index(key) > -1
                         var ln = getcurpos(id)[1]
                         win_execute(id, "normal! k")
                         if ln == getcurpos(id)[1]
@@ -198,31 +225,66 @@ export class FilterMenu
                         endif
                     # Ignoring fancy events and double clicks, which are 6 char long: `<80><fc> <80><fd>.`
                     elseif ignore_input->index(key) == -1 && strchars(key) != 6 && str2list(key) != ignore_input_wtf
-                        if key == "\<C-U>"
+                        if ["\<S-Up>", "\<S-Down>", "\<C-Up>", "\<C-Down>"]->index(key) > -1
+                            if history->has_key(this.title)
+                                var listlen = history[this.title]->len()
+                                if key == "\<C-Up>" || key == "\<S-Up>"
+                                    this.history_idx = (this.history_idx > 0) ? this.history_idx - 1 : listlen - 1
+                                else
+                                    this.history_idx = (this.history_idx < 0 || this.history_idx > (listlen - 2)) ?
+                                        0 : this.history_idx + 1
+                                endif
+                                this.prompt = history[this.title][this.history_idx]
+                                this.cursorpos = 3 + this.prompt->strcharlen()
+                            endif
+                        elseif key == "\<C-U>"
                             if this.prompt == null_string
                                 return true
                             endif
                             this.prompt = null_string
                             this.cursorpos = 3
-                        elseif (key == "\<C-h>" || key == "\<bs>")
+                        elseif !ctrl_r_active && key == "\<C-w>"
+                            if this.prompt == null_string
+                                return true
+                            endif
+                            if this.prompt->stridx(' ') == -1
+                                this.prompt = null_string
+                                this.cursorpos = 3
+                            else
+                                var pos = this.cursorpos - 3
+                                var right = this.prompt->slice(pos)
+                                this.prompt = this.prompt->slice(0, pos)->matchstr('.*\s\+\ze\k\+\s*$')
+                                this.cursorpos = 3 + this.prompt->strcharlen()
+                                this.prompt = this.prompt .. right
+                            endif
+                        elseif key == "\<C-h>" || key == "\<bs>"
                             if this.prompt == null_string
                                 return true
                             endif
                             this.cursorpos = this.cursorpos - 1
                             var pos = this.cursorpos - 3
                             this.prompt = this.prompt->slice(0, pos) .. this.prompt->slice(pos + 1)
-                        elseif key =~ '\p'
-                            var pos = this.cursorpos - 3
-                            this.prompt = this.prompt->slice(0, pos) .. key .. this.prompt->slice(pos)
-                            this.cursorpos = this.cursorpos + 1
-                        elseif key == "\<C-w>"
-                            if ctrl_r_active
+                        elseif ctrl_r_active && ["\<C-w>", "\<C-a>", "\<C-l>"]->index(key) > -1
+                            if key == "\<C-l>"
+                                this.prompt = getline('.')->trim()
+                                this.cursorpos = 3 + this.prompt->strcharlen()
+                            else
                                 # vim bug: ..= and += are not working (https://github.com/vim/vim/issues/14236)
-                                var cword = expand("<cword>")->trim()
+                                var cword = (key == "\<C-w>") ? expand("<cword>")->trim() : expand("<cWORD>")->trim()
                                 this.prompt = this.prompt .. cword
                                 this.cursorpos = this.cursorpos + cword->strcharlen()
                             endif
                             ctrl_r_active = false
+                        elseif key =~ '\p'
+                            if ctrl_r_active
+                                this.prompt = key->slice(1)->getreg()->trim()
+                                this.cursorpos = 3 + this.prompt->strcharlen()
+                                ctrl_r_active = false
+                            else
+                                var pos = this.cursorpos - 3
+                                this.prompt = this.prompt->slice(0, pos) .. key .. this.prompt->slice(pos)
+                                this.cursorpos = this.cursorpos + 1
+                            endif
                         endif
                         var GetFilteredItemsFn = GetFilteredItems == null_function ? this._GetFilteredItems : GetFilteredItems
                         [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
@@ -232,6 +294,12 @@ export class FilterMenu
                 },
                 callback: (id, result) => {
                     this.idp->popup_close(-1)  # when <c-c> is pressed explicitly close the second popup
+                    if this.prompt != null_string
+                        if !history->has_key(this.title)
+                            history[this.title] = []
+                        endif
+                        history[this.title]->add(this.prompt)
+                    endif
                     if result->type() == v:t_dict
                         Callback(this.filtered_items[0][result.idx - 1], result.key)
                     endif
