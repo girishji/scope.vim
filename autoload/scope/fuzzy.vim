@@ -3,6 +3,7 @@ vim9script
 import './task.vim'
 import './popup.vim'
 import './util.vim'
+import './lsp.vim'
 
 export var options: dict<any> = {
     grep_echo_cmd: true,
@@ -770,6 +771,10 @@ enddef
 
 export def Loclist()
     XListSearch(false)
+enddef
+
+export def LspDocumentSymbol()
+    lsp.DocumentSymbol()
 enddef
 
 # chunks of code shamelessly ripped from habamax

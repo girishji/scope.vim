@@ -244,6 +244,7 @@ Method|Description
 `fuzzy.Help()` | Help topics
 `fuzzy.Highlight()` | Highlight groups
 `fuzzy.Keymap()` | Key mappings, go to their declaration on `<cr>`
+`fuzzy.LspDocumentSymbol()` | Symbols supplied by [Lsp](https://github.com/yegappan/lsp)
 `fuzzy.Loclist()` | Items in the location list (sets 'current entry')
 `fuzzy.LoclistHistory()` | Entries in the location list stack
 `fuzzy.MRU()` | `:h v:oldfiles`
