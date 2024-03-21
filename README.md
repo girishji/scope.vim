@@ -33,6 +33,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
 
 > [!NOTE]
 > If you are using legacy script to map keys, use:
+>
 > `nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<CR>`
 > Same pattern applies to other mappings also.
 
