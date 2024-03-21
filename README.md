@@ -31,6 +31,11 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
 ```
 
+> [!NOTE]
+> If you are using legacy script to map keys, use:
+> `nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<CR>`
+> Same pattern applies to other mappings also.
+
 Search for installed Vim files:
 
 ```vim
@@ -46,9 +51,6 @@ vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
 ```
-
-> [!NOTE]
-> If you are using legacy script to map keys, use `scope#fuzzy#File()` instead. Same pattern applies to other mappings also.
 
 ##### API
 
