@@ -1,7 +1,7 @@
 vim9script
 
 if !exists('g:loaded_lsp')
-    echoerr 'LSP client not found'
+    # Do not throw error as it will show up when Vim starts.
     finish
 endif
 
