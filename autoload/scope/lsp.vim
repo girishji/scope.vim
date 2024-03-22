@@ -35,9 +35,9 @@ export def DocumentSymbol()
         var symList: list<dict<any>> = []
         var bnr = fname->bufnr()
         if reply[0]->has_key('location')
-            symList = symbol.GetSymbolsInfoTable(lspserver, bnr, reply)
+            symList = GetSymbolsInfoTable(lspserver, bnr, reply)
         else
-            symbol.GetSymbolsDocSymbol(lspserver, bnr, reply, symList)
+            GetSymbolsDocSymbol(lspserver, bnr, reply, symList)
         endif
 
         popup.FilterMenu.new("DocumentSymbol",
@@ -47,15 +47,54 @@ export def DocumentSymbol()
                     r = v.range
                 endif
                 var linenr = r.start.line + 1
-                return {text: $'{v.name} ({linenr})', lnum: linenr, data: v}
+                return {text: $'{v.text} ({linenr})', lnum: linenr, data: v}
             }),
             (res, key) => {
                 exe $":{res.lnum}"
                 normal! zz
             },
             (winid, _) => {
-                win_execute(winid, $"syn match FilterMenuLineNr '(\\d\\+)$'")
+                win_execute(winid, $"syn match FilterMenuLineNr '<.*> (\\d\\+)$'")
                 hi def link FilterMenuLineNr Comment
             })
     })
+enddef
+
+export def GetSymbolsInfoTable(lspserver: dict<any>,
+        bnr: number,
+        symbolInfoTable: list<dict<any>>): list<dict<any>>
+
+    var symbolTable: list<dict<any>> = []
+    for syminfo in symbolInfoTable
+        var symbolType = symbol.SymbolKindToName(syminfo.kind)->tolower()
+        var text = syminfo.name
+        if syminfo->has_key('containerName') && !syminfo.containerName->empty()
+            text ..= $' [{syminfo.containerName}]'
+        endif
+        text ..= $' <{symbolType}>'
+        var r: dict<dict<number>> = syminfo.location.range
+        symbolTable->add({text: text, range: r, selectionRange: {}})
+    endfor
+    return symbolTable
+enddef
+
+export def GetSymbolsDocSymbol(lspserver: dict<any>,
+        bnr: number,
+        docSymbolTable: list<dict<any>>,
+        symbolTable: list<dict<any>>,
+        parentName: string = '')
+
+    for syminfo in docSymbolTable
+        var symbolType = symbol.SymbolKindToName(syminfo.kind)->tolower()
+        var sr: dict<dict<number>>  = syminfo.selectionRange
+        var r: dict<dict<number>> = syminfo.range
+        var text = $'{syminfo.name} {parentName != null_string ? parentName : ""} <{symbolType}>'
+        symbolTable->add({text: text, range: r, selectionRange: sr})
+
+        if syminfo->has_key('children')
+            # Process all the child symbols
+            GetSymbolsDocSymbol(lspserver, bnr, syminfo.children, symbolTable,
+                syminfo.name)
+        endif
+    endfor
 enddef
