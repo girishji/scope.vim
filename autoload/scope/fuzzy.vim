@@ -74,7 +74,7 @@ var prev_grep = null_string
 # of parsing color codes, Vim's syntax highlighting is used. As Vim lacks
 # awareness of `grep`'s ignore-case flag, explicit instruction is needed for
 # accurate highlighting.
-export def Grep(cword: string = null_string, grepCmd: string = null_string, ignorecase: bool = true)
+export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string = null_string)
     var menu: popup.FilterMenu
     var timer_delay = max([1, options.timer_delay])
     var grep_poll_interval = max([10, options.grep_poll_interval])
@@ -189,6 +189,11 @@ export def Grep(cword: string = null_string, grepCmd: string = null_string, igno
                 echo ''
             endif
         }, true)
+enddef
+
+#wrapper function for Grep() for fast search by keyword in command line
+export def GrepFast(cword: string = null_string)
+    Grep(null_string, true, cword)
 enddef
 
 export def Buffer(list_all_buffers: bool = false)
