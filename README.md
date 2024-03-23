@@ -21,6 +21,8 @@ Map the following functions to your favorite keys.
 
 In the following examples, replace `<your_key>` with the desired key combination.
 
+To quickly try it out, use the <a href="#commands">commands</a> provided below.
+
 ### Find File
 
 Find files in the current working directory. Files are retrieved through an external job, and the window seamlessly refreshes to display real-time results.
