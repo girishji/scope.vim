@@ -192,6 +192,11 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: s
         }, true)
 enddef
 
+#wrapper function for Grep() for fast search by keyword in command line
+export def GrepFast(cword: string = null_string)
+    Grep(null_string, true, cword)
+enddef
+
 export def Buffer(list_all_buffers: bool = false)
     var blist = list_all_buffers ? getbufinfo({buloaded: 1}) : getbufinfo({buflisted: 1})
     var buffer_list = blist->mapnew((_, v) => {
