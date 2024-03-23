@@ -12,6 +12,10 @@ import autoload 'lsp/symbol.vim'
 import './popup.vim'
 
 export def DocumentSymbol()
+    if !exists("g:loaded_lsp") || exists(":LspDocumentSymbol") != 2
+        echo 'Lsp client is not available'
+        return
+    endif
     var fname: string = @%
     if fname->empty()
         return
