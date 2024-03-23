@@ -276,7 +276,7 @@ key mappings.
 
 For example, to initiate a buffer search, use the command `:Scope Buffer` or
 `:Scope buffer`. Typing `:Scope <Tab>` will display all available functions.
-`Find` and `Grep` take additional arguments.
+`Find` and `Grep` take an additional argument.
 
 `:Scope [File|file] [dir]` : Invokes a file search in the 'dir' directory. If
 'dir' is empty, the current directory is used.
