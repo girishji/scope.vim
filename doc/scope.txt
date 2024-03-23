@@ -9,7 +9,8 @@ CONTENTS                                            *scope-contents*
      1. Overview ................................. |scope-overview|
      2. Requirements ............................. |scope-requirements|
      3. Installation ............................. |scope-installation|
-     4. Configuration............................. |scope-configuration|
+     4. Configuration ............................ |scope-configuration|
+     5. Extension ................................ |scope-extensions|
 
 ==============================================================================
 1. Overview					*scope-overview*
@@ -235,7 +236,7 @@ location-list window. Add the following autocmd group:
 For automatic quickfix or location list window opening after `<C-q>` or
 `<C-l>` commands, replace `chistory|lhistory` above with `clist|llist`.
 
-### All Functions
+All Functions ~
 
 You can map the following functions to keys.
 
@@ -251,9 +252,9 @@ You can map the following functions to keys.
 `fuzzy.Grep()`: Live grep in current working directory (spaces allowed)
 `fuzzy.Help()`: Help topics
 `fuzzy.Highlight()`: Highlight groups
+`fuzzy.Jumplist()`: `:h jumplist`
 `fuzzy.Keymap()`: Key mappings, go to their declaration on `<cr>`
-`fuzzy.LspDocumentSymbol()`: Symbols supplied by Lsp client
-			     (https://github.com/yegappan/lsp)
+`fuzzy.LspDocumentSymbol()`: Symbols supplied by (yegappan) Lsp client
 `fuzzy.Loclist()`: Items in the location list (sets 'current entry')
 `fuzzy.LoclistHistory()`: Entries in the location list stack
 `fuzzy.MRU()`: `:h v:oldfiles`
@@ -265,30 +266,18 @@ You can map the following functions to keys.
 `fuzzy.Tag()`: `:h ctags` search
 `fuzzy.Window()`: Open windows
 
-### Writing Your Own Extension
+Commands ~
 
-The search functionality encompasses four fundamental patterns:
+The above functions have equivalent commands that can be invoked from the
+command line. The primary command is `:Scope`, with the function name as its
+first argument. These commands do not take any additional arguments and are
+primarily provided for convenience. The main interface, as described above, is
+through key mappings.
 
-1. Obtaining a List and Fuzzy Searching: ~
-   - This represents the simplest use case, where a list of items is acquired,
-     and fuzzy search is performed on them.
+For example, to initiate a file search, use the command `:Scope File`. Typing
+`:Scope <Tab>` will display all available functions.
 
-2. Asynchronous List Update with Fuzzy Search: ~
-   - In scenarios like file searching, the list of all items is updated
-     asynchronously while concurrently conducting a fuzzy search.
-
-3. Dynamic List Update on User Input: ~
-   - Certain cases, such as handling tags or Vim commands, involve waiting for
-     a new list of items every time the user inputs something.
-
-4. Asynchronous Relevant Items Update on User Input: ~
-   - For dynamic searches like live grep, the list is updated asynchronously,
-     but exclusively with relevant items, each time the user types something.
-
-Representative code for each of these patterns can be found in
-`autoload/scope/fuzzy.vim`.
-
-### Key Mappings
+Key Mappings ~
 
 When popup window is open the following key mappings can be used.
 
@@ -391,7 +380,30 @@ Following highlight groups modify the content of popup window:
 			  relevant). Default: Linked to `Statement`.
 
 ==============================================================================
+5. Writing Your Own Extension				*scope-extension*
 
+The search functionality encompasses four fundamental patterns:
+
+1. Obtaining a List and Fuzzy Searching: ~
+   - This represents the simplest use case, where a list of items is acquired,
+     and fuzzy search is performed on them.
+
+2. Asynchronous List Update with Fuzzy Search: ~
+   - In scenarios like file searching, the list of all items is updated
+     asynchronously while concurrently conducting a fuzzy search.
+
+3. Dynamic List Update on User Input: ~
+   - Certain cases, such as handling tags or Vim commands, involve waiting for
+     a new list of items every time the user inputs something.
+
+4. Asynchronous Relevant Items Update on User Input: ~
+   - For dynamic searches like live grep, the list is updated asynchronously,
+     but exclusively with relevant items, each time the user types something.
+
+Representative code for each of these patterns can be found in
+`autoload/scope/fuzzy.vim`.
+
+==============================================================================
 Credits ~
 
 Some chunks shamelessly ripped from habamax

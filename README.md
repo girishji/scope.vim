@@ -243,6 +243,7 @@ Method|Description
 `fuzzy.Grep()` | Live grep in current working directory (spaces allowed)
 `fuzzy.Help()` | Help topics
 `fuzzy.Highlight()` | Highlight groups
+`fuzzy.Jumplist()` | `:h jumplist`
 `fuzzy.Keymap()` | Key mappings, go to their declaration on `<cr>`
 `fuzzy.LspDocumentSymbol()` | Symbols supplied by [Lsp](https://github.com/yegappan/lsp)
 `fuzzy.Loclist()` | Items in the location list (sets 'current entry')
@@ -255,6 +256,12 @@ Method|Description
 `fuzzy.Register()` | Vim registers, paste contents on `<cr>`
 `fuzzy.Tag()` | `:h ctags` search
 `fuzzy.Window()` | Open windows
+
+### Commands
+
+The above functions have equivalent commands that can be invoked from the command line. The primary command is `:Scope`, with the function name as its first argument. These commands do not take any additional arguments and are primarily provided for convenience. The main interface, as described above, is through key mappings.
+
+For example, to initiate a file search, use the command `:Scope File`. Typing `:Scope <Tab>` will display all available functions.
 
 ### Key Mappings
 
