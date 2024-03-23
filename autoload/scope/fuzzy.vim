@@ -777,5 +777,26 @@ export def LspDocumentSymbol()
     lsp.DocumentSymbol()
 enddef
 
+export def Jumplist()
+    var jumps = execute("jumps")->split("\n")[1 : ]
+    var curr_idx = jumps->match('\v^\s*\>')
+
+    popup.FilterMenu.new("Jumplist (jump|line|col|file/text)", jumps->mapnew((_, v) => ({text: v})),
+        (res, key) => {
+              var idx = jumps->index(res.text)
+              var delta = curr_idx - idx
+              if delta > 0
+                  exe $"normal! {delta}\<C-o>"
+              else
+                  exe $"normal! {abs(delta)}\<C-i>"
+              endif
+        },
+        (winid, _) => {
+            win_execute(winid, "syn match ScopeMenuSubtle '\\s\\+\\d\\+\\s\\+\\d\\+\\s\\+\\d\\+\\s\\+'")
+            hi def link ScopeMenuSubtle Comment
+        },
+    )
+enddef
+
 # chunks of code shamelessly ripped from habamax
 # https://github.com/habamax/.vim/blob/master/autoload/fuzzy.vim
