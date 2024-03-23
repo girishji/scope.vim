@@ -36,6 +36,7 @@ export class FilterMenu
 
     def SetPrompt(s: string)
         this.prompt = s
+        this.cursorpos = 3 + s->strcharlen()
     enddef
 
     def _CommonProps(borderchars: list<string>, top_pos: number, winheight: number): dict<any>

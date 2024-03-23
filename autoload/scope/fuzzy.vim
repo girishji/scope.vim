@@ -162,10 +162,11 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: s
                     menu.SetPrompt(s)
                 enddef
                 var str = expand(cword)
-                if str != null_string
-                    timer_start(0, function(SetPrompt, [str]))
-                    timer_start(1, function(DoGrep, [str]))
+                if str == null_string
+                    str = cword
                 endif
+                timer_start(0, function(SetPrompt, [str]))
+                timer_start(1, function(DoGrep, [str]))
             endif
             win_execute(id, $"syn match ScopeMenuFilenameSubtle \".*:\\d\\+:\"")
             # note: it is expensive to regex match. even though following pattern
@@ -190,11 +191,6 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: s
                 echo ''
             endif
         }, true)
-enddef
-
-#wrapper function for Grep() for fast search by keyword in command line
-export def GrepFast(cword: string = null_string)
-    Grep(null_string, true, cword)
 enddef
 
 export def Buffer(list_all_buffers: bool = false)

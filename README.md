@@ -261,9 +261,17 @@ Method|Description
 
 ### Commands
 
-The above functions have equivalent commands that can be invoked from the command line. The primary command is `:Scope`, with the function name as its only argument. These commands are primarily provided for convenience. The main interface, as described above, is through key mappings.
+The above functions have equivalent commands that can be invoked from the command line. The primary command is `:Scope`, with the function name as its only argument except for `File` and `Grep`. These commands are primarily provided for convenience. The main interface, as described above, is through key mappings.
 
-For example, to initiate a file search, use the command `:Scope File`. Typing `:Scope <Tab>` will display all available functions.
+For example, to initiate a buffer search, use the command `:Scope Buffer` or `:Scope buffer`. Typing `:Scope <Tab>` will display all available functions. `Find` and `Grep` take additional arguments.
+
+###### `:Scope [File|file] [dir]`
+
+Invokes a file search in the 'dir' directory. If 'dir' is empty, the current directory is used.
+
+###### `:Scope [Grep|grep] [str]`
+
+Starts a live search with 'str' as the initial search string if non-empty.
 
 ### Key Mappings
 

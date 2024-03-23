@@ -12,7 +12,7 @@ import autoload '../autoload/scope/fuzzy.vim'
 # not contain column pattern, add it.
 set grepformat^=%f:%l:%c:%m
 
-var cmds = [
+const cmds = [
     'Autocmd',
     'BufSearch',
     'Buffer',
@@ -40,18 +40,44 @@ var cmds = [
     'Window',
 ]
 
-def DoCommand(cmd: string)
-    $'fuzzy.{(cmd->split())[0]}()'->eval()
+def DoCommand(fnstr: string, arg1: string = null_string)
+    def ExecCmd(dir: string, ExecFn: func(): any)
+        try
+            :silent exe $'cd {dir}'
+            ExecFn()
+        finally
+            :silent cd -
+        endtry
+    enddef
+    const cidx = cmds->indexof((_, v) => v ==? fnstr)
+    if cidx != -1
+        if fnstr ==? 'file'
+            if arg1->isdirectory()
+                ExecCmd(arg1, (): any => fuzzy.File())
+            else
+                fuzzy.File()
+            endif
+        elseif fnstr ==? 'grep'
+            # 'cd dir' does not work for grep since grep is called after 'cd -' is called (above)
+            fuzzy.Grep(null_string, true, arg1)
+        else
+            $'fuzzy.{cmds[cidx]}()'->eval()
+        endif
+    endif
 enddef
 
-def Completer(prefix: string, line: string, cursorpos: number): string
-    var parts = line->split()
-    if parts->len() == 1
+def Completor(prefix: string, line: string, cursorpos: number): string
+    if prefix == null_string
         return cmds->copy()->join("\n")
-    elseif parts[1] =~ $'^{prefix}'
-        return cmds->copy()->filter((_, v) => v =~? $'^{prefix}')->join("\n")
+    else
+        const parts = line->strpart(0, cursorpos)->split()
+        if parts->len() == 2
+            return cmds->copy()->filter((_, v) => v =~? $'^{prefix}')->join("\n")
+        elseif parts->len() == 3 && parts[1] ==? 'file'
+            return parts[2]->getcompletion('dir')->join("\n")
+        endif
     endif
     return null_string
 enddef
 
-command -nargs=1 -complete=custom,Completer Scope DoCommand(<f-args>)
+command -nargs=+ -complete=custom,Completor Scope DoCommand(<f-args>)
