@@ -107,11 +107,11 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
             prompt_escaped = prompt_escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
 
             cmd = $'{grepCmd ?? util.GrepCmd()} {prompt_escaped}'
-            if grepCmd != null_string && grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
+            if dir->isdirectory()
+                cmd = $'{cmd} {dir}'
+            elseif grepCmd != null_string && grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
                 # 'rg' needs a './' at the end
                 cmd = $'{cmd} ./'
-            elseif dir->isdirectory()
-                cmd = $'{cmd} {dir}'
             endif
             if options.grep_echo_cmd
                 echo cmd
