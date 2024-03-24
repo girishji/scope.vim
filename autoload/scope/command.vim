@@ -1,7 +1,6 @@
 vim9script
 
 import './fuzzy.vim'
-import './util.vim'
 
 const cmds = [
     'Autocmd',
