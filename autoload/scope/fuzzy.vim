@@ -75,7 +75,8 @@ var prev_grep = null_string
 # of parsing color codes, Vim's syntax highlighting is used. As Vim lacks
 # awareness of `grep`'s ignore-case flag, explicit instruction is needed for
 # accurate highlighting.
-export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string = null_string)
+export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
+        cword: string = null_string, dir: string = null_string)
     var menu: popup.FilterMenu
     var timer_delay = max([1, options.timer_delay])
     var grep_poll_interval = max([10, options.grep_poll_interval])
@@ -109,6 +110,8 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: s
             if grepCmd != null_string && grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
                 # 'rg' needs a './' at the end
                 cmd = $'{cmd} ./'
+            elseif dir->isdirectory()
+                cmd = $'{cmd} {dir}'
             endif
             if options.grep_echo_cmd
                 echo cmd

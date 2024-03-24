@@ -1,6 +1,7 @@
 vim9script
 
 import './fuzzy.vim'
+import './util.vim'
 
 const cmds = [
     'Autocmd',
@@ -30,7 +31,7 @@ const cmds = [
     'Window',
 ]
 
-export def DoCommand(fnstr: string, arg1: string = null_string)
+export def DoCommand(fnstr: string, arg1: string = null_string, arg2: string = null_string)
     def ExecCmd(dir: string, ExecFn: func(): any)
         try
             :silent exe $'cd {dir}'
@@ -48,8 +49,12 @@ export def DoCommand(fnstr: string, arg1: string = null_string)
                 fuzzy.File()
             endif
         elseif fnstr ==? 'grep'
-            # 'cd dir' does not work for grep since grep is called after 'cd -' is called (above)
-            fuzzy.Grep(null_string, true, arg1)
+            if arg1->isdirectory()
+                # 'cd dir' does not work for grep since grep is called after 'cd -' is called (above)
+                fuzzy.Grep(null_string, true, arg2, arg1)
+            else
+                fuzzy.Grep(null_string, true, $'{arg1}{arg2 != null_string ? " " : ""}{arg2}')
+            endif
         else
             $'fuzzy.{cmds[cidx]}()'->eval()
         endif
@@ -63,7 +68,7 @@ export def Completor(prefix: string, line: string, cursorpos: number): string
         const parts = line->strpart(0, cursorpos)->split()
         if parts->len() == 2
             return cmds->copy()->filter((_, v) => v =~? $'^{prefix}')->join("\n")
-        elseif parts->len() == 3 && parts[1] ==? 'file'
+        elseif parts->len() == 3 && parts[1] =~? 'file\|grep'
             return parts[2]->getcompletion('dir')->join("\n")
         endif
     endif

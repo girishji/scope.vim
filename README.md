@@ -61,7 +61,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
 ```vim
 # findCmd: String : Command string as you'd enter in a shell. If omitted, uses
 #                   'fd' (if installed) or 'find'.
-# count: Number : Maximum number of files returned.
+# count:   Number : Maximum number of files returned.
 def File(findCmd: string = null_string, count: number = 10000)
 ```
 
@@ -98,12 +98,15 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<CR>
 ##### API
 
 ```vim
-# grepCmd: String : Command string as you'd use in a shell. If omitted, uses 'grep'.
+# grepCmd:    String  : Command string as you'd use in a shell. If omitted, uses 'grep'.
 # ignorecase: Boolean : Strictly for syntax highlighting. Should match the 'ignorecase'
-#                       option given to 'grep'.
-# cword: String : If not null_string, put the word under cursor into the prompt.
-#                 Allowable values are '<cword>' and '<cWORD>'.
-def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string = null_string)
+#                         option given to 'grep'.
+# cword:      String  : If not null_string, put the word under cursor into the prompt.
+#                         Allowable values are '<cword>' and '<cWORD>'.
+# dir:        String  : If not null_string, search in the specified directory instead of the
+#                         current directory.
+def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string = null_string,
+             dir: string = null_string)
 ```
 
 To optimize responsiveness, consider fine-tuning `Grep()` settings, particularly for larger projects and slower systems. For instance, adjusting `timer_delay` to a higher value can help alleviate jitteriness during fast typing or clipboard pasting. Additionally, `grep_poll_interval` dictates the initial responsiveness of the prompt for the first few typed characters.
@@ -177,8 +180,8 @@ nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<CR>
 ##### API
 
 ```vim
-# cword: String : If not null_string, put the word under cursor into the prompt.
-#                 Allowable values are '<cword>' and '<cWORD>'.
+# cword:  String  : If not null_string, put the word under cursor into the prompt.
+#                     Allowable values are '<cword>' and '<cWORD>'.
 # recall: Boolean : Put previously searched word or <cword> into the prompt.
 def BufSearch(cword: string = null_string, recall: bool = true)
 ```
@@ -265,13 +268,13 @@ The above functions have equivalent commands that can be invoked from the comman
 
 For example, to initiate a buffer search, use the command `:Scope Buffer` or `:Scope buffer`. Typing `:Scope <Tab>` will display all available functions. `Find` and `Grep` take an additional argument.
 
-###### `:Scope [File|file] [dir]`
+###### `:Scope {File|file} [dir]`
 
 Invokes a file search in the 'dir' directory. If 'dir' is empty, the current directory is used.
 
-###### `:Scope [Grep|grep] [str]`
+###### `:Scope {Grep|grep} [dir] [str]`
 
-Starts a live search with 'str' as the initial search string if non-empty.
+Starts a live search with 'str' as the initial search string if non-empty. If 'dir' is specified, search in that directory instead of the current directory.
 
 ### Key Mappings
 
