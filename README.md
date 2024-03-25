@@ -318,10 +318,12 @@ Mapping | Action
 
 > [!NOTE]
 > If you have trouble pasting from clipboard into popup window, disable bracketed paste as follows:
+> ```
 > &t_BE = ""
 > &t_BD = "\e[?2004l"
 > exec "set t_PS=\e[200~"
 > exec "set t_PE=\e[201~"
+> ```
 
 ## Requirements
 
