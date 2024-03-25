@@ -316,6 +316,13 @@ Mapping | Action
 `<C-r><C-l>` | Insert line under cursor into prompt
 `<C-r>` {register} | Insert the contents of a numbered or named register. Between typing CTRL-R and the second character '"' will be displayed to indicate that you are expected to enter the name of a register.
 
+> [!NOTE]
+> If you have trouble pasting from clipboard into popup window, disable bracketed paste as follows:
+> &t_BE = ""
+> &t_BD = "\e[?2004l"
+> exec "set t_PS=\e[200~"
+> exec "set t_PE=\e[201~"
+
 ## Requirements
 
 - Vim version 9.1 or higher
