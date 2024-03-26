@@ -107,7 +107,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
             prompt_escaped = prompt_escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
 
             cmd = $'{grepCmd ?? util.GrepCmd()} {prompt_escaped}'
-            if dir->isdirectory()
+            if dir != null_string
                 cmd = $'{cmd} {dir}'
             elseif grepCmd != null_string && grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
                 # 'rg' needs a './' at the end
@@ -804,6 +804,12 @@ export def Jumplist()
             hi def link ScopeMenuSubtle Comment
         },
     )
+enddef
+
+export def HelpfilesGrep()
+    var cmd = 'grep --color=never -REIHins --include="*.txt"'
+    var dirs = &rtp->split(',')->mapnew((_, v) => $'{v}/doc')->filter((_, v) => v->isdirectory())
+    Grep(cmd, true, null_string, dirs->join(' '))
 enddef
 
 # chunks of code shamelessly ripped from habamax

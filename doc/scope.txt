@@ -252,6 +252,7 @@ You can map the following functions to keys.
 `fuzzy.GitFile()`: Files under git
 `fuzzy.Grep()`: Live grep in current working directory (spaces allowed)
 `fuzzy.Help()`: Help topics
+`fuzzy.HelpfilesGrep()`: Live grep Vim help files (doc/*.txt)
 `fuzzy.Highlight()`: Highlight groups
 `fuzzy.Jumplist()`: `:h jumplist`
 `fuzzy.Keymap()`: Key mappings, go to their declaration on `<cr>`

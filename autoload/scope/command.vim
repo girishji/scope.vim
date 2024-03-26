@@ -14,6 +14,7 @@ const cmds = [
     'GitFile',
     'Grep',
     'Help',
+    'HelpfilesGrep',
     'Highlight',
     'Jumplist',
     'Keymap',

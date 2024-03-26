@@ -247,7 +247,8 @@ Method|Description
 `fuzzy.Filetype()` | File types
 `fuzzy.GitFile()` | Files under git
 `fuzzy.Grep()` | Live grep in current working directory (spaces allowed)
-`fuzzy.Help()` | Help topics
+`fuzzy.Help()` | Vim help topics (tags)
+`fuzzy.HelpfilesGrep()` | Live grep Vim help files (doc/\*.txt)
 `fuzzy.Highlight()` | Highlight groups
 `fuzzy.Jumplist()` | `:h jumplist`
 `fuzzy.Keymap()` | Key mappings, go to their declaration on `<cr>`
