@@ -154,6 +154,10 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
                 var qfitem = getqflist({lines: [res.text]}).items[0]
                 if qfitem->has_key('bufnr')
                     util.VisitBuffer(key, qfitem.bufnr, qfitem.lnum, qfitem.col, qfitem.vcol > 0)
+                    if !qfitem.bufnr->getbufvar('&buflisted')
+                        # getqflist keeps buffer unlisted
+                        setbufvar(qfitem.bufnr, '&buflisted', 1)
+                    endif
                 else
                     echoerr 'Scope.vim: Incompatible:' res.text
                 endif
