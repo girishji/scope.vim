@@ -10,6 +10,7 @@ export var options = {
     drag: 0,
     wrap: 0,
     padding: [0, 1, 0, 1],
+    height: -1,
     promptchar: '>',
     # cursorchar: '█',
 }
@@ -327,7 +328,9 @@ export class FilterMenu
 
     def _GetHeight(items_count: number): list<number>
         var height = &lines - 8
-        if !this.maximize
+        if options.height != -1
+            height = options.height
+        elseif !this.maximize
             height = min([height, max([items_count, 5])])
         endif
         var pos_top = ((&lines - height) / 2) - 1

@@ -168,9 +168,9 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
                 def SetPrompt(s: string, timer: number)
                     menu.SetPrompt(s)
                 enddef
-                var str = expand(cword)
-                if str == null_string
-                    str = cword
+                var str: string = cword
+                if str == '<cword>' || str == '<cWORD>'
+                    str = expand(cword)
                 endif
                 timer_start(0, function(SetPrompt, [str]))
                 timer_start(1, function(DoGrep, [str]))
