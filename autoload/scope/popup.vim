@@ -119,9 +119,15 @@ export class FilterMenu
                     \ "\<X1Mouse>", "\<X1Release>", "\<X1Drag>", "\<X2Mouse>", "\<X2Release>", "\<X2Drag>",
                     \ "\<ScrollWheelLeft", "\<ScrollWheelRight>"
         ]
-        # this sequence of bytes are generated when left/right mouse is pressed and
-        # mouse wheel is rolled
-        var ignore_input_wtf = [128, 253, 100]
+        var ignore_input_utf8 = [
+            # this sequence of bytes are generated when left/right mouse is
+            # pressed and mouse wheel is rolled
+            [128, 253, 100],
+            # In xterm, when bracketed paste mode is set, the program will receive: ESC [ 200 ~,
+            # followed by the pasted text, followed by ESC [ 201 ~.
+            [128, 80, 83],
+            [128, 80, 69],
+        ]
         var ctrl_r_active = false
 
         this.idp = popup_create([$'{options.promptchar}  '],
@@ -224,8 +230,10 @@ export class FilterMenu
                         if ln == getcurpos(id)[1]
                             win_execute(id, "normal! G")
                         endif
-                    # Ignoring fancy events and double clicks, which are 6 char long: `<80><fc> <80><fd>.`
-                    elseif ignore_input->index(key) == -1 && strchars(key) != 6 && str2list(key) != ignore_input_wtf
+                    elseif ignore_input->index(key) == -1 &&
+                            # ignoring double clicks, which are 6 char long: `<80><fc> <80><fd>.`
+                            strchars(key) != 6 &&
+                            ignore_input_utf8->index(str2list(key)) == -1
                         if ["\<S-Up>", "\<S-Down>", "\<C-Up>", "\<C-Down>"]->index(key) > -1
                             if history->has_key(this.title)
                                 var listlen = history[this.title]->len()

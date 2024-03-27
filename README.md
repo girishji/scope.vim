@@ -394,12 +394,6 @@ Following highlight groups modify the content of popup window:
 - `ScopeMenuSubtle`: Line number, file name, and path. Default: Linked to `Comment`.
 - `ScopeMenuCurrent`: Special item indicating current status (used only when relevant). Default: Linked to `Statement`.
 
-> [!NOTE]
-> By default, bracketed paste is disabled. This facilitates pasting from clipboard into the popup window. To enable bracketed paste, simply set the following global variable (you might see additional characters when pasting from clipboard).
-> ```
-> g:scope_bracketed_paste = true
-> ```
-
 ### Writing Your Own Extension
 
 The search functionality encompasses four fundamental patterns:
