@@ -13,7 +13,7 @@
 
 There are already good implementations of this kind, such as [fuzzyy](https://github.com/Donaldttt/fuzzyy) and [fzf](https://github.com/junegunn/fzf). This plugin, while minimal, encompasses all essential features, excluding the preview window, which I consider non-essential. The emphasis is on performance -- pushing the essential features to their limits, and eliminating any unnecessary clutter. The feature set and key mappings align closely with [nvim-telescope](https://github.com/nvim-telescope/telescope.nvim). The code is concise and easy-to-understand.
 
-<a href="#Writing-Your-Own-Extension">Extending</a> the functionality to perform fuzzy searches for other items is straightforward.
+<a href="#Writing-Your-Own-Extension">Extending</a> the functionality to perform fuzzy search for other items is straightforward.
 
 ## Usage
 
