@@ -369,7 +369,7 @@ packadd scope.vim
 ## Configuration
 
 The appearance of the popup window can be customized using `borderchars`,
-`borderhighlight`, `highlight`, `scrollbarhighlight`, `thumbhighlight`, and
+`borderhighlight`, `highlight`, `scrollbarhighlight`, `thumbhighlight`, `maxheight`, and
 other `:h popup_create-arguments`. To wrap long lines set `wrap` to `true`
 (default is `false`). To configure these settings, use
 `scope#popup#OptionsSet()`.
