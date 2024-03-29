@@ -58,50 +58,55 @@ export def FilterFilenames(lst: list<dict<any>>, prompt: string): list<any>
     return FilterItems(lst, prompt, 'text', true)
 enddef
 
-export def FindCmd(): list<any>
-    if executable('fd')
-        return 'fd -tf --follow'->split()
-    else
-        var cmd = ['find', '.']
-        for fname in ['*.zwc', '*.swp', '.DS_Store']
-            cmd->extend(['-name', fname, '-prune', '-o'])
+export def FindCmd(gitignore: bool = true): string
+    var [dirs, basenames, relpaths] = [['.*'], ['.*', '*.swp'], []]
+    var cmd = 'find .'
+    if gitignore
+        var lines = []
+        for ignored in [getenv('HOME') .. '/.gitignore', '.gitignore']
+            if ignored->filereadable()
+                lines->extend(readfile(ignored)->filter((_, v) => v != '' && v !~ '^#'))
+            endif
         endfor
-        for fname in ['.git']  # matches .git/ and .gitrc through */git*
-            cmd->extend(['-path', $'*/{fname}*', '-prune', '-o'])
+        for item in lines
+            var idx = item->strridx('/')
+            if idx == -1
+                basenames->add(item) 
+            elseif idx == item->len() - 1
+                dirs->add(item)
+            else
+                relpaths->add(item)
+            endif
         endfor
-        for dname in ['.zsh_sessions']
-            cmd->extend(['-type', 'd', '-path', $'*/{dname}*', '-prune', '-o'])
-        endfor
-        return cmd->extend(['-type', 'f', '-print', '-follow'])
     endif
+    var paths = Unique(dirs)->mapnew((_, v) => $'-path "*/{v}"') + Unique(relpaths)->mapnew((_, v) => $'-path "./{v}"')
+    cmd ..= ' ( ' .. paths->join(' -o ') .. ' ) -prune -o'
+    cmd ..= ' -not ( ' .. Unique(basenames)->mapnew((_, v) => $'-name "{v}"')->join(' -o ') .. ' )'
+    return cmd .. ' -type f -print -follow'
 enddef
 
-export def FindCmdExcludeDirs(): string
-    # exclude dirs from .config/fd/ignore and .gitignore
-    # var sep = has("win32") ? '\' : '/'
-    # *nix only
-    var excludes = []
-    var ignore_files = [getenv('HOME') .. '/.config/fd/ignore', '.gitignore']
-    for ignore in ignore_files
-        if ignore->filereadable()
-            excludes->extend(readfile(ignore)->filter((_, v) => v != '' && v !~ '^#'))
+def Unique(lst: list<string>): list<string>
+    var found = {}
+    var res = []
+    for l in lst
+        if !found->has_key(l)
+            found[l] = true
+            res->add(l)
         endif
     endfor
-    var exclcmds = []
-    for item in excludes
-        var idx = item->strridx('/')
-        if idx == item->len() - 1
-            exclcmds->add($'-type d -path */{item}* -prune')
-        else
-            exclcmds->add($'-path */{item}/* -prune')
-        endif
-    endfor
-    var cmd = 'find . ' .. (exclcmds->empty() ? '' : exclcmds->join(' -o '))
-    return cmd .. ' -o -name *.swp -prune -o -path */.* -prune -o -type f -print -follow'
+    return res
 enddef
 
 export def GrepCmd(): string
     return 'grep --color=never -REIHins --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc"'
+enddef
+
+export def Escape(s: string): string
+    var escaped = s->substitute('\\', '\\\\\\\', 'g')
+    escaped = escaped->substitute('\[', '\\\\\\[', 'g')
+    escaped = escaped->substitute('\([ "]\)', '\\\1', 'g')
+    escaped = escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
+    return escaped
 enddef
 
 export def GetCompletionItems(s: string, type: string): list<string>

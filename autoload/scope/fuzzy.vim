@@ -12,6 +12,7 @@ export var options: dict<any> = {
     grep_poll_interval: 20,
     timer_delay: 20,
     quickfix_stack: true,
+    find_echo_cmd: false,
 }
 
 export def OptionsSet(opt: dict<any>)
@@ -19,12 +20,12 @@ export def OptionsSet(opt: dict<any>)
 enddef
 
 # fuzzy find files (build a list of files once and then fuzzy search on them)
-export def File(findCmd: string = null_string, count: number = 10000)  # list at least 10k files to search on
-    var cmd = findCmd == null_string ? util.FindCmd() : findCmd->split()
+export def File(findCmd: string = null_string, count: number = 10000, gitignore: bool = true)  # list at least 10k files to search on
+    var cmd = findCmd == null_string ? util.FindCmd(gitignore) : findCmd
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new("File", [],
         (res, key) => {
-            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd->join(' '),
+            if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd,
                     (v: dict<any>) => {
                         return {filename: v.text}
                     })
@@ -36,8 +37,17 @@ export def File(findCmd: string = null_string, count: number = 10000)  # list at
             hi def link ScopeMenuSubtle Comment
             hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
         },
-        util.FilterFilenames)
+        util.FilterFilenames,
+        () => {
+            if options.find_echo_cmd
+                echo ''
+            endif
+        })
 
+    if options.find_echo_cmd
+        var maxlen = &columns - 14
+        echo $'{cmd->len() > maxlen ? $"{cmd->slice(0, maxlen - 4)} ..." : cmd}'
+    endif
     var job: task.AsyncCmd
     var workaround = false
     job = task.AsyncCmd.new(cmd,
@@ -63,7 +73,10 @@ export def File(findCmd: string = null_string, count: number = 10000)  # list at
                 feedkeys("\<bs>", "nt")  # workaround for https://github.com/vim/vim/issues/13932
                 workaround = true
             endif
-        })
+        },
+        100,
+        null_dict,
+        findCmd == null_string)
 enddef
 
 var prev_grep = null_string
@@ -101,12 +114,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
             menu.SetText([])
         elseif prompt->len() > grep_skip_len
             # 'grep' requires some characters to be escaped (not tested for 'rg', 'ug', and 'ag')
-            var prompt_escaped = prompt->substitute('\\', '\\\\\\\', 'g')
-            prompt_escaped = prompt_escaped->substitute('\[', '\\\\\\[', 'g')
-            prompt_escaped = prompt_escaped->substitute('\([ "]\)', '\\\1', 'g')
-            prompt_escaped = prompt_escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
-
-            cmd = $'{grepCmd ?? util.GrepCmd()} {prompt_escaped}'
+            cmd = $'{grepCmd ?? util.GrepCmd()} {util.Escape(prompt)}'
             if dir != null_string
                 cmd = $'{cmd} {dir}'
             elseif grepCmd != null_string && grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
@@ -114,7 +122,8 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
                 cmd = $'{cmd} ./'
             endif
             if options.grep_echo_cmd
-                echo cmd
+                var maxlen = &columns - 14
+                echo $'{cmd->len() > maxlen ? $"{cmd->slice(0, maxlen - 4)} ..." : cmd}'
             endif
             # do not convert cmd to list, as this will not quote space characters correctly.
             var job: task.AsyncCmd

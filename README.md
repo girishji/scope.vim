@@ -45,7 +45,7 @@ Search for installed Vim files:
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print")<CR>
 ```
 
 Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 100,000 (default is 10,000):
@@ -59,11 +59,15 @@ nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
 ##### API
 
 ```vim
-# findCmd: String : Command string as you'd enter in a shell. If omitted, uses
-#                   'fd' (if installed) or 'find'.
-# count:   Number : Maximum number of files returned.
-def File(findCmd: string = null_string, count: number = 10000)
+# findCmd:   String : Command string to search for files. If omitted or set to
+#                       'null_string', uses 'find' command.
+# count:     Number : Maximum number of files returned.
+# gitignore: Number : Ignore paths specified in './gitignore' and '~/.gitignore'.
+#                       Applicable only when 'findCmd' is omitted or set to 'null_string'.
+def File(findCmd: string = null_string, count: number = 10000, gitignore: bool = true)
 ```
+
+To echo the command string in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting of options is discussed later.
 
 ### Live Grep
 

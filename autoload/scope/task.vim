@@ -9,7 +9,7 @@ export class AsyncCmd
         endif
     enddef
 
-    def new(cmd: any, CallbackFn: func(list<string>), poll_interval: number = 100, env: dict<any> = null_dict)
+    def new(cmd: any, CallbackFn: func(list<string>), poll_interval: number = 100, env: dict<any> = null_dict, ignore_err: bool = false)
         # ch_logfile('/tmp/channellog', 'w')
         # ch_log('BuildItemsList call')
         var items = []
@@ -30,7 +30,9 @@ export class AsyncCmd
             },
             close_cb: (ch) =>  CallbackFn(items),
             err_cb: (chan: channel, msg: string) => {
-                :echohl ErrorMsg | echoerr $'error: {msg} from {cmd}' | echohl None
+                if !ignore_err
+                    :echohl ErrorMsg | echoerr $'error: {msg} from {cmd}' | echohl None
+                endif
             },
         }->extend(env != null_dict ? {env: env} : {}))
     enddef
