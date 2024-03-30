@@ -58,12 +58,12 @@ export def FilterFilenames(lst: list<dict<any>>, prompt: string): list<any>
     return FilterItems(lst, prompt, 'text', true)
 enddef
 
-export def FindCmd(gitignore: bool = true): string
+export def FindCmd(ignore: bool = true): string
     var [dirs, basenames, relpaths] = [['.*'], ['.*', '*.swp'], []]
     var cmd = 'find .'
-    if gitignore
+    if ignore
         var lines = []
-        for ignored in [getenv('HOME') .. '/.gitignore', '.gitignore']
+        for ignored in [getenv('HOME') .. '/.gitignore', '.gitignore', '.findignore']
             if ignored->filereadable()
                 lines->extend(readfile(ignored)->filter((_, v) => v != '' && v !~ '^#'))
             endif
@@ -73,7 +73,7 @@ export def FindCmd(gitignore: bool = true): string
             if idx == -1
                 basenames->add(item) 
             elseif idx == item->len() - 1
-                dirs->add(item)
+                dirs->add(item->slice(0, item->len() - 1))
             else
                 relpaths->add(item)
             endif
@@ -199,6 +199,7 @@ enddef
 export def EchoClear()
     if saved_cmdheight > 0
         :exec $'setl cmdheight={saved_cmdheight}'
+        saved_cmdheight = -1
     endif
     :echo ''
 enddef

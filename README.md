@@ -67,12 +67,12 @@ nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" 
 ##### API
 
 ```vim
-# findCmd:   String : Command string to search for files. If omitted or set to
-#                       'null_string', uses 'find' command.
-# count:     Number : Maximum number of files returned.
-# gitignore: Number : Ignore paths specified in './gitignore' and '~/.gitignore'.
-#                       Applicable only when 'findCmd' is omitted or set to 'null_string'.
-def File(findCmd: string = null_string, count: number = 10000, gitignore: bool = true)
+# findCmd: String  : Command string to search for files. If omitted or set to
+#                      'null_string', uses 'find' command.
+# count:   Number  : Maximum number of files returned.
+# ignore:  Boolean : Ignore paths specified in '.gitignore', '~/.gitignore' and '.findignore'.
+#                      Applicable only when 'findCmd' is omitted or set to 'null_string'.
+def File(findCmd: string = null_string, count: number = 10000, ignore: bool = true)
 ```
 
 To echo the command string in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting of options is discussed later.
