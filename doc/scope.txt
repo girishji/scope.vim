@@ -28,24 +28,24 @@ results.
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.File()<cr>
 <
 [!NOTE]
 If you are using legacy script to map keys, use:
 >
-	`nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<CR>`
+	`nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<cr>`
 
 Search for installed Vim files.
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print -follow")<cr>
 <
 Use [fd](https://github.com/sharkdp/fd) instead of `find` command.
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow')<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow')<cr>
 <
 API ~
 >
@@ -66,7 +66,7 @@ Live grep in the directory.
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 <
 > [!NOTE]
 > 1. To perform a second grep with the same keyword, there's no need to retype
@@ -82,13 +82,13 @@ Define your own grep command.
 	vim9script
 	import autoload 'scope/fuzzy.vim'
 	# Case sensitive grep
-	nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude-dir=.git')<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude-dir=.git')<cr>
 	# ripgrep
-	nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<cr>
 	# silvergrep
-	nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<cr>
 	# Search the word under cursor
-	nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<cr>
 <
 `grep` command string is echoed in the command line after each search. You can
 set an option to turn this off (see below).
@@ -149,13 +149,13 @@ provided, it automatically selects the alternate buffer.
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.Buffer()<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Buffer()<cr>
 <
 Search unlisted buffers as well.
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<cr>
 <
 API ~
 >
@@ -171,9 +171,9 @@ current buffer. The prompt conveniently displays the word under the cursor
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<cr>
 	# Search the word under cursor
-	nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<cr>
 
 API ~
 >
@@ -215,8 +215,8 @@ Use the following mappings:
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.Quickfix()<CR>
-	nnoremap <your_key> <scriptcmd>fuzzy.Loclist()<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.Quickfix()<cr>
+	nnoremap <your_key> <scriptcmd>fuzzy.Loclist()<cr>
 
 The current item (error) is highlighted with an asterisk. You can also
 navigate to the next error in the list by using the `:cnext` command instead
@@ -227,8 +227,8 @@ window. Use the following mappings:
 >
 	vim9script
 	import autoload 'scope/fuzzy.vim'
-	nnoremap <your_key> <scriptcmd>fuzzy.QuickfixHistory()<CR>
-	nnoremap <your_key> <scriptcmd>fuzzy.LoclistHistory()<CR>
+	nnoremap <your_key> <scriptcmd>fuzzy.QuickfixHistory()<cr>
+	nnoremap <your_key> <scriptcmd>fuzzy.LoclistHistory()<cr>
 
 After selecting a list from the popup menu of `fuzzy.QuickfixHistory()` or
 `fuzzy.LoclistHistory()`, you can automatically open the quickfix or
@@ -291,7 +291,7 @@ specified, search in that directory instead of the current directory.
 
 You can map these commands to keys also. For example:
 >
-	nnoremap <your_key> <cmd>Scope File<CR>
+	nnoremap <your_key> <cmd>Scope File<cr>
 
 Key Mappings ~
 

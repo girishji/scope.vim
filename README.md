@@ -30,13 +30,13 @@ Find files in the current working directory. Files are retrieved through an exte
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File()<cr>
 ```
 
 > [!NOTE]
 > If you are using legacy script to map keys, use:
 >
-> `nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<CR>`
+> `nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<cr>`
 >
 > Same pattern applies to other mappings also.
 
@@ -45,7 +45,7 @@ Search for installed Vim files:
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$VIMRUNTIME} -type f -print -follow')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$VIMRUNTIME} -type f -print -follow')<cr>
 ```
 
 Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 100,000 (default is 10,000):
@@ -53,7 +53,7 @@ Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<cr>
 ```
 
 Find files in `~/.vim`, ignoring swap files and hidden files.
@@ -61,7 +61,7 @@ Find files in `~/.vim`, ignoring swap files and hidden files.
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" -prune -o -not ( -name "*.swp" -o -name ".*" ) -type f -print -follow')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" -prune -o -not ( -name "*.swp" -o -name ".*" ) -type f -print -follow')<cr>
 ```
 
 ##### API
@@ -84,7 +84,7 @@ Unlike fuzzy search `grep`, command is executed  after each keystroke in a dedic
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.Grep()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 ```
 
 > [!NOTE]
@@ -97,13 +97,13 @@ Define your own grep command:
 vim9script
 import autoload 'scope/fuzzy.vim'
 # Case sensitive grep
-nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude-dir=.git')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude-dir=.git')<cr>
 # ripgrep
-nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<cr>
 # silvergrep
-nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<cr>
 # Search the word under cursor
-nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<cr>
 ```
 
 `grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).
@@ -160,7 +160,7 @@ Switching buffers becomes effortless with fuzzy search. When no input is provide
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.Buffer()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Buffer()<cr>
 ```
 
 Search unlisted buffers as well.
@@ -168,7 +168,7 @@ Search unlisted buffers as well.
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<cr>
 ```
 
 ##### API
@@ -185,9 +185,9 @@ Enter a word in the prompt, and it will initiate a fuzzy search within the curre
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<cr>
 # Search the word under cursor
-nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<cr>
 ```
 
 ##### API
@@ -216,8 +216,8 @@ You have the option to display the contents of the current quickfix or location 
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.Quickfix()<CR>
-nnoremap <your_key> <scriptcmd>fuzzy.Loclist()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.Quickfix()<cr>
+nnoremap <your_key> <scriptcmd>fuzzy.Loclist()<cr>
 ```
 
 The current item is highlighted with an asterisk. You can also navigate to the next error in the list by using the `:cnext` command instead of the popup window.
@@ -227,8 +227,8 @@ The entire stack of quickfix and location lists can be displayed in a popup wind
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.QuickfixHistory()<CR>
-nnoremap <your_key> <scriptcmd>fuzzy.LoclistHistory()<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.QuickfixHistory()<cr>
+nnoremap <your_key> <scriptcmd>fuzzy.LoclistHistory()<cr>
 ```
 
 After selecting a list from the popup menu of `fuzzy.QuickfixHistory()` or `fuzzy.LoclistHistory()`, you can automatically open the quickfix or location-list window. Add the following autocmd group:
@@ -287,7 +287,7 @@ For example, to initiate a buffer search, use the command `:Scope Buffer` or `:S
 You can map these commands to keys also. For example:
 
 ```
-nnoremap <your_key> <cmd>Scope File<CR>
+nnoremap <your_key> <cmd>Scope File<cr>
 ```
 
 ### Key Mappings
