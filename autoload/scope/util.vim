@@ -99,7 +99,8 @@ enddef
 
 export def GrepCmd(): string
     # default shell does not support gnu '{' expansion (--option={x,y})
-    return 'grep --color=never -REIHins --exclude-dir="*.git*" --exclude="*.swp" --exclude="*.zwc"'
+    var flags = has('macunix') ? '-REIHSins' : '-REIHins'
+    return $'grep --color=never {flags} --exclude-dir="*.git*" --exclude="*.swp" --exclude="*.zwc"'
 enddef
 
 export def Escape(s: string): string
