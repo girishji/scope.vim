@@ -284,11 +284,14 @@ key mappings.
 
 For example, to initiate a buffer search, use the command `:Scope Buffer` or
 `:Scope buffer`. Typing `:Scope <Tab>` will display all available functions.
-`Grep` take additional arguments.
 
-`:Scope {Grep|grep} [dir] [str]` : Starts a live search with 'str' as the
-initial search string if non-empty. If 'dir' is specified, search in that
-directory instead of the current directory.
+`Grep` takes additional arguments. `:Scope {Grep|grep} [dir] [str]` starts a
+live search with 'str' as the initial search string if non-empty. If 'dir' is
+specified, search in that directory instead of the current directory.
+
+You can map these commands to keys also. For example:
+>
+	nnoremap <your_key> <cmd>Scope File<CR>
 
 Key Mappings ~
 
