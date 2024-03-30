@@ -45,7 +45,7 @@ Search for installed Vim files:
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File("find " .. $VIMRUNTIME .. " -type f -print")<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$VIMRUNTIME} -type f -print -follow')<CR>
 ```
 
 Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 100,000 (default is 10,000):
@@ -54,6 +54,14 @@ Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<CR>
+```
+
+Find files in `~/.vim`, ignoring swap files and hidden files.
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" -prune -o -not ( -name "*.swp" -o -name ".*" ) -type f -print -follow')<CR>
 ```
 
 ##### API
@@ -270,13 +278,9 @@ Method|Description
 
 ### Commands
 
-The above functions have equivalent commands that can be invoked from the command line. The primary command is `:Scope`, with the function name as its only argument except for `File` and `Grep`. These commands are primarily provided for convenience. The main interface, as described above, is through key mappings.
+The above functions have equivalent commands that can be invoked from the command line. The primary command is `:Scope`, with the function name as its only argument except for `Grep`. These commands are primarily provided for convenience. The main interface, as described above, is through key mappings.
 
-For example, to initiate a buffer search, use the command `:Scope Buffer` or `:Scope buffer`. Typing `:Scope <Tab>` will display all available functions. `Find` and `Grep` take an additional argument.
-
-###### `:Scope {File|file} [dir]`
-
-Invokes a file search in the 'dir' directory. If 'dir' is empty, the current directory is used.
+For example, to initiate a buffer search, use the command `:Scope Buffer` or `:Scope buffer`. Typing `:Scope <Tab>` will display all available functions. `Grep` takes additional arguments.
 
 ###### `:Scope {Grep|grep} [dir] [str]`
 

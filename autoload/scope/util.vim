@@ -98,7 +98,8 @@ def Unique(lst: list<string>): list<string>
 enddef
 
 export def GrepCmd(): string
-    return 'grep --color=never -REIHins --exclude="*.git*" --exclude="*.swp" --exclude="*.zwc"'
+    # default shell does not support gnu '{' expansion (--option={x,y})
+    return 'grep --color=never -REIHins --exclude-dir="*.git*" --exclude="*.swp" --exclude="*.zwc"'
 enddef
 
 export def Escape(s: string): string
@@ -173,4 +174,30 @@ export def Send2Qickfix(key: string, unfiltered: list<dict<any>>, filtered: list
         endif
     endif
     return true
+enddef
+
+var saved_cmdheight: number
+
+export def Echo(s: string)
+    var maxlen = &columns - 12
+    if s->len() < maxlen
+        :echo s
+        saved_cmdheight = -1
+    else
+        var lcount = (s->len() / maxlen) + 1
+        saved_cmdheight = &cmdheight
+        :exec $'setl cmdheight={lcount}'
+        var lines = []
+        for i in range(lcount)
+            lines->add(s->slice(i * maxlen, (i + 1) * maxlen))
+        endfor
+        echo lines->join("\n")
+    endif
+enddef
+
+export def EchoClear()
+    if saved_cmdheight > 0
+        :exec $'setl cmdheight={saved_cmdheight}'
+    endif
+    :echo ''
 enddef

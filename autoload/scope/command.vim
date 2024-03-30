@@ -32,23 +32,9 @@ const cmds = [
 ]
 
 export def DoCommand(fnstr: string, arg1: string = null_string, arg2: string = null_string)
-    def ExecCmd(dir: string, ExecFn: func(): any)
-        try
-            :silent exe $'cd {dir}'
-            ExecFn()
-        finally
-            :silent cd -
-        endtry
-    enddef
     const cidx = cmds->indexof((_, v) => v ==? fnstr)
     if cidx != -1
-        if fnstr ==? 'file'
-            if arg1->isdirectory()
-                ExecCmd(arg1, (): any => fuzzy.File())
-            else
-                fuzzy.File()
-            endif
-        elseif fnstr ==? 'grep'
+        if fnstr ==? 'grep'
             if arg1->isdirectory()
                 # 'cd dir' does not work for grep since grep is called after 'cd -' is called (above)
                 fuzzy.Grep(null_string, true, arg2, arg1)
