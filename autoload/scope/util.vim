@@ -69,17 +69,20 @@ export def FindCmd(ignore: bool = true): string
             endif
         endfor
         for item in lines
-            var idx = item->strridx('/')
-            if idx == -1
-                basenames->add(item) 
-            elseif idx == item->len() - 1
+            if item[-1] == '/'
                 dirs->add(item->slice(0, item->len() - 1))
             else
-                relpaths->add(item)
+                var idx = item->stridx('/')
+                if idx == -1
+                    basenames->add(item) 
+                else
+                    relpaths->add(item)
+                endif
             endif
         endfor
     endif
-    var paths = Unique(dirs)->mapnew((_, v) => $'-path "*/{v}"') + Unique(relpaths)->mapnew((_, v) => $'-path "./{v}"')
+    var paths = Unique(dirs)->mapnew((_, v) => $'-path "*/{v}"') +
+        Unique(relpaths)->mapnew((_, v) => v[0 : 1] == './' ? $'-path "{v}"' : $'-path "./{v}"')
     cmd ..= ' ( ' .. paths->join(' -o ') .. ' ) -prune -o'
     cmd ..= ' -not ( ' .. Unique(basenames)->mapnew((_, v) => $'-name "{v}"')->join(' -o ') .. ' )'
     return cmd .. ' -type f -print -follow'
