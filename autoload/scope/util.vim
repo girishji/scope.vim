@@ -58,6 +58,9 @@ export def FilterFilenames(lst: list<dict<any>>, prompt: string): list<any>
     return FilterItems(lst, prompt, 'text', true)
 enddef
 
+# See PATTERN FORMAT under https://git-scm.com/docs/gitignore
+# TODO: implement '**', '!', '*', and escaped trailing blank spaces
+#
 export def FindCmd(ignore: bool = true): string
     var [dirs, basenames, relpaths] = [['.*'], ['.*', '*.swp'], []]
     var cmd = 'find .'
@@ -65,24 +68,25 @@ export def FindCmd(ignore: bool = true): string
         var lines = []
         for ignored in [getenv('HOME') .. '/.gitignore', '.gitignore', '.findignore']
             if ignored->filereadable()
-                lines->extend(readfile(ignored)->filter((_, v) => v != '' && v !~ '^#'))
+                lines->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
             endif
         endfor
         for item in lines
-            if item[-1] == '/'
+            var idx = item->stridx('/')
+            if idx != -1 && idx != item->len() - 1
+                relpaths->add(item)
+            elseif item[-1] == '/'
                 dirs->add(item->slice(0, item->len() - 1))
             else
-                var idx = item->stridx('/')
-                if idx == -1
-                    basenames->add(item) 
-                else
-                    relpaths->add(item)
-                endif
+                basenames->add(item) 
             endif
         endfor
     endif
     var paths = Unique(dirs)->mapnew((_, v) => $'-path "*/{v}"') +
-        Unique(relpaths)->mapnew((_, v) => v[0 : 1] == './' ? $'-path "{v}"' : $'-path "./{v}"')
+        Unique(relpaths)->mapnew((_, v) => {
+            var relp = (v[-1] == '/') ? v[0 : -2] : v
+            return (relp[0 : 1] == './') ? $'-path "{relp}"' : $'-path "./{relp}"'
+        })
     cmd ..= ' ( ' .. paths->join(' -o ') .. ' ) -prune -o'
     cmd ..= ' -not ( ' .. Unique(basenames)->mapnew((_, v) => $'-name "{v}"')->join(' -o ') .. ' )'
     return cmd .. ' -type f -print -follow'
