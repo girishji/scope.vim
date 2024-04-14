@@ -70,12 +70,17 @@ nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" 
 # findCmd: String  : Command string to search for files. If omitted or set to
 #                      'null_string', uses 'find' command.
 # count:   Number  : Maximum number of files returned.
-# ignore:  Boolean : Ignore paths specified in '.gitignore', '~/.gitignore' and '.findignore'.
-#                      Applicable only when 'findCmd' is omitted or set to 'null_string'.
+# ignore:  Boolean : Ignore paths specified in '.gitignore', '~/.gitignore',
+#                      '.findignore' and '~/.findignore'. Applicable only when
+#                      'findCmd' is omitted or set to 'null_string'.
 def File(findCmd: string = null_string, count: number = 10000, ignore: bool = true)
 ```
 
-To echo the command string in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting of options is discussed later.
+> [!NOTE]
+>
+> - To prevent *find* command from descending into *.git* directory, put `.git/` in the *~/.findignore* or *~/.gitignore* file.
+> - If `.gitignore` file contains `**` or `!` in the patterns, performance of `find` command may degrade. Use [fd](https://github.com/sharkdp/fd) if this becomes an issue.
+> - To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting of options is discussed later.
 
 ### Live Grep
 

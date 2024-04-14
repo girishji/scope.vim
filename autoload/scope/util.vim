@@ -59,36 +59,41 @@ export def FilterFilenames(lst: list<dict<any>>, prompt: string): list<any>
 enddef
 
 # See PATTERN FORMAT under https://git-scm.com/docs/gitignore
-# TODO: implement '**', '!', '*', and escaped trailing blank spaces
 #
 export def FindCmd(ignore: bool = true): string
-    var [dirs, basenames, relpaths] = [['.*'], ['.*', '*.swp'], []]
     var cmd = 'find .'
     if ignore
+        var [dirs, fnames, relpaths, epaths] = [[], [], [], []]
         var lines = []
-        for ignored in [getenv('HOME') .. '/.gitignore', '.gitignore', '.findignore']
+        for ignored in [getenv('HOME') .. '/.gitignore', getenv('HOME') .. '/.findignore', '.gitignore', '.findignore']
             if ignored->filereadable()
                 lines->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
             endif
         endfor
-        for item in lines
-            var idx = item->stridx('/')
-            if idx != -1 && idx != item->len() - 1
-                relpaths->add(item)
-            elseif item[-1] == '/'
-                dirs->add(item->slice(0, item->len() - 1))
-            else
-                basenames->add(item) 
+        var specialchars = false
+        var paths = Unique(lines)->mapnew((_, v) => {
+            if v->stridx('**') != -1 || v->stridx('!') != -1
+                specialchars = true
+                return ''  # filter out these empty strings later when joining
             endif
-        endfor
-    endif
-    var paths = Unique(dirs)->mapnew((_, v) => $'-path "*/{v}"') +
-        Unique(relpaths)->mapnew((_, v) => {
-            var relp = (v[-1] == '/') ? v[0 : -2] : v
-            return (relp[0 : 1] == './') ? $'-path "{relp}"' : $'-path "./{relp}"'
+            var idx = v->stridx('/')
+            if idx != -1 && idx != v->len() - 1  # relative path
+                var path = (v[-1] == '/') ? v[0 : -2] : v
+                return (path[0 : 1] == './') ? $'-path "{path}"' : $'-path "./{path}"'
+            else  # exclude these wherever they appear in the path
+                var path = (v[-1] == '/') ? v[0 : -2] : v
+                return $'-path "*/{path}"'
+            endif
         })
-    cmd ..= ' ( ' .. paths->join(' -o ') .. ' ) -prune -o'
-    cmd ..= ' -not ( ' .. Unique(basenames)->mapnew((_, v) => $'-name "{v}"')->join(' -o ') .. ' )'
+        cmd ..= ' ( ' .. paths->copy()->filter((_, v) => v != null_string)->join(' -o ') .. ' ) -prune -o -type f -follow'
+        if specialchars && 'git'->executable() == 1
+            # if '**' or '!' is present in the pattern, filter the results through 'git' (this is significantly slow)
+            cmd ..= ' -exec sh -c "for f do git check-ignore -q \"$f\" || echo \"$f\"; done" find-sh {} +'
+        else
+            cmd ..= ' -print'
+        endif
+        return cmd
+    endif
     return cmd .. ' -type f -print -follow'
 enddef
 
