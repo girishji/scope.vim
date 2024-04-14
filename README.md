@@ -78,8 +78,8 @@ def File(findCmd: string = null_string, count: number = 10000, ignore: bool = tr
 
 > [!NOTE]
 >
-> - To prevent *find* command from descending into *.git* directory, put `.git/` in the *~/.findignore* or *~/.gitignore* file.
-> - If `.gitignore` file contains `**` or `!` in the patterns, performance of `find` command may degrade. Use [fd](https://github.com/sharkdp/fd) if this becomes an issue.
+> - To prevent *find* command from descending into *.git* directory, put `.git/` in the `~/.gitignore` or `~/.findignore` file.
+> - If `.gitignore` file contains `**` or `!` in the patterns, performance of *find* command may degrade. Use [fd](https://github.com/sharkdp/fd) if this becomes an issue.
 > - To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting of options is discussed later.
 
 ### Live Grep
