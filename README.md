@@ -77,7 +77,6 @@ def File(findCmd: string = null_string, count: number = 10000, ignore: bool = tr
 ```
 
 > [!NOTE]
->
 > - To prevent *find* command from descending into `.git` directory, put `.git/` in the `~/.gitignore` or `~/.findignore` file.
 > - If `.gitignore` file contains `**` or `!` in the patterns, performance of *find* command may degrade. Use [fd](https://github.com/sharkdp/fd) if this becomes an issue.
 > - To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting of options is discussed later.
@@ -95,6 +94,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 > [!NOTE]
 > 1. To perform a second grep with the same keyword, there's no need to retype it. The prompt conveniently retains the previous grep string as virtual text. Simply input `<Right>` or `<PgDn>` to auto-fill and proceed, or overwrite it as needed. For smaller projects, you can efficiently execute repeated greps without relying on the quickfix list.
 > 2. Special characters can be entered into the prompt window directly without requiring backslash escaping.
+> 3. It is sometimes useful to suspend live grep and filter results returned by live grep. Type `<C-k>` to enter pattern search mode (case insensitive). For example, typing `^foo` will filter lines that begin with `foo`. Patterns are negated if the first character is `!`. To filter lines *not* containing `foo` or `bar` type `!foo|bar` into the prompt.
 
 Define your own grep command:
 
@@ -314,6 +314,7 @@ Mapping | Action
 `<C-Q>` | Send only filtered items to the quickfix list
 `<C-l>` | Send all unfiltered items to the location list (`:h location-list`)
 `<C-L>` | Send only filtered items to the location list
+`<C-k>` | Switch to pattern search of results during live grep
 
 Prompt window editor key mappings align with Vim's default mappings for command-line editing.
 

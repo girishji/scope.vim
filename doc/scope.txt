@@ -56,9 +56,15 @@ API ~
 	#                      Applicable only when 'findCmd' is omitted or set to 'null_string'.
 	def File(findCmd: string = null_string, count: number = 10000, ignore: bool = true)
 <
-To echo the command string in Vim's command line, set the option
-`find_echo_cmd` to `true`. Default is `false`. Setting of options is discussed
-later.
+> [!NOTE]
+> - To prevent 'find' command from descending into `.git` directory, put `.git/`
+>   in the `~/.gitignore` or `~/.findignore` file.
+> - If `.gitignore` file contains `**` or `!` in the patterns, performance of
+>   'find' command may degrade. Use fd (https://github.com/sharkdp/fd) if this
+>   becomes an issue.
+> - To echo the command string in Vim's command line, set the option
+>   `find_echo_cmd` to `true`. Default is `false`. Setting of options is
+>   discussed later.
 
 Live Grep ~
 
@@ -76,6 +82,11 @@ Live grep in the directory.
 >    repeated greps without relying on the quickfix list.
 > 2. Special characters can be entered into the prompt window directly without
 >    requiring backslash escaping.
+> 3. It is sometimes useful to suspend live grep and filter results returned
+>    by live grep. Type `<C-k>` to enter pattern search mode (case
+>    insensitive). For example, typing `^foo` will filter lines that begin
+>    with `foo`. Patterns are negated if the first character is `!`. To filter
+>    lines not containing `foo` or `bar` type `!foo|bar` into the prompt.
 
 Define your own grep command.
 >

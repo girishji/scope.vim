@@ -295,6 +295,9 @@ export class FilterMenu
                                 this.prompt = this.prompt->slice(0, pos) .. key .. this.prompt->slice(pos)
                                 this.cursorpos = this.cursorpos + 1
                             endif
+                        elseif key == "\<C-k>"
+                            Callback(null_string, key)
+                            return true
                         endif
                         var GetFilteredItemsFn = GetFilteredItems == null_function ? this._GetFilteredItems : GetFilteredItems
                         [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
@@ -372,13 +375,7 @@ export class FilterMenu
                 })}
             })
         else
-            if itemsAny[0]->empty()
-                return []
-            else
-                return itemsAny[0]->mapnew((_, v) => {
-                    return {text: v.text}
-                })
-            endif
+            return itemsAny->empty() ? [] : itemsAny[0]
         endif
     enddef
 
@@ -389,7 +386,3 @@ export class FilterMenu
         matchaddpos('ScopeMenuCursor', [[1, bytepos]], 10, -1, {window: this.idp})
     enddef
 endclass
-
-# some chunks shamelessly ripped from habamax
-#   https://github.com/habamax/.vim/blob/master/autoload/popup.vim
-

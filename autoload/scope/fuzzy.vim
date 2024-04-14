@@ -101,6 +101,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
     var grep_throttle_len = max([0, options.grep_throttle_len])
     var grep_skip_len = max([0, options.grep_skip_len])
     var cmd: string
+    var select_mode = false  # grep mode or select mode
 
     def DoGrep(prompt: string, timer: number)
         # during pasting from clipboard to prompt window, spawning a new job for
@@ -162,6 +163,12 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
 
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
+            if key == "\<C-k>"
+                select_mode = true
+                menu.SetPrompt(null_string)
+                menu.SetText(menu.items_dict)
+                return
+            endif
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd, null_function, true)
                 # let quicfix parse output of 'grep' for filename, line, column.
                 # it deals with ':' in filename and other corner cases.
@@ -178,6 +185,9 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
             endif
         },
         (id, idp) => {
+            if select_mode
+                return
+            endif
             if cword != null_string
                 def SetPrompt(s: string, timer: number)
                     menu.SetPrompt(s)
@@ -204,8 +214,28 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
         },
         (lst: list<dict<any>>, prompt: string): list<any> => {
             # This function is called everytime when user types something
-            timer_start(timer_delay, function(DoGrep, [prompt]))
-            return [[], [[]]]
+            if select_mode
+                if prompt->empty()
+                    return [lst, [lst]]
+                else
+                    # pattern match only (not fuzzy match)
+                    var filtered = []
+                    if prompt[0] == '!'
+                        filtered = lst->copy()->filter((_, v) => v.text !~ $'\v{prompt->slice(1)}')
+                    else
+                        for item in lst
+                            var pos = item.text->matchstrpos($'\c{prompt}')
+                            if pos[1] != -1
+                                filtered->add({text: item.text, props: [{col: pos[1] + 1, length: pos[2] - pos[1], type: 'ScopeMenuMatch'}]})
+                            endif
+                        endfor
+                    endif
+                    return [lst, [filtered]]
+                endif
+            else
+                timer_start(timer_delay, function(DoGrep, [prompt]))
+                return [[], [[]]]
+            endif
         },
         () => {
             if options.grep_echo_cmd
