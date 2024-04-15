@@ -94,7 +94,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 > [!NOTE]
 > 1. To perform a second grep with the same keyword, there's no need to retype it. The prompt conveniently retains the previous grep string as virtual text. Simply input `<Right>` or `<PgDn>` to auto-fill and proceed, or overwrite it as needed. For smaller projects, you can efficiently execute repeated greps without relying on the quickfix list.
 > 2. Special characters can be entered into the prompt window directly without requiring backslash escaping.
-> 3. It is sometimes useful to suspend live grep and filter results returned by live grep. Type `<C-k>` to enter pattern search mode (case insensitive). For example, typing `^foo` will filter lines that begin with `foo`. Patterns are negated if the first character is `!`. To filter lines *not* containing `foo` or `bar` type `!foo|bar` into the prompt.
+> 3. When working with live grep, it can be advantageous to suspend it temporarily and refine the results through filtering. Press `<C-k>` to enter pattern search mode. For instance, while in pattern search mode, typing `^foo` will selectively display lines starting with `foo`. To negate patterns, prepend `!` to the search term. For instance, to filter lines that do not contain `foo` or `bar`, input `!foo|bar` into the prompt. Whether the pattern is case-sensitive is determined by `ignorecase` Vim option. To force case (in)sensitive search prepend the pattern with `\c` or `\C`. Pressing `<C-k>` again will toggle back to live grep mode.
 
 Define your own grep command:
 
@@ -314,7 +314,7 @@ Mapping | Action
 `<C-Q>` | Send only filtered items to the quickfix list
 `<C-l>` | Send all unfiltered items to the location list (`:h location-list`)
 `<C-L>` | Send only filtered items to the location list
-`<C-k>` | Switch to pattern search of results during live grep
+`<C-k>` | During live grep, toggle between pattern search of results and live grep.
 
 Prompt window editor key mappings align with Vim's default mappings for command-line editing.
 

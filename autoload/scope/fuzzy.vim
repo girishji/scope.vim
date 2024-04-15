@@ -102,6 +102,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
     var grep_skip_len = max([0, options.grep_skip_len])
     var cmd: string
     var select_mode = false  # grep mode or select mode
+    var cached_prompt = null_string
 
     def DoGrep(prompt: string, timer: number)
         # during pasting from clipboard to prompt window, spawning a new job for
@@ -161,12 +162,22 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
         endif
     enddef
 
+    def SetPrompt(s: string, timer: number)
+        menu.SetPrompt(s)
+    enddef
+
     menu = popup.FilterMenu.new('Grep', [],
         (res, key) => {
             if key == "\<C-k>"
-                select_mode = true
-                menu.SetPrompt(null_string)
-                menu.SetText(menu.items_dict)
+                select_mode = !select_mode
+                if select_mode
+                    cached_prompt = menu.prompt
+                    menu.SetPrompt(null_string)
+                    menu.SetText(menu.items_dict)
+                else
+                    timer_start(0, function(SetPrompt, [cached_prompt]))
+                    timer_start(1, function(DoGrep, [cached_prompt]))
+                endif
                 return
             endif
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd, null_function, true)
@@ -189,9 +200,6 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
                 return
             endif
             if cword != null_string
-                def SetPrompt(s: string, timer: number)
-                    menu.SetPrompt(s)
-                enddef
                 var str: string = cword
                 if str == '<cword>' || str == '<cWORD>'
                     str = expand(cword)
@@ -224,7 +232,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
                         filtered = lst->copy()->filter((_, v) => v.text !~ $'\v{prompt->slice(1)}')
                     else
                         for item in lst
-                            var pos = item.text->matchstrpos($'\c{prompt}')
+                            var pos = item.text->matchstrpos(prompt)
                             if pos[1] != -1
                                 filtered->add({text: item.text, props: [{col: pos[1] + 1, length: pos[2] - pos[1], type: 'ScopeMenuMatch'}]})
                             endif
