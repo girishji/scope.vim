@@ -60,53 +60,50 @@ enddef
 
 # See PATTERN FORMAT under https://git-scm.com/docs/gitignore
 #
-export def FindCmd(ignore: bool = true): string
+export def FindCmd(): string
     var cmd = 'find .'
-    if ignore
-        var patterns = []
-        for ignored in [getenv('HOME') .. '/.gitignore', getenv('HOME') .. '/.findignore', '.gitignore', '.findignore']
-            if ignored->filereadable()
-                patterns->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
-            endif
-        endfor
-        var specialchars = false
-        var paths = Unique(patterns)->mapnew((_, v) => {
-            if v->stridx('**') != -1 || v->stridx('!') != -1
-                specialchars = true
-                return ''  # filter out these empty strings later when joining
-            endif
-            var idx = v->stridx('/')
-            if idx != -1 && idx != v->len() - 1  # relative path
-                var pat = (v[-1] == '/') ? v[0 : -2] : v
-                return (pat[0 : 1] == './' || pat[0] == '*') ? $'-path "{pat}"' : $'-path "./{pat}"'
-            else  # exclude these wherever they appear in the pat
-                var pat = (v[-1] == '/') ? v[0 : -2] : v
-                return $'-path "*/{pat}"'
-            endif
-        })
-        # wildignore (:h autocmd-patterns)
-        var fnames = []
-        for pat in &wildignore->split(',')
-            if pat->stridx('/') != -1
-                paths->add((pat[0 : 1] == './' || pat[0] == '*') ? $'-path "{pat}"' : $'-path "./{pat}"')
-            else
-                fnames->add($'-name "{pat}"')
-            endif
-        endfor
-        cmd ..= ' ( ' .. paths->copy()->filter((_, v) => v != null_string)->join(' -o ') .. ' ) -prune'
-        if !fnames->empty()
-            cmd ..= ' -o ' .. fnames->join(' -o ')
+    var patterns = []
+    for ignored in [getenv('HOME') .. '/.gitignore', getenv('HOME') .. '/.findignore', '.gitignore', '.findignore']
+        if ignored->filereadable()
+            patterns->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
         endif
-        cmd ..= ' -o -type f -follow'
-        if specialchars && 'git'->executable() == 1
-            # If '**' or '!' is present in the pattern, filter the results through 'git' (this is significantly slow)
-            cmd ..= ' -exec sh -c "for f do git check-ignore -q \"$f\" || echo \"$f\"; done" find-sh {} +'
+    endfor
+    var specialchars = false
+    var paths = Unique(patterns)->mapnew((_, v) => {
+        if v->stridx('**') != -1 || v->stridx('!') != -1
+            specialchars = true
+            return ''  # filter out these empty strings later when joining
+        endif
+        var idx = v->stridx('/')
+        if idx != -1 && idx != v->len() - 1  # relative path
+            var pat = (v[-1] == '/') ? v[0 : -2] : v
+            return (pat[0 : 1] == './' || pat[0] == '*') ? $'-path "{pat}"' : $'-path "./{pat}"'
+        else  # exclude these wherever they appear in the pat
+            var pat = (v[-1] == '/') ? v[0 : -2] : v
+            return $'-path "*/{pat}"'
+        endif
+    })
+    # wildignore (:h autocmd-patterns)
+    var fnames = []
+    for pat in &wildignore->split(',')
+        if pat->stridx('/') != -1
+            paths->add((pat[0 : 1] == './' || pat[0] == '*') ? $'-path "{pat}"' : $'-path "./{pat}"')
         else
-            cmd ..= ' -print'
+            fnames->add($'-name "{pat}"')
         endif
-        return cmd
+    endfor
+    cmd ..= ' ( ' .. paths->copy()->filter((_, v) => v != null_string)->join(' -o ') .. ' ) -prune'
+    if !fnames->empty()
+        cmd ..= ' -o ' .. fnames->join(' -o ')
     endif
-    return cmd .. ' -type f -print -follow'
+    cmd ..= ' -o -type f -follow'
+    if specialchars && 'git'->executable() == 1
+        # If '**' or '!' is present in the pattern, filter the results through 'git' (this is significantly slow)
+        cmd ..= ' -exec sh -c "for f do git check-ignore -q \"$f\" || echo \"$f\"; done" find-sh {} +'
+    else
+        cmd ..= ' -print'
+    endif
+    return cmd
 enddef
 
 def Unique(lst: list<string>): list<string>
@@ -121,10 +118,22 @@ def Unique(lst: list<string>): list<string>
     return res
 enddef
 
-export def GrepCmd(): string
+export def GrepCmd(ignore: bool = true): string
     # default shell does not support gnu '{' expansion (--option={x,y})
     var flags = has('macunix') ? '-REIHSins' : '-REIHins'
-    return $'grep --color=never {flags} --exclude-dir="*.git*" --exclude="*.swp" --exclude="*.zwc"'
+    var cmd = $'grep --color=never {flags}'
+    if ignore
+        # wildignore (:h autocmd-patterns)
+        var excl = &wildignore->split(',')->mapnew((_, v) => {
+            if v->stridx('/') != -1
+                return (v[0 : 1] == './' || v[0] == '*') ? $'--exclude-dir="{v}"' : $'--exclude-dir="./{v}"'
+            else
+                return $'--exclude="{v}"'
+            endif
+        })
+        cmd ..= ' ' .. excl->join(' ')
+    endif
+    return cmd
 enddef
 
 export def Escape(s: string): string
