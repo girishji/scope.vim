@@ -92,11 +92,14 @@ export def FindCmd(): string
             fnames->add($'-name "{pat}"')
         endif
     endfor
-    cmd ..= ' ( ' .. paths->copy()->filter((_, v) => v != null_string)->join(' -o ') .. ' ) -prune'
-    if !fnames->empty()
-        cmd ..= ' -o ' .. fnames->join(' -o ')
+    paths->filter((_, v) => v != null_string)
+    if !paths->empty()
+        cmd ..= ' ( ' .. paths->join(' -o ') .. ' ) -prune -o'
     endif
-    cmd ..= ' -o -type f -follow'
+    if !fnames->empty()
+        cmd ..= ' ' .. fnames->join(' -o ') .. ' -o'
+    endif
+    cmd ..= ' -type f -follow'
     if specialchars && 'git'->executable() == 1
         # If '**' or '!' is present in the pattern, filter the results through 'git' (this is significantly slow)
         cmd ..= ' -exec sh -c "for f do git check-ignore -q \"$f\" || echo \"$f\"; done" find-sh {} +'
