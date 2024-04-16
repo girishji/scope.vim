@@ -63,31 +63,43 @@ enddef
 export def FindCmd(ignore: bool = true): string
     var cmd = 'find .'
     if ignore
-        var [dirs, fnames, relpaths, epaths] = [[], [], [], []]
-        var lines = []
+        var patterns = []
         for ignored in [getenv('HOME') .. '/.gitignore', getenv('HOME') .. '/.findignore', '.gitignore', '.findignore']
             if ignored->filereadable()
-                lines->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
+                patterns->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
             endif
         endfor
         var specialchars = false
-        var paths = Unique(lines)->mapnew((_, v) => {
+        var paths = Unique(patterns)->mapnew((_, v) => {
             if v->stridx('**') != -1 || v->stridx('!') != -1
                 specialchars = true
                 return ''  # filter out these empty strings later when joining
             endif
             var idx = v->stridx('/')
             if idx != -1 && idx != v->len() - 1  # relative path
-                var path = (v[-1] == '/') ? v[0 : -2] : v
-                return (path[0 : 1] == './') ? $'-path "{path}"' : $'-path "./{path}"'
-            else  # exclude these wherever they appear in the path
-                var path = (v[-1] == '/') ? v[0 : -2] : v
-                return $'-path "*/{path}"'
+                var pat = (v[-1] == '/') ? v[0 : -2] : v
+                return (pat[0 : 1] == './' || pat[0] == '*') ? $'-path "{pat}"' : $'-path "./{pat}"'
+            else  # exclude these wherever they appear in the pat
+                var pat = (v[-1] == '/') ? v[0 : -2] : v
+                return $'-path "*/{pat}"'
             endif
         })
-        cmd ..= ' ( ' .. paths->copy()->filter((_, v) => v != null_string)->join(' -o ') .. ' ) -prune -o -type f -follow'
+        # wildignore (:h autocmd-patterns)
+        var fnames = []
+        for pat in &wildignore->split(',')
+            if pat->stridx('/') != -1
+                paths->add((pat[0 : 1] == './' || pat[0] == '*') ? $'-path "{pat}"' : $'-path "./{pat}"')
+            else
+                fnames->add($'-name "{pat}"')
+            endif
+        endfor
+        cmd ..= ' ( ' .. paths->copy()->filter((_, v) => v != null_string)->join(' -o ') .. ' ) -prune'
+        if !fnames->empty()
+            cmd ..= ' -o ' .. fnames->join(' -o ')
+        endif
+        cmd ..= ' -o -type f -follow'
         if specialchars && 'git'->executable() == 1
-            # if '**' or '!' is present in the pattern, filter the results through 'git' (this is significantly slow)
+            # If '**' or '!' is present in the pattern, filter the results through 'git' (this is significantly slow)
             cmd ..= ' -exec sh -c "for f do git check-ignore -q \"$f\" || echo \"$f\"; done" find-sh {} +'
         else
             cmd ..= ' -print'
