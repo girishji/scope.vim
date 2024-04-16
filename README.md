@@ -76,9 +76,9 @@ def File(findCmd: string = null_string, count: number = 10000)
 > [!NOTE]
 > If the `findCmd` argument (above) is either unset or set to `null_string`, the *find* command (accessible from *$PATH)*) is automatically utilized. Under this circumstance, the following conditions apply:
 >
->       - Patterns specified in the Vim option 'wildignore', along with patterns present in files '.gitignore' and '~/.gitignore', are excluded. For instance, to prevent the *find* command from traversing into the `.git` directory or displaying Vim swap files, add the following line to your *.vimrc* file: `set wildignore+=.git/*,*.swp`.
->       - If the `.gitignore` file contains `**` or `!` within the patterns, the performance of the *find* command may deteriorate. If this becomes problematic, consider using [fd](https://github.com/sharkdp/fd).
->       - For guidance on setting *wildignore* patterns, refer to `:h autocmd-patterns` within Vim. For similar assistance regarding *gitignore* patterns, consult '[PATTERN FORMAT](https://git-scm.com/docs/gitignore)'.
+> - Patterns specified in the Vim option 'wildignore', along with patterns present in files '.gitignore' and '~/.gitignore', are excluded. For instance, to prevent the *find* command from traversing into the `.git` directory or displaying Vim swap files, add the following line to your *.vimrc* file: `set wildignore+=.git/*,*.swp`.
+> - If the `.gitignore` file contains `**` or `!` within the patterns, the performance of the *find* command may deteriorate. If this becomes problematic, consider using [fd](https://github.com/sharkdp/fd).
+> - For guidance on setting *wildignore* patterns, refer to `:h autocmd-patterns` within Vim. For similar assistance regarding *gitignore* patterns, consult '[PATTERN FORMAT](https://git-scm.com/docs/gitignore)'.
 
 > [!NOTE]
 > To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
