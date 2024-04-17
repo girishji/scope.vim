@@ -40,7 +40,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File()<cr>
 >
 > Same pattern applies to other mappings also.
 >
-> If you're not concerned with customizing the behavior, another option is to simply map keys to <a href="#command">commands</a>.
+> If you're not concerned with customizing the behavior, another option is to simply map keys to <a href="#commands">commands</a>.
 
 Search for installed Vim files:
 
