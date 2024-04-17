@@ -35,6 +35,9 @@ If you are using legacy script to map keys, use:
 >
 	`nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<cr>`
 
+If you're not concerned with customizing the behavior, another option is to
+simply map keys to commands (see below).
+
 Search for installed Vim files.
 >
 	vim9script
