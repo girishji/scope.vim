@@ -55,7 +55,7 @@ API ~
 	# findCmd:  String  : Command string to search for files. If omitted or set to
 	#                      'null_string', uses 'find' command.
 	# count:    Number  : Maximum number of files returned.
-	def File(findCmd: string = null_string, count: number = 10000)
+	def File(findCmd: string = null_string, count: number = 100000)
 <
 > [!NOTE]
 > If the `findCmd` argument (above) is either unset or set to `null_string`,

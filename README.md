@@ -50,12 +50,12 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$VIMRUNTIME} -type f -print -follow')<cr>
 ```
 
-Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 100,000 (default is 10,000):
+Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 500,000 (default is 100,000):
 
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 100000)<cr>
+nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 500000)<cr>
 ```
 
 Find files in `~/.vim`, ignoring swap files and hidden files.
@@ -72,7 +72,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" 
 # findCmd: String  : Command string to search for files. If omitted or set to
 #                      'null_string', uses 'find' command.
 # count:   Number  : Maximum number of files returned.
-def File(findCmd: string = null_string, count: number = 10000)
+def File(findCmd: string = null_string, count: number = 100000)
 ```
 
 > [!NOTE]

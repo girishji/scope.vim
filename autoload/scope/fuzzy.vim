@@ -23,7 +23,7 @@ enddef
 # Note: specifying a directory to find files leads to unexpected results. if you
 # specify 'find ~/.zsh ...' and you have '*/.*' pruned from -path, then it will
 # not show anything since the whole path is matched, which includes .zsh.
-export def File(findCmd: string = null_string, count: number = 10000)
+export def File(findCmd: string = null_string, count: number = 100000)
     var cmd = findCmd == null_string ? util.FindCmd() : findCmd
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new("File", [],
