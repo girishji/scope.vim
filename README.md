@@ -15,7 +15,7 @@ There are already good implementations of this kind, such as [fuzzyy](https://gi
 
 <a href="#Writing-Your-Own-Extension">Extending</a> the functionality to perform fuzzy search for other items is straightforward.
 
-## Usage
+# Usage
 
 Map the following functions to your favorite keys.
 
@@ -23,7 +23,7 @@ In the following examples, replace `<your_key>` with the desired key combination
 
 To quickly try it out, use the <a href="#commands">commands</a> provided below.
 
-### Find File
+## Find File
 
 Find files in the current working directory. Files are retrieved through an external job, and the window seamlessly refreshes to display real-time results.
 
@@ -66,7 +66,7 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" -prune -o -not ( -name "*.swp" -o -name ".*" ) -type f -print -follow')<cr>
 ```
 
-##### API
+#### API
 
 ```vim
 # findCmd: String  : Command string to search for files. If omitted or set to
@@ -84,7 +84,7 @@ def File(findCmd: string = null_string, count: number = 10000)
 > [!TIP]
 > To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
 
-### Live Grep
+## Live Grep
 
 Unlike fuzzy search `grep`, command is executed  after each keystroke in a dedicated external job. Result updates occur every 100 milliseconds, ensuring real-time feedback. To maintain Vim's responsiveness, lengthy processes may be terminated. An ideal scenario involves launching Vim within the project directory, initiating a grep search, and iteratively refining your query until you pinpoint the desired result. Notably, when editing multiple files, you need not re-enter the grep string for each file. Refer to the note below for further details.
 
@@ -116,7 +116,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<cr>
 
 `grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).
 
-##### API
+#### API
 
 ```vim
 # grepCmd:    String  : Command string as you'd use in a shell. If omitted, uses 'grep'
@@ -166,7 +166,7 @@ fuzzy.OptionsSet({
 })
 ```
 
-### Switch Buffer
+## Switch Buffer
 
 Switching buffers becomes effortless with fuzzy search. When no input is provided, it automatically selects the alternate buffer.
 
@@ -184,14 +184,14 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<cr>
 ```
 
-##### API
+#### API
 
 ```vim
 # list_all_buffers: Boolean : If 'true', include unlisted buffers as well.
 def Buffer(list_all_buffers: bool = false)
 ```
 
-### Search Current Buffer
+## Search Current Buffer
 
 Enter a word in the prompt, and it will initiate a fuzzy search within the current buffer. The prompt conveniently displays the word under the cursor (`<cword>`) or the previously searched word as virtual text. Use `<Right>` or `<PgDn>` to auto-fill and continue, or type over it.
 
@@ -203,7 +203,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<cr>
 nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<cr>
 ```
 
-##### API
+#### API
 
 ```vim
 # cword:  String  : If not null_string, put the word under cursor into the prompt.
@@ -212,7 +212,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<cr>
 def BufSearch(cword: string = null_string, recall: bool = true)
 ```
 
-### Quickfix and Location List Integration
+## Quickfix and Location List Integration
 
 While the popup window is open, you can conveniently send all items (unfiltered) to a quickfix list by typing `<C-q>`. For filtered items, utilize `<C-Q>`. Likewise, to direct items to the location list, simply type `<C-l>` or `<C-L>`.
 
@@ -256,7 +256,7 @@ augroup END
 
 For automatic quickfix or location list window opening after `<C-q>` or `<C-l>` commands, replace `chistory|lhistory` above with `clist|llist`.
 
-### All Functions
+## All Functions
 
 You can map the following fuzzy search functions to keys.
 
@@ -289,7 +289,7 @@ Method|Description
 `fuzzy.Tag()` | `:h ctags` search
 `fuzzy.Window()` | Open windows
 
-### Commands
+## Commands
 
 The above functions have equivalent commands that can be invoked from the command line. The primary command is `:Scope`, with the function name as its only argument except for `Grep`. These commands are primarily provided for convenience. The main interface, as described above, is through key mappings.
 
@@ -303,7 +303,7 @@ You can map these commands to keys also. For example:
 nnoremap <your_key> <cmd>Scope File<cr>
 ```
 
-### Key Mappings
+## Key Mappings
 
 When popup window is open the following key mappings can be used.
 
@@ -343,11 +343,11 @@ Mapping | Action
 `<C-r><C-l>` | Insert line under cursor into prompt
 `<C-r>` {register} | Insert the contents of a numbered or named register. Between typing CTRL-R and the second character '"' will be displayed to indicate that you are expected to enter the name of a register.
 
-## Requirements
+# Requirements
 
 - Vim version 9.1 or higher
 
-## Installation
+# Installation
 
 Install this plugin via [vim-plug](https://github.com/junegunn/vim-plug).
 
@@ -392,7 +392,7 @@ packadd scope.vim
 
 </details>
 
-## Configuration
+# Configuration
 
 The appearance of the popup window can be customized using `borderchars`,
 `borderhighlight`, `highlight`, `scrollbarhighlight`, `thumbhighlight`, `maxheight`, and
@@ -420,7 +420,7 @@ Following highlight groups modify the content of popup window:
 - `ScopeMenuSubtle`: Line number, file name, and path. Default: Linked to `Comment`.
 - `ScopeMenuCurrent`: Special item indicating current status (used only when relevant). Default: Linked to `Statement`.
 
-### Writing Your Own Extension
+## Writing Your Own Extension
 
 The search functionality encompasses four fundamental patterns:
 
@@ -439,11 +439,11 @@ The search functionality encompasses four fundamental patterns:
 
 Representative code for each of these patterns can be found in `autoload/scope/fuzzy.vim`.
 
-## Credits
+# Credits
 
 Some portions of this code are shamelessly ripped from [habamax](https://github.com/habamax/.vim/blob/master/autoload/).
 
-## Other Plugins to Enhance Your Workflow
+# Other Plugins to Enhance Your Workflow
 
 1. [**devdocs.vim**](https://github.com/girishji/devdocs.vim) - browse documentation from [devdocs.io](https://devdocs.io).
 
@@ -455,6 +455,6 @@ Some portions of this code are shamelessly ripped from [habamax](https://github.
 
 5. [**vimcomplete**](https://github.com/girishji/vimcomplete) - enhances autocompletion in Vim.
 
-## Contributing
+# Contributing
 
 Open an issue if you encounter problems. Pull requests are welcomed.
