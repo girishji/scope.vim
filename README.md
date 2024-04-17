@@ -33,7 +33,7 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File()<cr>
 ```
 
-> [!NOTE]
+> [!TIP]
 > If you are using legacy script to map keys, use:
 >
 > `nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<cr>`
@@ -81,7 +81,7 @@ def File(findCmd: string = null_string, count: number = 10000)
 > - If the `.gitignore` file contains `**` or `!` within the patterns, the performance of the *find* command may deteriorate. If this becomes problematic, consider using [fd](https://github.com/sharkdp/fd).
 > - For guidance on setting *wildignore* patterns, refer to `:h autocmd-patterns` within Vim. For similar assistance regarding *gitignore* patterns, consult '[PATTERN FORMAT](https://git-scm.com/docs/gitignore)'.
 
-> [!NOTE]
+> [!TIP]
 > To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
 
 ### Live Grep
@@ -94,7 +94,7 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 ```
 
-> [!NOTE]
+> [!TIP]
 > 1. To perform a second grep with the same keyword, there's no need to retype it. The prompt conveniently retains the previous grep string as virtual text. Simply input `<Right>` or `<PgDn>` to auto-fill and proceed, or overwrite it as needed. For smaller projects, you can efficiently execute repeated greps without relying on the quickfix list.
 > 2. Special characters can be entered into the prompt window directly without requiring backslash escaping.
 > 3. When working with live grep, it can be advantageous to suspend it temporarily and refine the results through filtering. Press `<C-k>` to enter pattern search mode. For instance, while in pattern search mode, typing `^foo` will selectively display lines starting with `foo`. To negate patterns, prepend `!` to the search term. For instance, to filter lines that do not contain `foo` or `bar`, input `!foo|bar` into the prompt. Whether the pattern is case-sensitive is determined by `ignorecase` Vim option. To force case (in)sensitive search prepend the pattern with `\c` or `\C`. Pressing `<C-k>` again will toggle back to live grep mode.
@@ -131,7 +131,9 @@ def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string =
              dir: string = null_string)
 ```
 
-If the `grepCmd` argument (above) is either not set or set to `null_string`, the *grep* command (accessible from *$PATH*) is automatically utilized. In this scenario, patterns specified in the Vim option 'wildignore' are automatically excluded from *grep* operations. For example, to prevent the *grep* command from traversing into the `.git` directory, include the following line in your *.vimrc* file: `set wildignore+=.git/*`. Any pattern within 'wildignore' containing a slash (`/`) is interpreted as a directory (utilizing *grep* option *--exclude-dir*), while others are considered as files (utilizing *grep* option *--exclude*).
+> [!NOTE]
+> If the `grepCmd` argument (above) is either not set or set to `null_string`, the *grep* command (accessible from *$PATH*) is automatically utilized. In this scenario, patterns specified in the Vim option 'wildignore' are automatically excluded from *grep* operations. For example, to prevent the *grep* command from traversing into the `.git` directory, include the following line in your *.vimrc* file: `set wildignore+=.git/*`. Any pattern within 'wildignore' containing a slash (`/`) is interpreted as a directory (utilizing *grep* option *--exclude-dir*), while others are considered as files (utilizing *grep* option *--exclude*).
+
 
 To optimize responsiveness, consider fine-tuning `Grep()` settings, particularly for larger projects and slower systems. For instance, adjusting `timer_delay` to a higher value can help alleviate jitteriness during fast typing or clipboard pasting. Additionally, `grep_poll_interval` dictates the initial responsiveness of the prompt for the first few typed characters.
 
