@@ -123,13 +123,21 @@ enddef
 
 export def GrepCmd(ignore: bool = true): string
     # default shell does not support gnu '{' expansion (--option={x,y})
-    var flags = has('macunix') ? '-REIHSins' : '-REIHins'
+    var macos = has('macunix')
+    var flags = macos ? '-REIHSins' : '-REIHins'
     var cmd = $'grep --color=never {flags}'
     if ignore
         # wildignore (:h autocmd-patterns)
         var excl = &wildignore->split(',')->mapnew((_, v) => {
             if v->stridx('/') != -1
-                return (v[0 : 1] == './' || v[0] == '*') ? $'--exclude-dir="{v}"' : $'--exclude-dir="./{v}"'
+                if macos
+                    # BSD grep expects full path for exclude-dir as it appears in grep output (which begins with a './')
+                    return (v[0 : 1] == './' || v[0] == '*') ? $'--exclude-dir="{v}"' : $'--exclude-dir="./{v}"'
+
+                else
+                    # linux expects a glob pattern without trailing '*' and leading '*/' for exclude-dir
+                    return '--exclude-dir="' .. v->substitute('^\**/\{0,1}\(.\{-}\)/\{0,1}\**$', '\1', '') .. '"'
+                endif
             else
                 return $'--exclude="{v}"'
             endif
