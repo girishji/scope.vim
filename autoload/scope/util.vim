@@ -62,7 +62,7 @@ enddef
 #
 export def FindCmd(): string
     var cmd = 'find .'
-    var patterns = []
+    var patterns = [".git"]
     for ignored in [getenv('HOME') .. '/.gitignore', getenv('HOME') .. '/.findignore', '.gitignore', '.findignore']
         if ignored->filereadable()
             patterns->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
