@@ -62,7 +62,7 @@ enddef
 #
 export def FindCmd(): string
     var cmd = 'find .'
-    var patterns = [".git"]
+    var patterns = [".git/*"]
     for ignored in [getenv('HOME') .. '/.gitignore', getenv('HOME') .. '/.findignore', '.gitignore', '.findignore']
         if ignored->filereadable()
             patterns->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
@@ -133,7 +133,6 @@ export def GrepCmd(ignore: bool = true): string
                 if macos
                     # BSD grep expects full path for exclude-dir as it appears in grep output (which begins with a './')
                     return (v[0 : 1] == './' || v[0] == '*') ? $'--exclude-dir="{v}"' : $'--exclude-dir="./{v}"'
-
                 else
                     # linux expects a glob pattern without trailing '*' and leading '*/' for exclude-dir
                     return '--exclude-dir="' .. v->substitute('^\**/\{0,1}\(.\{-}\)/\{0,1}\**$', '\1', '') .. '"'
@@ -143,6 +142,9 @@ export def GrepCmd(ignore: bool = true): string
             endif
         })
         cmd ..= ' ' .. excl->join(' ')
+        if &wildignore !~ '\(^\|,\)\.git[/,]'
+            cmd ..= ' ' .. (macos ? '--exclude-dir="./.git/*"' : '--exclude-dir=".git"')
+        endif
     endif
     return cmd
 enddef

@@ -77,7 +77,7 @@ def File(findCmd: string = null_string, count: number = 100000)
 
 > [!NOTE]
 > If the `findCmd` argument (above) is either unset or set to `null_string`, the *find* command (accessible from *$PATH)*) is automatically utilized. Under this circumstance, the following conditions apply:
-> - Patterns specified in the Vim option `wildignore`, along with patterns present in files `.gitignore`, `~/.gitignore`, `.findignore`, and `~/.findignore`, are excluded. For instance, to prevent the *find* command from traversing into the `.git` directory or displaying Vim swap files, add the following line to your `.vimrc` file: `set wildignore+=.git/*,*.swp`.
+> - Patterns specified in the Vim option `wildignore`, along with patterns present in files `.gitignore`, `~/.gitignore`, `.findignore`, and `~/.findignore`, are excluded. For instance, to prevent the *find* command from traversing into the `.foo` directory or displaying Vim swap files, add the following line to your `.vimrc` file: `set wildignore+=.foo/*,*.swp`. `.git` directory is automatically excluded.
 > - If the `.gitignore` file contains `**` or `!` within the patterns, the performance of the *find* command may deteriorate. If this becomes problematic, consider using [fd](https://github.com/sharkdp/fd).
 > - For guidance on setting *wildignore* patterns, refer to `:h autocmd-patterns` within Vim. For similar assistance regarding *gitignore* patterns, consult '[PATTERN FORMAT](https://git-scm.com/docs/gitignore)'.
 
@@ -132,7 +132,7 @@ def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string =
 ```
 
 > [!NOTE]
-> If the `grepCmd` argument (above) is either not set or set to `null_string`, the *grep* command (accessible from *$PATH*) is automatically utilized. In this scenario, patterns specified in the Vim option 'wildignore' are automatically excluded from *grep* operations. For example, to prevent the *grep* command from traversing into the `.git` directory, include the following line in your *.vimrc* file: `set wildignore+=.git/*`. Any pattern within 'wildignore' containing a slash (`/`) is interpreted as a directory (utilizing *grep* option *--exclude-dir*), while others are considered as files (utilizing *grep* option *--exclude*).
+> If the `grepCmd` argument (above) is either not set or set to `null_string`, the *grep* command (accessible from *$PATH*) is automatically utilized. In this scenario, patterns specified in the Vim option 'wildignore' are automatically excluded from *grep* operations. For example, to prevent the *grep* command from traversing into the `.foo` directory, include the following line in your *.vimrc* file: `set wildignore+=.foo/*`. Any pattern within 'wildignore' containing a slash (`/`) is interpreted as a directory (utilizing *grep* option *--exclude-dir*), while others are considered as files (utilizing *grep* option *--exclude*). '.git' directory is always excluded.
 
 
 To optimize responsiveness, consider fine-tuning `Grep()` settings, particularly for larger projects and slower systems. For instance, adjusting `timer_delay` to a higher value can help alleviate jitteriness during fast typing or clipboard pasting. Additionally, `grep_poll_interval` dictates the initial responsiveness of the prompt for the first few typed characters.
