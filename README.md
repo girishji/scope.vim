@@ -129,6 +129,8 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --smart-case')<cr>
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<cr>
 # Search the word under cursor
 nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<cr>
+# grep inside '~/.vim' directory
+nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, null_string, $'{$HOME}/.vim')<cr>
 ```
 
 If you need to grep within a specific directory that isn't the current one, consider these two options:
@@ -139,7 +141,7 @@ If you need to grep within a specific directory that isn't the current one, cons
 ```vim
 vim9script
 # Define a Vim command called 'ScopeGrep' that takes 'dir' argument (autocompletes directory name)
-command -nargs=1 -complete=dir ScopeGrep function(fuzzy.Grep, [null_string, true, null_string])(<f-args>)
+command -nargs=1 -complete=dir ScopeGrep fuzzy.Grep(null_string, true, null_string, <f-args>)
 # Map a key (if you prefer)
 nnoremap <your_key> :ScopeGrep<space>
 # Use ripgrep instread
