@@ -66,6 +66,21 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" -prune -o -not ( -name "*.swp" -o -name ".*" ) -type f -print -follow')<cr>
 ```
 
+If you need to find files within a specific directory that isn't the current one, consider these two options:
+
+1) Create a keymap where each directory you want to search is mapped to a unique key (as shown above).
+2) Alternatively, define a command and optionally assign a key to it. This method enables you to select the directory dynamically at runtime.
+
+```vim
+vim9script
+# Define a Vim command called 'ScopeFind' which takes a 'dir' argument (autocompletes directory name)
+command -nargs=1 -complete=dir ScopeFile fuzzy.File($'find {<f-args>} -type f -print -follow')
+# (Optionally) Assign a key
+nnoremap <your_key> :ScopeFile<space>
+# Use 'fd' instread
+command -nargs=1 -complete=dir ScopeFile fuzzy.File($'fd -tf --follow . {<f-args>}')
+```
+
 #### API
 
 ```vim
@@ -86,7 +101,7 @@ def File(findCmd: string = null_string, count: number = 100000)
 
 ## Live Grep
 
-Unlike fuzzy search `grep`, command is executed  after each keystroke in a dedicated external job. Result updates occur every 100 milliseconds, ensuring real-time feedback. To maintain Vim's responsiveness, lengthy processes may be terminated. An ideal scenario involves launching Vim within the project directory, initiating a grep search, and iteratively refining your query until you pinpoint the desired result. Notably, when editing multiple files, you need not re-enter the grep string for each file. Refer to the note below for further details.
+Unlike fuzzy search, `grep` command is executed  after each keystroke in a dedicated external job. Result updates occur every 100 milliseconds, ensuring real-time feedback. To maintain Vim's responsiveness, lengthy processes may be terminated. An ideal scenario involves launching Vim within the project directory, initiating a grep search, and iteratively refining your query until you pinpoint the desired result. Notably, when editing multiple files, you need not re-enter the grep string for each file. Refer to the tip below for further details.
 
 ```vim
 vim9script
@@ -99,7 +114,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 > 2. Special characters can be entered into the prompt window directly without requiring backslash escaping.
 > 3. When working with live grep, it can be advantageous to suspend it temporarily and refine the results through filtering. Press `<C-k>` to enter pattern search mode. For instance, while in pattern search mode, typing `^foo` will selectively display lines starting with `foo`. To negate patterns, prepend `!` to the search term. For instance, to filter lines that do not contain `foo` or `bar`, input `!foo|bar` into the prompt. Whether the pattern is case-sensitive is determined by `ignorecase` Vim option. To force case (in)sensitive search prepend the pattern with `\c` or `\C`. Pressing `<C-k>` again will toggle back to live grep mode.
 
-Define your own grep command:
+Here are some examples of customizing Grep:
 
 ```vim
 vim9script
@@ -107,14 +122,30 @@ import autoload 'scope/fuzzy.vim'
 # Case sensitive grep
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude-dir=.git')<cr>
 # ripgrep
-nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --no-heading --smart-case')<cr>
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --smart-case')<cr>
 # silvergrep
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<cr>
 # Search the word under cursor
 nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<cr>
 ```
 
-`grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).
+If you need to grep within a specific directory that isn't the current one, consider these two options:
+
+1) Create a keymap where each directory you want to grep is mapped to a unique key. Then, utilize `fuzzy.Grep()` by providing the directory as an argument (refer to the API below). Assign a key to each directory you wish to grep.
+2) Alternatively, define a command and optionally assign a key to it. This method enables you to select the directory dynamically at runtime.
+
+```
+vim9script
+# Define a Vim command called 'ScopeGrep' that takes 'dir' argument (autocompletes directory name)
+command -nargs=1 -complete=dir ScopeGrep function(fuzzy.Grep, [null_string, true, null_string])(<f-args>)
+# Map a key (if you prefer)
+nnoremap <your_key> :ScopeGrep<space>
+# Use ripgrep instread
+command -nargs=1 -complete=dir ScopeGrep fuzzy.Grep('rg --vimgrep', true, null_string, <f-args>)
+```
+
+> [!NOTE]
+> `grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).
 
 #### API
 
@@ -133,7 +164,6 @@ def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string =
 
 > [!NOTE]
 > If the `grepCmd` argument (above) is either not set or set to `null_string`, the *grep* command (accessible from *$PATH*) is automatically utilized. In this scenario, patterns specified in the Vim option 'wildignore' are automatically excluded from *grep* operations. For example, to prevent the *grep* command from traversing into the `.foo` directory, include the following line in your *.vimrc* file: `set wildignore+=.foo/*`. Any pattern within 'wildignore' containing a slash (`/`) is interpreted as a directory (utilizing *grep* option *--exclude-dir*), while others are considered as files (utilizing *grep* option *--exclude*). '.git' directory is always excluded.
-
 
 To optimize responsiveness, consider fine-tuning `Grep()` settings, particularly for larger projects and slower systems. For instance, adjusting `timer_delay` to a higher value can help alleviate jitteriness during fast typing or clipboard pasting. Additionally, `grep_poll_interval` dictates the initial responsiveness of the prompt for the first few typed characters.
 

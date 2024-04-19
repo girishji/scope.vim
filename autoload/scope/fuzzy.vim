@@ -122,11 +122,10 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
         elseif prompt->len() > grep_skip_len
             # 'grep' requires some characters to be escaped (not tested for 'rg', 'ug', and 'ag')
             cmd = $'{grepCmd ?? util.GrepCmd()} {util.Escape(prompt)}'
-            if dir != null_string
+            if grepCmd =~ 'rg\(\s\|$\)'
+                cmd = $'{cmd} {dir != null_string ? dir : "./"}'
+            elseif dir != null_string
                 cmd = $'{cmd} {dir}'
-            elseif grepCmd != null_string && grepCmd->match('^\S*rg\s\|^\S*rg$') != -1
-                # 'rg' needs a './' at the end
-                cmd = $'{cmd} ./'
             endif
             if options.grep_echo_cmd
                 var maxlen = &columns - 14
