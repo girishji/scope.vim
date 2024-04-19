@@ -335,7 +335,7 @@ For example, to initiate a buffer search, use the command `:Scope Buffer` or `:S
 
 You can map these commands to keys also. For example:
 
-```
+```vim
 nnoremap <your_key> <cmd>Scope File<cr>
 ```
 
