@@ -134,7 +134,7 @@ If you need to grep within a specific directory that isn't the current one, cons
 1) Create a keymap where each directory you want to grep is mapped to a unique key. Then, utilize `fuzzy.Grep()` by providing the directory as an argument (refer to the API below). Assign a key to each directory you wish to grep.
 2) Alternatively, define a command and optionally assign a key to it. This method enables you to select the directory dynamically at runtime.
 
-```
+```vim
 vim9script
 # Define a Vim command called 'ScopeGrep' that takes 'dir' argument (autocompletes directory name)
 command -nargs=1 -complete=dir ScopeGrep function(fuzzy.Grep, [null_string, true, null_string])(<f-args>)
