@@ -64,6 +64,8 @@ Find files in `~/.vim`, ignoring swap files and hidden files.
 vim9script
 import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" -prune -o -not ( -name "*.swp" -o -name ".*" ) -type f -print -follow')<cr>
+# Use 'fd' instead
+nnoremap <your_key> <scriptcmd>fuzzy.File($'fd -tf --follow . {$HOME}/.vim')<cr>
 ```
 
 If you need to find files within a specific directory that isn't the current one, consider these two options:
