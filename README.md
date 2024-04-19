@@ -326,7 +326,7 @@ Method|Description
 The above functions have equivalent commands that can be invoked from the command line. The primary command is `:Scope`, with the function name as its only argument except for `Grep`. These commands are primarily provided for convenience. The main interface, as described above, is through key mappings.
 
 ```vim
-:Scope [Autocmd|BufSearch|Buffer|CmdHistory|Colorscheme|Command|File|Filetype|GitFile|Grep|Help|HelpfilesGrep|Highlight|Jumplist|Keymap|LspDocumentSymbol|Loclist|LoclistHistory|MRU|Mark|Option|Quickfix|QuickfixHistory|Register|Tag|Window]
+:Scope <Autocmd|BufSearch|Buffer|CmdHistory|Colorscheme|Command|File|Filetype|GitFile|Grep|Help|HelpfilesGrep|Highlight|Jumplist|Keymap|LspDocumentSymbol|Loclist|LoclistHistory|MRU|Mark|Option|Quickfix|QuickfixHistory|Register|Tag|Window>
 ```
 
 For example, to initiate a buffer search, use the command `:Scope Buffer` or `:Scope buffer`. Typing `:Scope <Tab>` will display all available functions.
