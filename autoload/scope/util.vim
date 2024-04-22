@@ -68,10 +68,9 @@ export def FindCmd(): string
             patterns->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
         endif
     endfor
-    var specialchars = false
     var paths = Unique(patterns)->mapnew((_, v) => {
         if v->stridx('**') != -1 || v->stridx('!') != -1
-            specialchars = true
+            # cannot support these patterns, slows down 'find' command
             return ''  # filter out these empty strings later when joining
         endif
         var idx = v->stridx('/')
@@ -99,13 +98,7 @@ export def FindCmd(): string
     if !fnames->empty()
         cmd ..= ' ' .. fnames->join(' -o ') .. ' -o'
     endif
-    cmd ..= ' -type f -follow'
-    if specialchars && 'git'->executable() == 1
-        # If '**' or '!' is present in the pattern, filter the results through 'git' (this is significantly slow)
-        cmd ..= ' -exec sh -c "for f do git check-ignore -q \"$f\" || echo \"$f\"; done" find-sh {} +'
-    else
-        cmd ..= ' -print'
-    endif
+    cmd ..= ' -type f -follow -print'
     return cmd
 enddef
 
