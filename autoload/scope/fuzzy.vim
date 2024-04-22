@@ -115,7 +115,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
         prev_grep = prompt
         win_execute(menu.id, "syn clear ScopeMenuMatch")
         if options.grep_echo_cmd
-            echo ''
+            util.EchoClear()
         endif
         if prompt == null_string
             menu.SetText([])
@@ -128,8 +128,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
                 cmd = $'{cmd} {dir}'
             endif
             if options.grep_echo_cmd
-                var maxlen = &columns - 14
-                echo $'{cmd->len() > maxlen ? $"{cmd->slice(0, maxlen - 4)} ..." : cmd}'
+                util.Echo(cmd)
             endif
             # do not convert cmd to list, as this will not quote space characters correctly.
             var job: task.AsyncCmd
@@ -246,7 +245,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
         },
         () => {
             if options.grep_echo_cmd
-                echo ''
+                util.EchoClear()
             endif
         }, true)
 enddef

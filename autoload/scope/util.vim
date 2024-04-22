@@ -158,13 +158,13 @@ export def Escape(s: string): string
 enddef
 
 export def GetCompletionItems(s: string, type: string): list<string>
-    var saved = &wildoptions
+    var saved_wo = &wildoptions
     var items: list<string> = []
     try
         :set wildoptions=fuzzy
         items = getcompletion(s, type)
     finally
-        exe $'set wildoptions={saved}'
+        exe $'set wildoptions={saved_wo}'
     endtry
     return items
 enddef
@@ -223,29 +223,44 @@ export def Send2Qickfix(key: string, unfiltered: list<dict<any>>, filtered: list
     return true
 enddef
 
-var saved_cmdheight: number
+var saved = { cmdheight: -1, scrolloff: -1, toplinenr: -1 }
 
 export def Echo(s: string)
     var maxlen = &columns - 12
     if s->len() < maxlen
         :echo s
-        saved_cmdheight = -1
+        saved.cmdheight = -1
     else
         var lcount = (s->len() / maxlen) + 1
-        saved_cmdheight = &cmdheight
-        :exec $'setl cmdheight={lcount}'
+        saved.cmdheight = &l:cmdheight
+        # To prevent viewport from shifting up, temporarily move the cursor
+        saved.scrolloff = &l:scrolloff  # -1 if this local var is not set. global var defaults to 0
+        saved.toplinenr = line('w0')
+        var saved_cursor = getcurpos()[1 : 2]
+        if line('w$') - line('.') > lcount
+            :setlocal scrolloff=0
+            cursor(line('w0'), 1)
+        endif
+        :exec $'setlocal cmdheight={lcount}'
         var lines = []
         for i in range(lcount)
             lines->add(s->slice(i * maxlen, (i + 1) * maxlen))
         endfor
         echo lines->join("\n")
+        cursor(saved_cursor[0], saved_cursor[1])
     endif
 enddef
 
 export def EchoClear()
-    if saved_cmdheight > 0
-        :exec $'setl cmdheight={saved_cmdheight}'
-        saved_cmdheight = -1
-    endif
     :echo ''
+    if saved.cmdheight > 0
+        var saved_cursor = getcurpos()[1 : 2]
+        :exec $'setlocal cmdheight={saved.cmdheight}'
+        :setlocal scrolloff=0
+        cursor(saved.toplinenr, 1)
+        :normal zt
+        cursor(saved_cursor[0], saved_cursor[1])
+        :exec $'setlocal scrolloff={saved.scrolloff}'
+        saved.cmdheight = -1
+    endif
 enddef
