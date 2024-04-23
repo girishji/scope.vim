@@ -222,7 +222,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --smart-case')<cr>
 nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<cr>
 ```
 
-# Search the word under cursor:
+Search the word under cursor:
 
 ```vim
 vim9script
@@ -230,7 +230,7 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<cr>
 ```
 
-# grep inside '~/.vim' directory
+grep inside '~/.vim' directory:
 
 ```vim
 vim9script
