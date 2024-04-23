@@ -42,7 +42,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.File()<cr>
 >
 > If you're not concerned with customizing the behavior, another option is to simply map keys to <a href="#commands">commands</a>.
 
-#### API
+### API
 
 ```vim
 # findCmd: String  : Command string to search for files. If omitted or set to
@@ -63,7 +63,7 @@ def File(findCmd: string = null_string, count: number = 100000)
 > [!TIP]
 > To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
 
-#### Examples
+### Examples
 
 Search for installed Vim files:
 
@@ -147,7 +147,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 > [!NOTE]
 > `grep` command string is echoed in the command line after each search. You can unset `grep_echo_cmd` option to turn this off (see below).
 
-#### API
+### API
 
 ```vim
 # grepCmd:    String  : Command string as you'd use in a shell. If omitted, uses 'grep'
@@ -199,7 +199,7 @@ fuzzy.OptionsSet({
 })
 ```
 
-#### Examples
+### Examples
 
 Case-sensitive grep:
 
@@ -271,7 +271,7 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<cr>
 ```
 
-#### API
+### API
 
 ```vim
 # list_all_buffers: Boolean : If 'true', include unlisted buffers as well.
@@ -290,7 +290,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.BufSearch()<cr>
 nnoremap <your_key> <scriptcmd>fuzzy.BufSearch('<cword>')<cr>
 ```
 
-#### API
+### API
 
 ```vim
 # cword:  String  : If not null_string, put the word under cursor into the prompt.
