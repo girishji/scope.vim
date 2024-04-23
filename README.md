@@ -42,47 +42,6 @@ nnoremap <your_key> <scriptcmd>fuzzy.File()<cr>
 >
 > If you're not concerned with customizing the behavior, another option is to simply map keys to <a href="#commands">commands</a>.
 
-Search for installed Vim files:
-
-```vim
-vim9script
-import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$VIMRUNTIME} -type f -print -follow')<cr>
-```
-
-Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 500,000 (default is 100,000):
-
-```vim
-vim9script
-import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 500000)<cr>
-```
-
-Find files in `~/.vim`, ignoring swap files and hidden files.
-
-```vim
-vim9script
-import autoload 'scope/fuzzy.vim'
-nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$HOME}/.vim -path "*/.vim/.*" -prune -o -not ( -name "*.swp" -o -name ".*" ) -type f -print -follow')<cr>
-# Use 'fd' instead
-nnoremap <your_key> <scriptcmd>fuzzy.File($'fd -tf --follow . {$HOME}/.vim')<cr>
-```
-
-If you need to find files within a specific directory that isn't the current one, consider these two options:
-
-1) Create a keymap where each directory you want to search is mapped to a unique key (as shown above).
-2) Alternatively, define a command and optionally assign a key to it. This method enables you to select the directory dynamically at runtime.
-
-```vim
-vim9script
-# Define a Vim command called 'ScopeFind' which takes a 'dir' argument (autocompletes directory name)
-command -nargs=1 -complete=dir ScopeFile fuzzy.File($'find {<f-args>} -type f -print -follow')
-# (Optionally) Assign a key
-nnoremap <your_key> :ScopeFile<space>
-# Use 'fd' instread
-command -nargs=1 -complete=dir ScopeFile fuzzy.File($'fd -tf --follow . {<f-args>}')
-```
-
 #### API
 
 ```vim
@@ -95,11 +54,80 @@ def File(findCmd: string = null_string, count: number = 100000)
 > [!NOTE]
 > If the `findCmd` argument (above) is either unset or set to `null_string`, the *find* command (accessible from *$PATH)*) is automatically utilized. Under this circumstance, the following conditions apply:
 > - Patterns specified in the Vim option `wildignore`, along with patterns present in files `.gitignore`, `~/.gitignore`, `.findignore`, and `~/.findignore`, are excluded. For instance, to prevent the *find* command from traversing into the `.foo` directory or displaying Vim swap files, add the following line to your `.vimrc` file: `set wildignore+=.foo/*,*.swp`. `.git` directory is automatically excluded.
-> - If the `.gitignore` file contains `**` or `!` within the patterns, the performance of the *find* command may deteriorate. If this becomes problematic, consider using [fd](https://github.com/sharkdp/fd).
+> - `.gitignore` patterns containing `**` or `!` are ignored, since precessing them deteriorates performance.
 > - For guidance on setting *wildignore* patterns, refer to `:h autocmd-patterns` within Vim. For similar assistance regarding *gitignore* patterns, consult '[PATTERN FORMAT](https://git-scm.com/docs/gitignore)'.
+
+> [!IMPORTANT]
+> The default command utilized by `File()`, which employs the *find* system command and incorporates flags for excluding paths specified in `.gitignore` and `wildignore`, can be accessed via the `FindCmd()` function. The function's API is as follows: `FindCmd(dir: string = '.'): string`. The `dir` argument designates the directory to be searched, with the default being the current directory.
 
 > [!TIP]
 > To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
+
+#### Examples
+
+Search for installed Vim files:
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.File($'find {$VIMRUNTIME} -type f -print -follow')<cr>
+# Or, utilize 'FindCmd()' to exclude paths specified in '.gitignore' and 'wildignore':
+nnoremap <your_key> <scriptcmd>fuzzy.File(fuzzy.FindCmd($VIMRUNTIME))<CR>
+```
+
+Use [fd](https://github.com/sharkdp/fd) instead of `find` command, and limit the maximum number of files returned by external job to 500,000 (default is 100,000):
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.File('fd -tf --follow', 500000)<cr>
+```
+
+Find files in `~/.vim`:
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <leader>fv <scriptcmd>fuzzy.File(fuzzy.FindCmd($'{$HOME}/.vim'))<CR>
+# Use 'fd' instead
+nnoremap <your_key> <scriptcmd>fuzzy.File($'fd -tf --follow . {$HOME}/.vim')<cr>
+```
+
+If you require the flexibility to search a directory of your choice during runtime, consider creating a command that allows for dynamic directory selection, and optionally, assign a key for quicker access.
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+# Define a Vim command called 'ScopeFind' which takes a 'dir' argument (autocompletes directory name):
+command -nargs=1 -complete=dir ScopeFile fuzzy.File($'find {<f-args>} -type f -print -follow')
+# Or, utilize 'FindCmd()' to exclude paths specified in '.gitignore' and 'wildignore':
+command -nargs=1 -complete=dir ScopeFile fuzzy.File(fuzzy.FindCmd(<f-args>))
+# Or, use 'fd' instead:
+command -nargs=1 -complete=dir ScopeFile fuzzy.File($'fd -tf --follow . {<f-args>}')
+# (Optionally) Assign a key:
+nnoremap <your_key> :ScopeFile<space>
+```
+
+To always search from the root directory of a Git repository, regardless of whether the file is opened from a sub-directory within that repository, you can add the following mapping:
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.File(fuzzy.FindCmd($'{system("git rev-parse --show-toplevel 2>/dev/null \|\| true")->trim()}'))<cr>
+```
+
+The directory from which to initiate the search can be obtained from any mechanism. Here is the same example using a Vim function:
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+def FindGit()
+    # Suppress error from 'git' command and always return 'true' so that 'system()' is happy
+    var gitdir = system("git rev-parse --show-toplevel 2>/dev/null \|\| true")->trim()
+    fuzzy.File(fuzzy.FindCmd(gitdir))
+enddef
+nnoremap <your_key> <scriptcmd>FindGit()<cr>
+```
 
 ## Live Grep
 
@@ -116,40 +144,8 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 > 2. Special characters can be entered into the prompt window directly without requiring backslash escaping.
 > 3. When working with live grep, it can be advantageous to suspend it temporarily and refine the results through filtering. Press `<C-k>` to enter pattern search mode. For instance, while in pattern search mode, typing `^foo` will selectively display lines starting with `foo`. To negate patterns, prepend `!` to the search term. For instance, to filter lines that do not contain `foo` or `bar`, input `!foo|bar` into the prompt. Whether the pattern is case-sensitive is determined by `ignorecase` Vim option. To force case (in)sensitive search prepend the pattern with `\c` or `\C`. Pressing `<C-k>` again will toggle back to live grep mode.
 
-Here are some examples of customizing Grep:
-
-```vim
-vim9script
-import autoload 'scope/fuzzy.vim'
-# Case sensitive grep
-nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude-dir=.git')<cr>
-# ripgrep
-nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --smart-case')<cr>
-# silvergrep
-nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<cr>
-# Search the word under cursor
-nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<cr>
-# grep inside '~/.vim' directory
-nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, null_string, $'{$HOME}/.vim')<cr>
-```
-
-If you need to grep within a specific directory that isn't the current one, consider these two options:
-
-1) Create a keymap where each directory you want to grep is mapped to a unique key. Then, utilize `fuzzy.Grep()` by providing the directory as an argument (refer to the API below). Assign a key to each directory you wish to grep.
-2) Alternatively, define a command and optionally assign a key to it. This method enables you to select the directory dynamically at runtime.
-
-```vim
-vim9script
-# Define a Vim command called 'ScopeGrep' that takes 'dir' argument (autocompletes directory name)
-command -nargs=1 -complete=dir ScopeGrep fuzzy.Grep(null_string, true, null_string, <f-args>)
-# Map a key (if you prefer)
-nnoremap <your_key> :ScopeGrep<space>
-# Use ripgrep instread
-command -nargs=1 -complete=dir ScopeGrep fuzzy.Grep('rg --vimgrep', true, null_string, <f-args>)
-```
-
 > [!NOTE]
-> `grep` command string is echoed in the command line after each search. You can set an option to turn this off (see below).
+> `grep` command string is echoed in the command line after each search. You can unset `grep_echo_cmd` option to turn this off (see below).
 
 #### API
 
@@ -167,7 +163,10 @@ def Grep(grepCmd: string = null_string, ignorecase: bool = true, cword: string =
 ```
 
 > [!NOTE]
-> If the `grepCmd` argument (above) is either not set or set to `null_string`, the *grep* command (accessible from *$PATH*) is automatically utilized. In this scenario, patterns specified in the Vim option 'wildignore' are automatically excluded from *grep* operations. For example, to prevent the *grep* command from traversing into the `.foo` directory, include the following line in your *.vimrc* file: `set wildignore+=.foo/*`. Any pattern within 'wildignore' containing a slash (`/`) is interpreted as a directory (utilizing *grep* option *--exclude-dir*), while others are considered as files (utilizing *grep* option *--exclude*). '.git' directory is always excluded.
+> 1. If the `grepCmd` argument (above) is either not set or set to `null_string`, the *grep* command (accessible from *$PATH*) is automatically utilized. In this scenario, patterns specified in the Vim option 'wildignore' are automatically excluded from *grep* operations. For example, to prevent the *grep* command from traversing into the `.foo` directory, include the following line in your *.vimrc* file: `set wildignore+=.foo/*`. Any pattern within 'wildignore' containing a slash (`/`) is interpreted as a directory (utilizing *grep* option *--exclude-dir*), while others are considered as files (utilizing *grep* option *--exclude*). '.git' directory is always excluded.
+
+> [!IMPORTANT]
+> The default command utilized by `Grep()`, which employs the *grep* system command and incorporates flags for excluding paths specified in `wildignore`, can be accessed via the `GrepCmd()` function. The function's API is as follows: `GrepCmd(flags: string = null_string): string`. The `flags` argument defaults to case-insensitive search (when `null_string` is specified). These flags can have minor variations depending on the OS.
 
 To optimize responsiveness, consider fine-tuning `Grep()` settings, particularly for larger projects and slower systems. For instance, adjusting `timer_delay` to a higher value can help alleviate jitteriness during fast typing or clipboard pasting. Additionally, `grep_poll_interval` dictates the initial responsiveness of the prompt for the first few typed characters.
 
@@ -198,6 +197,60 @@ fuzzy.OptionsSet({
     grep_echo_cmd: false,
     # ...
 })
+```
+
+#### Examples
+
+Case-sensitive grep:
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('grep --color=never -REIHns --exclude-dir=.git')<cr>
+# Or, to exclude patterns specified in 'wildignore':
+nnoremap <your_key> <scriptcmd>fuzzy.Grep(fuzzy.GrepCmd('-RESIHns'))<CR>
+```
+
+Use ripgrep or silvergrep:
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+# ripgrep
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('rg --vimgrep --smart-case')<cr>
+# silvergrep
+nnoremap <your_key> <scriptcmd>fuzzy.Grep('ag --vimgrep')<cr>
+```
+
+# Search the word under cursor:
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, '<cword>')<cr>
+```
+
+# grep inside '~/.vim' directory
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.Grep(null_string, true, null_string, $'{$HOME}/.vim')<cr>
+```
+
+If you need to grep within a specific directory that isn't the current one, consider these two options:
+
+1) Create a keymap where each directory you want to grep is mapped to a unique key. Then, utilize `fuzzy.Grep()` by providing the directory as an argument (refer to the API below). Assign a key to each directory you wish to grep.
+2) Alternatively, define a command and optionally assign a key to it. This method enables you to select the directory **dynamically** at runtime.
+
+```vim
+vim9script
+# Define a Vim command called 'ScopeGrep' that takes 'dir' argument (autocompletes directory name)
+command -nargs=1 -complete=dir ScopeGrep fuzzy.Grep(null_string, true, null_string, <f-args>)
+# Map a key (if you prefer)
+nnoremap <your_key> :ScopeGrep<space>
+# Use ripgrep instread
+command -nargs=1 -complete=dir ScopeGrep fuzzy.Grep('rg --vimgrep', true, null_string, <f-args>)
 ```
 
 ## Switch Buffer
@@ -340,7 +393,6 @@ You can map these commands to keys also. For example:
 ```vim
 nnoremap <your_key> <cmd>Scope File<cr>
 ```
-
 
 ## Key Mappings
 

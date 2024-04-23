@@ -58,26 +58,27 @@ export def FilterFilenames(lst: list<dict<any>>, prompt: string): list<any>
     return FilterItems(lst, prompt, 'text', true)
 enddef
 
-# See PATTERN FORMAT under https://git-scm.com/docs/gitignore
+# Ignores patterns from .gitignore and 'wildignore'.
 #
-export def FindCmd(): string
-    var cmd = 'find .'
+export def FindCmd(dir: string = '.'): string
+    var cmd: string = $'find {dir}'
     var patterns = [".git/*"]
-    for ignored in [getenv('HOME') .. '/.gitignore', getenv('HOME') .. '/.findignore', '.gitignore', '.findignore']
+    for ignored in [$'{$HOME}/.gitignore', $'{$HOME}/.findignore', $'{dir}/.gitignore', $'{dir}/.findignore']
         if ignored->filereadable()
             patterns->extend(readfile(ignored)->filter((_, v) => v !~ '^\s*$\|^\s*#'))
         endif
     endfor
     var paths = Unique(patterns)->mapnew((_, v) => {
         if v->stridx('**') != -1 || v->stridx('!') != -1
-            # cannot support these patterns, slows down 'find' command
+            # cannot support these patterns--slows down 'find' command
+            # See PATTERN FORMAT under https://git-scm.com/docs/gitignore
             return ''  # filter out these empty strings later when joining
         endif
         var idx = v->stridx('/')
         if idx != -1 && idx != v->len() - 1  # relative path
             var pat = (v[-1] == '/') ? v[0 : -2] : v
-            return (pat[0 : 1] == './' || pat[0] == '*') ? $'-path "{pat}"' : $'-path "./{pat}"'
-        else  # exclude these wherever they appear in the pat
+            return (pat[0] == '*') ? $'-path "{pat}"' : $'-path "{dir}/{pat}"'
+        else  # exclude these wherever they appear in the path
             var pat = (v[-1] == '/') ? v[0 : -2] : v
             return $'-path "*/{pat}"'
         endif
@@ -86,7 +87,7 @@ export def FindCmd(): string
     var fnames = []
     for pat in &wildignore->split(',')
         if pat->stridx('/') != -1
-            paths->add((pat[0 : 1] == './' || pat[0] == '*') ? $'-path "{pat}"' : $'-path "./{pat}"')
+            paths->add((pat[0] == '*') ? $'-path "{pat}"' : $'-path "{dir}/{pat}"')
         else
             fnames->add($'-name "{pat}"')
         endif
@@ -114,30 +115,28 @@ def Unique(lst: list<string>): list<string>
     return res
 enddef
 
-export def GrepCmd(ignore: bool = true): string
+export def GrepCmd(flags: string = null_string): string
     # default shell does not support gnu '{' expansion (--option={x,y})
     var macos = has('macunix')
-    var flags = macos ? '-REIHSins' : '-REIHins'
-    var cmd = $'grep --color=never {flags}'
-    if ignore
-        # wildignore (:h autocmd-patterns)
-        var excl = &wildignore->split(',')->mapnew((_, v) => {
-            if v->stridx('/') != -1
-                if macos
-                    # BSD grep expects full path for exclude-dir as it appears in grep output (which begins with a './')
-                    return (v[0 : 1] == './' || v[0] == '*') ? $'--exclude-dir="{v}"' : $'--exclude-dir="./{v}"'
-                else
-                    # linux expects a glob pattern without trailing '*' and leading '*/' for exclude-dir
-                    return '--exclude-dir="' .. v->substitute('^\**/\{0,1}\(.\{-}\)/\{0,1}\**$', '\1', '') .. '"'
-                endif
+    var gflags = (flags == null_string) ? (macos ? '-REIHSins' : '-REIHins') : flags
+    var cmd = $'grep --color=never {gflags}'
+    # wildignore (:h autocmd-patterns)
+    var excl = &wildignore->split(',')->mapnew((_, v) => {
+        if v->stridx('/') != -1
+            if macos
+                # BSD grep expects full path for exclude-dir as it appears in grep output (which begins with a './')
+                return (v[0 : 1] == './' || v[0] == '*') ? $'--exclude-dir="{v}"' : $'--exclude-dir="./{v}"'
             else
-                return $'--exclude="{v}"'
+                # linux expects a glob pattern without trailing '*' and leading '*/' for exclude-dir
+                return '--exclude-dir="' .. v->substitute('^\**/\{0,1}\(.\{-}\)/\{0,1}\**$', '\1', '') .. '"'
             endif
-        })
-        cmd ..= ' ' .. excl->join(' ')
-        if &wildignore !~ '\(^\|,\)\.git[/,]'
-            cmd ..= ' ' .. (macos ? '--exclude-dir="./.git/*"' : '--exclude-dir=".git"')
+        else
+            return $'--exclude="{v}"'
         endif
+    })
+    cmd ..= ' ' .. excl->join(' ')
+    if &wildignore !~ '\(^\|,\)\.git[/,]'
+        cmd ..= ' ' .. (macos ? '--exclude-dir="./.git/*"' : '--exclude-dir=".git"')
     endif
     return cmd
 enddef

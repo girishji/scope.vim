@@ -19,12 +19,16 @@ export def OptionsSet(opt: dict<any>)
     options->extend(opt)
 enddef
 
+export def FindCmd(dir: string = '.'): string
+    return util.FindCmd($'{dir == null_string ? "." : dir}')
+enddef
+
 # fuzzy find files (build a list of files once and then fuzzy search on them)
 # Note: specifying a directory to find files leads to unexpected results. if you
 # specify 'find ~/.zsh ...' and you have '*/.*' pruned from -path, then it will
 # not show anything since the whole path is matched, which includes .zsh.
 export def File(findCmd: string = null_string, count: number = 100000)
-    var cmd = findCmd == null_string ? util.FindCmd() : findCmd
+    var cmd = findCmd == null_string ? FindCmd() : findCmd
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new("File", [],
         (res, key) => {
@@ -84,6 +88,10 @@ export def File(findCmd: string = null_string, count: number = 100000)
         findCmd == null_string)
 enddef
 
+export def GrepCmd(flags: string = null_string): string
+    return util.GrepCmd(flags)
+enddef
+
 var prev_grep = null_string
 
 # live grep, not fuzzy search.
@@ -121,7 +129,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
             menu.SetText([])
         elseif prompt->len() > grep_skip_len
             # 'grep' requires some characters to be escaped (not tested for 'rg', 'ug', and 'ag')
-            cmd = $'{grepCmd ?? util.GrepCmd()} {util.Escape(prompt)}'
+            cmd = $'{grepCmd ?? GrepCmd()} {util.Escape(prompt)}'
             if grepCmd =~ 'rg\(\s\|$\)'
                 cmd = $'{cmd} {dir != null_string ? dir : "./"}'
             elseif dir != null_string
