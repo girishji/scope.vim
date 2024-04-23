@@ -246,6 +246,7 @@ If you need to grep within a specific directory that isn't the current one, cons
 
 ```vim
 vim9script
+import autoload 'scope/fuzzy.vim'
 # Define a Vim command called 'ScopeGrep' that takes 'dir' argument (autocompletes directory name)
 command -nargs=1 -complete=dir ScopeGrep fuzzy.Grep(null_string, true, null_string, <f-args>)
 # Map a key (if you prefer)
