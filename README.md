@@ -145,7 +145,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 > 3. When working with live grep, it can be advantageous to suspend it temporarily and refine the results through filtering. Press `<C-k>` to enter pattern search mode. For instance, while in pattern search mode, typing `^foo` will selectively display lines starting with `foo`. To negate patterns, prepend `!` to the search term. For instance, to filter lines that do not contain `foo` or `bar`, input `!foo|bar` into the prompt. Whether the pattern is case-sensitive is determined by `ignorecase` Vim option. To force case (in)sensitive search prepend the pattern with `\c` or `\C`. Pressing `<C-k>` again will toggle back to live grep mode.
 
 > [!NOTE]
-> `grep` command string is echoed in the command line after each search. You can unset `grep_echo_cmd` option to turn this off (see below).
+> `grep` command string is **echoed** in the command line after each search. You can unset `grep_echo_cmd` option to turn this off (see below).
 
 ### API
 
