@@ -180,7 +180,7 @@ Here's a breakdown of available options:
 | `grep_skip_len`      | `Number`  | Specifies the minimum number of characters required to invoke the grep command. Default: `0`.
 | `grep_echo_cmd`      | `Boolean` | Determines whether to display the grep command string on the command line. Default: `true`.
 
-To optimize performance, adjust these options accordingly:
+Set these options as follows:
 
 ```vim
 scope#fuzzy#OptionsSet({
@@ -192,6 +192,7 @@ scope#fuzzy#OptionsSet({
 or
 
 ```vim
+vim9script
 import autoload 'scope/fuzzy.vim'
 fuzzy.OptionsSet({
     grep_echo_cmd: false,
