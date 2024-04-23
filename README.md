@@ -122,7 +122,7 @@ The directory from which to initiate the search can be obtained from any mechani
 vim9script
 import autoload 'scope/fuzzy.vim'
 def FindGit()
-    # Suppress error from 'git' command and always return 'true' so that 'system()' is happy
+    # Suppress error from 'git' command and always return success so that 'system()' is happy
     var gitdir = system("git rev-parse --show-toplevel 2>/dev/null \|\| true")->trim()
     fuzzy.File(fuzzy.FindCmd(gitdir))
 enddef
