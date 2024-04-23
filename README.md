@@ -88,7 +88,7 @@ Find files in `~/.vim`:
 ```vim
 vim9script
 import autoload 'scope/fuzzy.vim'
-nnoremap <leader>fv <scriptcmd>fuzzy.File(fuzzy.FindCmd($'{$HOME}/.vim'))<CR>
+nnoremap <your_key> <scriptcmd>fuzzy.File(fuzzy.FindCmd($'{$HOME}/.vim'))<CR>
 # Use 'fd' instead
 nnoremap <your_key> <scriptcmd>fuzzy.File($'fd -tf --follow . {$HOME}/.vim')<cr>
 ```
