@@ -342,7 +342,7 @@ export class FilterMenu
         var maxwidth = (&columns - 14)
         if options.maxwidth != -1
             # make sure we fit into the screen
-            maxwidth = min([options.maxwidth, &columns - 4])
+            maxwidth = min([options.maxwidth, &columns - 8])
         endif
         if this.maximize
             minwidth = maxwidth
