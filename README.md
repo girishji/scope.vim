@@ -123,7 +123,9 @@ vim9script
 import autoload 'scope/fuzzy.vim'
 def FindGit()
     var gitdir = system("git rev-parse --show-toplevel 2>/dev/null")->trim()
-    gitdir = (v:shell_error != 0) ? '.' : gitdir
+    if v:shell_error != 0 || gitdir == getcwd()
+        gitdir = '.'
+    endif
     fuzzy.File(fuzzy.FindCmd(gitdir))
 enddef
 nnoremap <your_key> <scriptcmd>FindGit()<cr>
