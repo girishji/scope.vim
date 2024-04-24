@@ -11,6 +11,7 @@ export var options = {
     wrap: 0,
     padding: [0, 1, 0, 1],
     maxheight: -1,
+    maxwidth: -1,
     promptchar: '>',
     # cursorchar: '█',
 }
@@ -106,11 +107,7 @@ export class FilterMenu
         this.maximize = maximize
         var items_count = this.items_dict->len()
         var [height, pos_top] = this._GetHeight(items_count)
-        this.minwidth = (&columns * 0.6)->float2nr()
-        this.maxwidth = (&columns - 14)
-        if maximize
-            this.minwidth = this.maxwidth
-        endif
+        [this.minwidth, this.maxwidth] = this._GetWidth()
         this.history_idx = -1
         var ignore_input = ["\<cursorhold>", "\<ignore>", "\<Nul>",
                     \ "\<LeftMouse>", "\<LeftRelease>", "\<LeftDrag>", $"\<2-LeftMouse>",
@@ -338,6 +335,19 @@ export class FilterMenu
         endif
         var pos_top = ((&lines - height) / 2) - 1
         return [height, pos_top]
+    enddef
+
+    def _GetWidth(): list<number>
+        var minwidth = (&columns * 0.6)->float2nr()
+        var maxwidth = (&columns - 14)
+        if options.maxwidth != -1
+            # make sure we fit into the screen
+            maxwidth = min([options.maxwidth, &columns - 4])
+        endif
+        if this.maximize
+            minwidth = maxwidth
+        endif
+        return [minwidth, maxwidth]
     enddef
 
     def SetText(items_dict: list<dict<any>>, GetFilteredItems: func(list<any>, string): list<any> = null_function, max_items: number = -1): bool
