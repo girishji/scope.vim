@@ -27,7 +27,7 @@ enddef
 # Note: specifying a directory to find files leads to unexpected results. if you
 # specify 'find ~/.zsh ...' and you have '*/.*' pruned from -path, then it will
 # not show anything since the whole path is matched, which includes .zsh.
-export def File(findCmd: string = null_string, count: number = 100000)
+export def File(findCmd: string = null_string, count: number = 100000, ignore_err: bool = true)
     var cmd = findCmd == null_string ? FindCmd() : findCmd
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new("File", [],
@@ -83,9 +83,7 @@ export def File(findCmd: string = null_string, count: number = 100000)
                 workaround = true
             endif
         },
-        100,
-        null_dict,
-        findCmd == null_string)
+        100, null_dict, ignore_err)
 enddef
 
 export def GrepCmd(flags: string = null_string): string

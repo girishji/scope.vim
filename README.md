@@ -45,10 +45,11 @@ nnoremap <your_key> <scriptcmd>fuzzy.File()<cr>
 ### API
 
 ```vim
-# findCmd: String  : Command string to search for files. If omitted or set to
+# findCmd: String     : Command string to search for files. If omitted or set to
 #                      'null_string', uses 'find' command.
-# count:   Number  : Maximum number of files returned.
-def File(findCmd: string = null_string, count: number = 100000)
+# count: Number       : Maximum number of files returned.
+# ignore_err: Boolean : Ignore stderr from 'findCmd', including file permission errors.
+def File(findCmd: string = null_string, count: number = 100000, ignore_err: bool = true)
 ```
 
 > [!NOTE]
