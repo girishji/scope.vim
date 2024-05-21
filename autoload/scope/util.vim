@@ -140,13 +140,16 @@ export def GrepCmd(flags: string = null_string): string
     endif
     return cmd
 enddef
-
 export def Escape(s: string): string
-    var escaped = s->substitute('\\', '\\\\\\\', 'g')
-    escaped = escaped->substitute('\[', '\\\\\\[', 'g')
-    escaped = escaped->substitute('\([ "]\)', '\\\1', 'g')
-    escaped = escaped->substitute('\([?()*$^.+|-]\)', '\\\\\1', 'g')
-    return escaped
+    if &shellxquote == '('  # for windows, see ':h sxq'
+        return s->substitute('\([' .. &shellxescape .. ']\)', '^\1', 'g')
+    else
+        var escaped = s->substitute('\\', '\\\\\\\', 'g')
+        escaped = escaped->substitute('\[', '\\\\\\[', 'g')
+        escaped = escaped->substitute('\([ "]\)', '\\\1', 'g')
+        escaped = escaped->substitute('\([?()*$^.+|-]\)', '\\\\\1', 'g')
+        return escaped
+    endif
 enddef
 
 export def GetCompletionItems(s: string, type: string): list<string>
