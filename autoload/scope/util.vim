@@ -145,7 +145,7 @@ export def Escape(s: string): string
     var escaped = s->substitute('\\', '\\\\\\\', 'g')
     escaped = escaped->substitute('\[', '\\\\\\[', 'g')
     escaped = escaped->substitute('\([ "]\)', '\\\1', 'g')
-    escaped = escaped->substitute('\([?(*$^.+|-]\)', '\\\\\1', 'g')
+    escaped = escaped->substitute('\([?()*$^.+|-]\)', '\\\\\1', 'g')
     return escaped
 enddef
 
