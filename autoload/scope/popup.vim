@@ -86,7 +86,7 @@ export class FilterMenu
             var widthp = this.minwidth + (pos.scrollbar ? 1 : 0)
             popup_move(this.idp, {minwidth: widthp, maxwidth: widthp})
         else
-            var widthp = this.minwidth + (pos.scrollbar ? 1 : 0)
+            var widthp = new_width + (pos.scrollbar ? 1 : 0)
             popup_move(this.idp, {minwidth: widthp, maxwidth: widthp})
         endif
     enddef
