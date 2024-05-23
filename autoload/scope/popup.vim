@@ -84,10 +84,10 @@ export class FilterMenu
             this.minwidth = new_width
             popup_move(this.id, {minwidth: this.minwidth})
             var widthp = this.minwidth + (pos.scrollbar ? 1 : 0)
-            popup_move(this.idp, {minwidth: widthp, maxwidth: widthp})
+            popup_move(this.idp, {minwidth: widthp, maxwidth: widthp, col: pos.col})
         else
             var widthp = new_width + (pos.scrollbar ? 1 : 0)
-            popup_move(this.idp, {minwidth: widthp, maxwidth: widthp})
+            popup_move(this.idp, {minwidth: widthp, maxwidth: widthp, col: pos.col})
         endif
     enddef
 
@@ -327,9 +327,9 @@ export class FilterMenu
     enddef
 
     def _GetHeight(items_count: number): list<number>
-        var height = &lines - 8
-        if options.maxheight != -1
-            height = max([options.maxheight, 5])
+        var height = &lines - 4
+        if options.maxheight > 0
+            height = min([options.maxheight, max([height, 5])])
         elseif !this.maximize
             height = min([height, max([items_count, 5])])
         endif
