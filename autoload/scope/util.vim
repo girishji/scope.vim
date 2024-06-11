@@ -140,6 +140,7 @@ export def GrepCmd(flags: string = null_string): string
     endif
     return cmd
 enddef
+
 export def Escape(s: string): string
     if &shellxquote == '('  # for windows, see ':h sxq'
         return s->substitute('\([' .. &shellxescape .. ']\)', '^\1', 'g')

@@ -51,7 +51,8 @@ export def Completor(prefix: string, line: string, cursorpos: number): string
     if prefix == null_string
         return cmds->copy()->join("\n")
     else
-        const parts = line->strpart(0, cursorpos)->split()
+        var stripped = line->substitute('vim9\S*\s', '', '')
+        const parts = stripped->strpart(0, cursorpos)->split()
         if parts->len() == 2
             return cmds->copy()->filter((_, v) => v =~? $'^{prefix}')->join("\n")
         elseif parts->len() == 3 && parts[1] =~? 'file\|grep'
