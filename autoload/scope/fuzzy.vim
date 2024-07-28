@@ -374,7 +374,10 @@ export def Command()
     menu = popup.FilterMenu.new("Commands", cmds,
         (res, key) => {
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'Vim Commands')
-                exe $":{res.text}"
+                var cmd = $'verbose com {res.text}'
+                if !util.VisitDeclaration(key, cmd)
+                    echom res.text
+                endif
             endif
         })
 enddef
