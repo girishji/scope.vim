@@ -289,8 +289,12 @@ export class FilterMenu
                                 ctrl_r_active = false
                             else
                                 var pos = this.cursorpos - 3
-                                this.prompt = this.prompt->slice(0, pos) .. key .. this.prompt->slice(pos)
-                                this.cursorpos = this.cursorpos + 1
+                                var newstr = key
+                                if key == "P" && has('gui') && this.prompt == '"+g'  # issue 32
+                                    newstr = getreg('+')
+                                endif
+                                this.prompt = this.prompt->slice(0, pos) .. newstr .. this.prompt->slice(pos)
+                                this.cursorpos = this.cursorpos + newstr->len()
                             endif
                         elseif key == "\<C-k>"
                             Callback(null_string, key)
