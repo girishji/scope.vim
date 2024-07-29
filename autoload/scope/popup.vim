@@ -289,7 +289,7 @@ export class FilterMenu
                                 ctrl_r_active = false
                             else
                                 var pos = this.cursorpos - 3
-                                if key == "P" && has('gui') && this.prompt == '"+g'  # issue 32
+                                if key == "P" && has('gui') && (this.prompt->slice(0, pos) =~# '"+g$')  # issue 32
                                     var pasted = getreg('+')
                                     this.prompt = this.prompt->slice(0, pos - 3) .. pasted .. this.prompt->slice(pos)
                                     this.cursorpos = this.cursorpos - 3 + pasted->len()
