@@ -428,16 +428,40 @@ Mapping | Action
 `<Right>` | Cursor one character right
 `<C-e>/<End>` | Move cursor to the end of line
 `<C-b>/<Home>` | Move cursor to the beginning of line
-`<C-u>` | Delete characters between cursor and beginning of line
-`<C-w>` | Delete word before the cursor
 `<S-Left>/<C-Left>` | Cursor one WORD left
 `<S-Right>/<C-Right>` | Cursor one WORD right
+`<C-u>` | Delete characters between cursor and beginning of line
+`<C-w>` | Delete word before the cursor
 `<C-Up>/<S-Up>` | Recall history previous
 `<C-Down>/<S-Down>` | Recall history next
 `<C-r><C-w>` | Insert word under cursor (`<cword>`) into prompt
 `<C-r><C-a>` | Insert WORD under cursor (`<cWORD>`) into prompt
 `<C-r><C-l>` | Insert line under cursor into prompt
 `<C-r>` {register} | Insert the contents of a numbered or named register. Between typing CTRL-R and the second character '"' will be displayed to indicate that you are expected to enter the name of a register.
+
+To enable emacs-style editing in the prompt window, set the option `emacsKeys` to `true` as follows:
+
+```vim
+scope#popup#OptionsSet({emacsKeys: true})
+```
+
+or,
+
+```vim
+import autoload 'scope/popup.vim' as sp
+sp.OptionsSet({emacsKeys: true})
+```
+
+When emacs-style editing is enabled, following keybinding take effect:
+
+Mapping | Action
+--------|-------
+`<C-b>/<Left>` | Cursor one character left
+`<C-f>/<Right>` | Cursor one character right
+`<C-e>/<End>` | Move cursor to the end of line
+`<C-a>/<Home>` | Move cursor to the beginning of line
+`<A-b>/<S-Left>/<C-Left>` | Cursor one WORD left
+`<A-f>/<S-Right>/<C-Right>` | Cursor one WORD right
 
 # Requirements
 

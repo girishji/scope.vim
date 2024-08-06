@@ -14,6 +14,7 @@ export var options = {
     maxwidth: -1,
     promptchar: '>',
     # cursorchar: '█',
+    emacsKeys: false,
 }
 
 export def OptionsSet(opt: dict<any>)
@@ -159,7 +160,7 @@ export class FilterMenu
                             # close the popup window for <cr> when popup window is empty
                             id->popup_close(-1)
                         endif
-                    elseif key == "\<Right>" || key == "\<PageDown>"
+                    elseif key == "\<Right>" || key == "\<PageDown>" || (options.emacsKeys && key == "\<C-f>")
                         if this.idp->getmatches()->indexof((_, v) => v.group == 'ScopeMenuVirtualText') != -1
                             # virtual text present. grep using virtual text.
                             this.prompt = this.idp->getwininfo()[0].bufnr->getbufline(1)[0]->slice(2)
@@ -168,7 +169,7 @@ export class FilterMenu
                             [this.items_dict, this.filtered_items] = GetFilteredItemsFn(this.items_dict, this.prompt)
                             this._SetPopupContent()
                         else
-                            if key == "\<Right>"
+                            if key == "\<Right>" || (options.emacsKeys && key == "\<C-f>")
                                 if this.cursorpos < (3 + this.prompt->strcharlen())
                                     this.cursorpos = this.cursorpos + 1
                                     this._CursorSet()
@@ -177,12 +178,12 @@ export class FilterMenu
                                 win_execute(id, 'normal! ' .. "\<C-d>")
                             endif
                         endif
-                    elseif key == "\<Left>"
+                    elseif key == "\<Left>" || (options.emacsKeys && key == "\<C-b>")
                         if this.cursorpos > 3
                             this.cursorpos = this.cursorpos - 1
                             this._CursorSet()
                         endif
-                    elseif key == "\<C-Right>" || key == "\<S-Right>"
+                    elseif key == "\<C-Right>" || key == "\<S-Right>" || (options.emacsKeys && key == "\<A-f>")
                         if this.cursorpos < (3 + this.prompt->strcharlen())
                             var pos = this.cursorpos - 3
                             var byteidx = this.prompt->stridx(' ', this.prompt->byteidx(pos) + 1)
@@ -193,7 +194,7 @@ export class FilterMenu
                             endif
                             this._CursorSet()
                         endif
-                    elseif key == "\<C-Left>" || key == "\<S-Left>"
+                    elseif key == "\<C-Left>" || key == "\<S-Left>" || (options.emacsKeys && key == "\<A-b>")
                         if this.cursorpos > 3
                             var pos = this.cursorpos - 3
                             if pos > 1 && this.prompt[pos - 1] == ' ' && this.prompt[pos - 2] == ' '
@@ -206,7 +207,7 @@ export class FilterMenu
                         endif
                     elseif key == "\<PageUp>"
                         win_execute(id, 'normal! ' .. "\<C-u>")
-                    elseif key == "\<Home>" || key == "\<C-b>"
+                    elseif key == "\<Home>" || (!options.emacsKeys && key == "\<C-b>") || (options.emacsKeys && key == "\<C-a>")
                         if this.cursorpos > 3
                             this.cursorpos = 3
                             this._CursorSet()
