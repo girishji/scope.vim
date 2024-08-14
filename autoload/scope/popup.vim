@@ -334,7 +334,7 @@ export class FilterMenu
     enddef
 
     def _GetHeight(items_count: number): list<number>
-        var height = &lines - 4
+        var height = &lines - &cmdheight - 6
         if options.maxheight > 0
             height = min([options.maxheight, max([height, 5])])
         elseif !this.maximize
