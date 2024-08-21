@@ -61,6 +61,9 @@ enddef
 # Ignores patterns from .gitignore and 'wildignore'.
 #
 export def FindCmd(dir: string = '.'): string
+    if has('win32')
+        return 'powershell -command "gci . -r -n -File"'
+    endif
     var cmd: string = $'find {dir}'
     var patterns = [".git/*"]
     for ignored in [$'{$HOME}/.gitignore', $'{$HOME}/.findignore', $'{dir}/.gitignore', $'{dir}/.findignore']
@@ -116,6 +119,9 @@ def Unique(lst: list<string>): list<string>
 enddef
 
 export def GrepCmd(flags: string = null_string): string
+    if has('win32')
+        return &grepprg
+    endif
     # default shell does not support gnu '{' expansion (--option={x,y})
     var macos = has('macunix')
     var gflags = (flags == null_string) ? (macos ? '-REIHSins' : '-REIHins') : flags
