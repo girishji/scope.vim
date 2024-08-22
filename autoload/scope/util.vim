@@ -120,7 +120,7 @@ enddef
 
 export def GrepCmd(flags: string = null_string): string
     if has('win32')
-        return &grepprg
+        return ''
     endif
     # default shell does not support gnu '{' expansion (--option={x,y})
     var macos = has('macunix')

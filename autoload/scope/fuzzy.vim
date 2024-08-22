@@ -128,7 +128,9 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
         elseif prompt->len() > grep_skip_len
             # 'grep' requires some characters to be escaped (not tested for 'rg', 'ug', and 'ag')
             cmd = $'{grepCmd ?? GrepCmd()} {util.Escape(prompt)}'
-            if grepCmd =~ 'rg\(\s\|$\)'
+            if has('win32') and grepCmd == null_string
+                cmd = $'powershell -command "findstr /s /i /n {util.Escape(prompt)} *.*"'
+            elseif grepCmd =~ 'rg\(\s\|$\)'
                 cmd = $'{cmd} {dir != null_string ? dir : "./"}'
             elseif dir != null_string
                 cmd = $'{cmd} {dir}'
