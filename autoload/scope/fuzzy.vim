@@ -419,7 +419,7 @@ export def MRU()
     if has("win32")
         # windows is very slow checking if file exists
         # use non-filtered v:oldfiles
-        mru = v:oldfiles
+        mru = v:oldfiles->copy()
     else
         mru = v:oldfiles->copy()->filter((_, v) => filereadable(fnamemodify(v, ":p")))
     endif
