@@ -13,6 +13,7 @@ export var options: dict<any> = {
     timer_delay: 20,
     quickfix_stack: true,
     find_echo_cmd: false,
+    mru_rel_path: false,
 }
 
 export def OptionsSet(opt: dict<any>)
@@ -419,12 +420,12 @@ export def MRU()
     if has("win32")
         # windows is very slow checking if file exists
         # use non-filtered v:oldfiles
-        mru = v:oldfiles->copy()
+        mru = v:oldfiles
     else
         mru = v:oldfiles->copy()->filter((_, v) => filereadable(fnamemodify(v, ":p")))
     endif
-    mru->map((_, v) => {
-        return {text: v}
+    mru = mru->mapnew((_, v) => {
+        return {text: options.mru_rel_path ? v->fnamemodify(':.') : v }
     })
     var menu: popup.FilterMenu
     menu = popup.FilterMenu.new("MRU", mru,

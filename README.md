@@ -372,7 +372,7 @@ Method|Description
 `fuzzy.LspDocumentSymbol()` | Symbols supplied by [Lsp](https://github.com/yegappan/lsp)
 `fuzzy.Loclist()` | Items in the location list (sets 'current entry')
 `fuzzy.LoclistHistory()` | Entries in the location list stack
-`fuzzy.MRU()` | `:h v:oldfiles`
+`fuzzy.MRU()` | `:h v:oldfiles` (set `mru_rel_path` option to list relative paths)
 `fuzzy.Mark()` | Vim marks (`:h mark-motions`)
 `fuzzy.Option()` | Vim options and their values
 `fuzzy.Quickfix()` | Items in the quickfix list (sets 'current entry') 
