@@ -403,3 +403,7 @@ export class FilterMenu
         matchaddpos('ScopeMenuCursor', [[1, bytepos]], 10, -1, {window: this.idp})
     enddef
 endclass
+
+export def NewFilterMenu(title: string, items_dict: list<dict<any>>, Callback: func(any, string), Setup: func(number, number) = null_function, GetFilteredItems: func(list<any>, string): list<any> = null_function, Cleanup: func() = null_function, maximize: bool = false): FilterMenu
+    return FilterMenu.new(title, items_dict, Callback, Setup, GetFilteredItems, Cleanup, maximize)
+enddef
