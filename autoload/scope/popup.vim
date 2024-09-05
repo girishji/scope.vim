@@ -116,7 +116,7 @@ export class FilterMenu
                     \ "\<MiddleMouse>", "\<MiddleRelease>", "\<MiddleDrag>", "\<2-MiddleMouse>",
                     \ "\<MiddleMouse>", "\<MiddleRelease>", "\<MiddleDrag>", "\<2-MiddleMouse>",
                     \ "\<X1Mouse>", "\<X1Release>", "\<X1Drag>", "\<X2Mouse>", "\<X2Release>", "\<X2Drag>",
-                    \ "\<ScrollWheelLeft", "\<ScrollWheelRight>"
+                    \ "\<ScrollWheelLeft>", "\<ScrollWheelRight>"
         ]
         var ignore_input_utf8 = [
             # this sequence of bytes are generated when left/right mouse is
@@ -151,7 +151,7 @@ export class FilterMenu
                         if Cleanup != null_function
                             Cleanup()
                         endif
-                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>", "\<C-Q>"]->index(key) > -1 ||
+                    elseif ["\<cr>", "\<C-j>", "\<C-v>", "\<C-t>", "\<C-o>", "\<C-g>", "\<C-Q>"]->index(key) > -1 ||
                             (!ctrl_r_active && key == "\<C-L>")  # <C-L> matches both <C-L> and <C-l>
                         this.idp->popup_close(-1)
                         if this.filtered_items[0]->len() > 0 && items_count > 0

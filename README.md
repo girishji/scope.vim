@@ -64,6 +64,7 @@ def File(findCmd: string = null_string, count: number = 100000, ignore_err: bool
 > [!TIP]
 > - To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
 > - To open the filtered files as a set of buffers, press `<C-o>`. You can view the newly added buffers by typing `:ls`.
+> - To send the filtered files to (global) argument list (`:h arglist`), press `<C-g>`.
 
 ### Examples
 
@@ -421,6 +422,7 @@ Mapping | Action
 `<C-L>` | Send only filtered items to the location list
 `<C-k>` | During live grep, toggle between pattern search of results and live grep.
 `<C-o>` | During file search, send filtered files to buffer list.
+`<C-g>` | During file search, send filtered files to argument list (`:h arglist`)
 
 Prompt window editor key mappings align with Vim's default mappings for command-line editing.
 
