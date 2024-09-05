@@ -62,7 +62,8 @@ def File(findCmd: string = null_string, count: number = 100000, ignore_err: bool
 > The default command utilized by `File()`, which employs the *find* system command and incorporates flags for excluding paths specified in `.gitignore` and `wildignore`, can be accessed via the `FindCmd()` function. The function's API is as follows: `FindCmd(dir: string = '.'): string`. The `dir` argument designates the directory to be searched, with the default being the current directory.
 
 > [!TIP]
-> To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
+> - To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
+> - To open the filtered files as a set of buffers, press `<C-o>`. You can view the newly added buffers by typing `:ls`.
 
 ### Examples
 
@@ -419,6 +420,7 @@ Mapping | Action
 `<C-l>` | Send all unfiltered items to the location list (`:h location-list`)
 `<C-L>` | Send only filtered items to the location list
 `<C-k>` | During live grep, toggle between pattern search of results and live grep.
+`<C-o>` | During file search, send filtered files to buffer list.
 
 Prompt window editor key mappings align with Vim's default mappings for command-line editing.
 

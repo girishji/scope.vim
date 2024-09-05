@@ -37,7 +37,12 @@ export def File(findCmd: string = null_string, count: number = 100000, ignore_er
                     (v: dict<any>) => {
                         return {filename: v.text}
                     })
-                util.VisitFile(key, res.text)
+                if key == "\<C-o>"  # send all files to buffer list
+                    foreach(menu.filtered_items[0]->mapnew('v:val.text'),
+                        'setbufvar(bufadd(v:val), "&buflisted", true)')
+                else
+                    util.VisitFile(key, res.text)
+                endif
             endif
             if options.find_echo_cmd
                 util.EchoClear()
