@@ -63,8 +63,7 @@ def File(findCmd: string = null_string, count: number = 100000, ignore_err: bool
 
 > [!TIP]
 > - To **echo the command string** in Vim's command line, set the option `find_echo_cmd` to `true`. Default is `false`. Setting this option helps in debugging arguments given to *find* command. Setting of options is discussed later.
-> - To open the filtered files as a set of buffers, press `<C-o>`. You can view the newly added buffers by typing `:ls`.
-> - To send the filtered files to (global) argument list (`:h arglist`), press `<C-g>`.
+> - To open the filtered results in separate buffers, press `<C-o>`. Alternatively, use `<C-g>` to open them as an argument list (see `:h arglist` for more details).
 
 ### Examples
 
@@ -148,6 +147,7 @@ nnoremap <your_key> <scriptcmd>fuzzy.Grep()<cr>
 > 1. To perform a second grep with the same keyword, there's no need to retype it. The prompt conveniently retains the previous grep string as virtual text. Simply input `<Right>` or `<PgDn>` to auto-fill and proceed, or overwrite it as needed. For smaller projects, you can efficiently execute repeated greps without relying on the quickfix list.
 > 2. Special characters can be entered into the prompt window directly without requiring backslash escaping.
 > 3. When working with live grep, it can be advantageous to suspend it temporarily and refine the results through filtering. Press `<C-k>` to enter pattern search mode. For instance, while in pattern search mode, typing `^foo` will selectively display lines starting with `foo`. To negate patterns, prepend `!` to the search term. For instance, to filter lines that do not contain `foo` or `bar`, input `!foo|bar` into the prompt. Whether the pattern is case-sensitive is determined by `ignorecase` Vim option. To force case (in)sensitive search prepend the pattern with `\c` or `\C`. Pressing `<C-k>` again will toggle back to live grep mode.
+> 4. To open the filtered results in separate buffers, press `<C-o>`. Alternatively, use `<C-g>` to open them as an argument list (see `:h arglist` for more details).
 
 > [!NOTE]
 > `grep` command string is **echoed** in the command line after each search. You can unset `grep_echo_cmd` option to turn this off (see below).
@@ -421,8 +421,8 @@ Mapping | Action
 `<C-l>` | Send all unfiltered items to the location list (`:h location-list`)
 `<C-L>` | Send only filtered items to the location list
 `<C-k>` | During live grep, toggle between pattern search of results and live grep.
-`<C-o>` | During file search, send filtered files to buffer list.
-`<C-g>` | During file search, send filtered files to argument list (`:h arglist`)
+`<C-o>` | Send filtered files to buffer list, where applicable.
+`<C-g>` | Send filtered files to argument list, where applicable (`:h arglist`)
 
 Prompt window editor key mappings align with Vim's default mappings for command-line editing.
 
