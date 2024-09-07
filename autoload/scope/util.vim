@@ -142,7 +142,7 @@ export def GrepCmd(flags: string = null_string): string
     })
     cmd ..= ' ' .. excl->join(' ')
     if &wildignore !~ '\(^\|,\)\.git[/,]'
-        cmd ..= ' ' .. (macos ? '--exclude-dir="./.git/*"' : '--exclude-dir=".git"')
+        cmd ..= ' ' .. (macos ? '--exclude="./.git/*"' : '--exclude-dir=".git"')
     endif
     return cmd
 enddef
