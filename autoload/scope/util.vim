@@ -225,6 +225,17 @@ export def Send2Qickfix(key: string, unfiltered: list<dict<any>>, filtered: list
     return true
 enddef
 
+export def Send2Buflist(key: string, flist: list<string>): bool
+    if key == "\<C-o>"  # send filtered files to buffer list
+        foreach(flist, 'setbufvar(bufadd(v:val), "&buflisted", true)')
+    elseif key == "\<C-g>"  # send filtered files to argument list
+        execute($'argadd {flist->join(" ")}')
+    else
+        return false
+    endif
+    return true
+enddef
+
 var saved = { cmdheight: -1, scrolloff: -1, toplinenr: -1 }
 
 export def Echo(s: string)

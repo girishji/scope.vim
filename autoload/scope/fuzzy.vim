@@ -36,15 +36,9 @@ export def File(findCmd: string = null_string, count: number = 100000, ignore_er
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd,
                     (v: dict<any>) => {
                         return {filename: v.text}
-                    })
-                if key == "\<C-o>"  # send filtered files to buffer list
-                    foreach(menu.filtered_items[0]->mapnew('v:val.text'),
-                        'setbufvar(bufadd(v:val), "&buflisted", true)')
-                elseif key == "\<C-g>"  # send filtered files to argument list
-                    execute($'argadd {menu.filtered_items[0]->mapnew("v:val.text")->join(' ')}')
-                else
-                    util.VisitFile(key, res.text)
-                endif
+                    }) &&
+                    !util.Send2Buflist(key, menu.filtered_items[0]->mapnew('v:val.text'))
+                util.VisitFile(key, res.text)
             endif
             if options.find_echo_cmd
                 util.EchoClear()
@@ -202,18 +196,21 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
                 endif
                 return
             endif
+            # let quicfix parse output of 'grep' for filename, line, column.
+            # it deals with ':' in filename and other corner cases.
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd, null_function, true)
-                # let quicfix parse output of 'grep' for filename, line, column.
-                # it deals with ':' in filename and other corner cases.
-                var qfitem = getqflist({lines: [res.text]}).items[0]
-                if qfitem->has_key('bufnr')
-                    util.VisitBuffer(key, qfitem.bufnr, qfitem.lnum, qfitem.col, qfitem.vcol > 0)
-                    if !qfitem.bufnr->getbufvar('&buflisted')
-                        # getqflist keeps buffer unlisted
-                        setbufvar(qfitem.bufnr, '&buflisted', 1)
+                var flist = menu.filtered_items[0]->mapnew((_, v) => v.text->matchstr('\v^.+\ze:\d+:'))->uniq()
+                if !util.Send2Buflist(key, flist)
+                    var qfitem = getqflist({lines: [res.text]}).items[0]
+                    if qfitem->has_key('bufnr')
+                        util.VisitBuffer(key, qfitem.bufnr, qfitem.lnum, qfitem.col, qfitem.vcol > 0)
+                        if !qfitem.bufnr->getbufvar('&buflisted')
+                            # getqflist keeps buffer unlisted
+                            setbufvar(qfitem.bufnr, '&buflisted', 1)
+                        endif
+                    else
+                        echoerr 'Scope.vim: Incompatible:' res.text
                     endif
-                else
-                    echoerr 'Scope.vim: Incompatible:' res.text
                 endif
             endif
         },
@@ -362,7 +359,7 @@ export def DoVimItems(title: string, cmd: string, GetItemsFn: func(string): list
     menu = popup.FilterMenu.new(title, [],
         (res, key) => {
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], title)
-                # when callback function is called in popup, the window and assciated buffer
+                # when callback function is called in popup, the window and associated buffer
                 # are not yet deleted, and it is visible when ':tag' is called, which
                 # opens a dialog split window. put this in a timer to let popup close.
                 timer_start(timer_delay, function(ExecCmd, [key, res.text]))
@@ -440,7 +437,8 @@ export def MRU()
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'v:oldfiles',
                     (v: dict<any>) => {
                         return {filename: v.text}
-                    })
+                    }) &&
+                    !util.Send2Buflist(key, menu.filtered_items[0]->mapnew((_, v) => v.text->fnamemodify(':p'))->uniq())
                 util.VisitFile(key, res.text)
             endif
         },
@@ -552,7 +550,8 @@ export def GitFile(path: string = "")
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], 'GitFile',
                     (v: dict<any>) => {
                         return {filename: $'{path_e}{v.text}'}
-                    })
+                    }) &&
+                    !util.Send2Buflist(key, menu.filtered_items[0]->mapnew((_, v) => $'{path_e}{v.text}'))
                 util.VisitFile(key, $'{path_e}{res.text}')
             endif
         },
