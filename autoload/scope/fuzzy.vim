@@ -199,7 +199,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
             # let quicfix parse output of 'grep' for filename, line, column.
             # it deals with ':' in filename and other corner cases.
             if !util.Send2Qickfix(key, menu.items_dict, menu.filtered_items[0], cmd, null_function, true)
-                var flist = menu.filtered_items[0]->mapnew((_, v) => v.text->matchstr('\v^[^:]+\ze:\d+:'))->uniq()
+                var flist = menu.filtered_items[0]->mapnew((_, v) => v.text->matchstr('\v^.{-}\ze:\d+:'))->uniq()
                 if !util.Send2Buflist(key, flist)
                     var qfitem = getqflist({lines: [res.text]}).items[0]
                     if qfitem->has_key('bufnr')
