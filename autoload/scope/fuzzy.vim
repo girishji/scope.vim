@@ -271,7 +271,7 @@ export def Grep(grepCmd: string = null_string, ignorecase: bool = true,
         }, true)
 enddef
 
-export def Buffer(list_all_buffers: bool = false)
+export def Buffer(list_all_buffers: bool = false, goto_window: bool = true)
     var blist = list_all_buffers ? getbufinfo({buloaded: 1}) : getbufinfo({buflisted: 1})
     var buffer_list = blist->mapnew((_, v) => {
         return {bufnr: v.bufnr,
@@ -290,7 +290,7 @@ export def Buffer(list_all_buffers: bool = false)
                     (v: dict<any>) => {
                         return {bufnr: v.bufnr, text: v.text}
                     })
-                if res.winid != -1
+                if res.winid != -1 && goto_window
                     win_gotoid(res.winid)
                 else
                     util.VisitBuffer(key, res.bufnr)
