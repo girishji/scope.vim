@@ -278,11 +278,20 @@ import autoload 'scope/fuzzy.vim'
 nnoremap <your_key> <scriptcmd>fuzzy.Buffer(true)<cr>
 ```
 
+Hide unlisted buffers and always use current window
+
+```vim
+vim9script
+import autoload 'scope/fuzzy.vim'
+nnoremap <your_key> <scriptcmd>fuzzy.Buffer(v:none, false)<cr>
+```
+
 ### API
 
 ```vim
 # list_all_buffers: Boolean : If 'true', include unlisted buffers as well.
-def Buffer(list_all_buffers: bool = false)
+# goto_window: Boolean : If 'false', do not go to other window.
+def Buffer(list_all_buffers: bool = false, goto_window: bool = true )
 ```
 
 ## Search Current Buffer
