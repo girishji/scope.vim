@@ -5,7 +5,7 @@ export class AsyncCmd
 
     def Stop(how: string = '')
         if this.job->job_status() ==# 'run'
-            how == '' ? this.job->job_stop() : this.job->job_stop(how)
+            how->empty() ? this.job->job_stop() : this.job->job_stop(how)
         endif
     enddef
 
