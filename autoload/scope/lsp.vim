@@ -2,6 +2,9 @@ vim9script
 
 if !exists('g:loaded_lsp')
     # Do not throw error as it will show up when Vim starts.
+    export def DocumentSymbol()
+        echo 'Error: Lsp client is not available'
+    enddef
     finish
 endif
 
