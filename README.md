@@ -586,7 +586,7 @@ Some portions of this code are shamelessly ripped from [habamax](https://github.
 
 3. [**VimBits**](https://github.com/girishji/vimbits) - curated suite of lightweight Vim plugins.
 
-4. [**Autosuggest.vim**](https://github.com/girishji/autosuggest.vim) - autocompletion for Vim's command mode.
+4. [**VimSuggest**](https://github.com/girishji/vimsuggest) - autocompletion for Vim's command-line.
 
 # Contributing
 
