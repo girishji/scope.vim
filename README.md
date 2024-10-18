@@ -15,7 +15,7 @@ There are already good implementations of this kind, such as [fuzzyy](https://gi
 
 <a href="#Writing-Your-Own-Extension">Extending</a> the functionality to perform fuzzy search for other items is straightforward.
 
-![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png) **Update (10/18/2024): Consider using [VimSuggest](https://github.com/girishji/vimsuggest). It accomplishes most of what this plugin does, but you may find it more user-friendly, as it leverages Vim's native command completion.**
+![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png) **Update (10/18/2024): Consider using [VimSuggest](https://github.com/girishji/vimsuggest). It accomplishes most of what this plugin does, but it has familiar configuration syntax for users of legacy Vim scripts.**
 
 # Usage
 
