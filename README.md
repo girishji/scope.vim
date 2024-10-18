@@ -15,6 +15,8 @@ There are already good implementations of this kind, such as [fuzzyy](https://gi
 
 <a href="#Writing-Your-Own-Extension">Extending</a> the functionality to perform fuzzy search for other items is straightforward.
 
+**Update (10/18/2024): Consider using [VimSuggest](https://github.com/girishji/vimsuggest). It achieves most of what this plugin does but with fewer complexities.**
+
 # Usage
 
 Map the following functions to your favorite keys.
