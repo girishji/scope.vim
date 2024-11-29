@@ -39,6 +39,8 @@ nnoremap <your_key> <scriptcmd>fuzzy.File()<cr>
 > If you are using legacy script to map keys, use:
 >
 > `nnoremap <your_key> <scriptcmd>vim9cmd scope#fuzzy#File()<cr>`
+> or
+> `nnoremap <your_key> :call g:scope#fuzzy#File()<cr>`
 >
 > Same pattern applies to other mappings also.
 >
