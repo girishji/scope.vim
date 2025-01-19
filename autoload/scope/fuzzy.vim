@@ -16,8 +16,8 @@ export var options: dict<any> = {
     mru_rel_path: false,
 }
 
-export def OptionsSet(opt: dict<any>)
-    options->extend(opt)
+export def OptionsSet(option: dict<any>)
+    options->extend(option)
 enddef
 
 export def FindCmd(dir: string = '.'): string
