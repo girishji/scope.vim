@@ -212,7 +212,7 @@ export class FilterMenu
                             this.cursorpos = 3
                             this._CursorSet()
                         endif
-                    elseif key == "\<End>" || key == "\<C-e>" 
+                    elseif key == "\<End>" || key == "\<C-e>"
                         if this.cursorpos < (3 + this.prompt->strcharlen())
                             this.cursorpos = 3 + this.prompt->strcharlen()
                             this._CursorSet()
