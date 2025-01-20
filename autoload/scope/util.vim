@@ -225,7 +225,9 @@ enddef
 
 export def Send2Buflist(key: string, flist: list<string>): bool
     if key == "\<C-o>"  # send filtered files to buffer list
-        foreach(flist, 'setbufvar(bufadd(v:val), "&buflisted", true)')
+        for str in flist
+            setbufvar(bufadd(str), "&buflisted", true)
+        endfor
     elseif key == "\<C-g>"  # send filtered files to argument list
         execute($'argadd {flist->join(" ")}')
     else
