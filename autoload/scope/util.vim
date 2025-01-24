@@ -197,7 +197,7 @@ export def Send2Qickfix(key: string, unfiltered: list<dict<any>>, filtered: list
     var lst = ["\<C-q>", "\<C-l>"]->index(key) != -1 ? filtered : unfiltered
     var qflist = ["\<C-q>", "\<C-Q>"]->index(key) != -1
     var SetXList = qflist ? function('setqflist') : function('setloclist', [0])
-    var qf_stack = fuzzy#options.quickfix_stack
+    var qf_stack = scope#fuzzy#options.quickfix_stack
     var action = qf_stack ? ' ' : 'r'
     var what: dict<any> = qf_stack ? {nr: '$', title: title} : {title: title}
     if !lst->empty()
